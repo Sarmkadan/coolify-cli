@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -238,7 +239,7 @@ public static class ConfigurationHelper
             var json = File.ReadAllText(filePath);
             var config = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
-            if (config != null)
+            if (config is not null)
             {
                 SaveConfiguration(config);
                 Console.WriteLine($"Configuration imported from {filePath}");

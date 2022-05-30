@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -35,7 +36,7 @@ public class HealthCheckService
         {
             var response = await _apiClient.GetAsync<ServiceHealth>($"/api/v1/applications/{applicationId}/health");
 
-            if (response.Success && response.Data != null)
+            if (response.Success && response.Data is not null)
             {
                 _logger.Info($"Application {applicationId} health: {response.Data.Status} (Response: {response.Data.ResponseTimeMs}ms)");
             }
@@ -60,7 +61,7 @@ public class HealthCheckService
     /// <returns>Health statuses for all applications.</returns>
     public async Task<ApiResponse<Dictionary<int, ServiceHealth>>> CheckBulkHealthAsync(List<int> applicationIds)
     {
-        if (applicationIds == null || applicationIds.Count == 0)
+        if (applicationIds is null || applicationIds.Count == 0)
             return ApiResponse<Dictionary<int, ServiceHealth>>.ErrorResponse("Application IDs are required.", 400);
 
         _logger.Info($"Performing bulk health check for {applicationIds.Count} applications");
@@ -183,7 +184,7 @@ public class HealthCheckService
         {
             var healthResponse = await CheckApplicationHealthAsync(applicationId);
 
-            if (healthResponse.Success && healthResponse.Data != null)
+            if (healthResponse.Success && healthResponse.Data is not null)
             {
                 yield return healthResponse.Data;
             }

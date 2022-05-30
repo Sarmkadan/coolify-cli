@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -132,7 +133,7 @@ public class EnvironmentVariableService
         if (string.IsNullOrWhiteSpace(applicationId))
             return ApiResponse<object>.ErrorResponse("Application ID is required.", 400);
 
-        if (variables == null || variables.Count == 0)
+        if (variables is null || variables.Count == 0)
             return ApiResponse<object>.ErrorResponse("At least one variable is required.", 400);
 
         var validationErrors = new List<string>();
@@ -190,7 +191,7 @@ public class EnvironmentVariableService
         if (string.IsNullOrWhiteSpace(applicationId))
             return ApiResponse<object>.ErrorResponse("Application ID is required.", 400);
 
-        if (variableIds == null || variableIds.Count == 0)
+        if (variableIds is null || variableIds.Count == 0)
             return ApiResponse<object>.ErrorResponse("At least one variable ID is required.", 400);
 
         _logger.Warn($"Rotating {variableIds.Count} secrets for application {applicationId}");

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -27,7 +28,7 @@ public class ApplicationRepository : BaseRepository<ApplicationDeployment>
         try
         {
             var response = await _apiClient.GetAsync<List<ApplicationDeployment>>("/api/v1/applications");
-            if (response.Success && response.Data != null)
+            if (response.Success && response.Data is not null)
             {
                 _all.Clear();
                 _cache.Clear();
@@ -91,7 +92,7 @@ public class ApplicationRepository : BaseRepository<ApplicationDeployment>
     public async Task<IEnumerable<ApplicationDeployment>> FindUndeployedAsync()
     {
         var all = await GetAllAsync();
-        return all.Where(a => a.LastDeployedAt == null);
+        return all.Where(a => a.LastDeployedAt is null);
     }
 
     /// <summary>

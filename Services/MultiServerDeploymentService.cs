@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -74,8 +75,8 @@ public class MultiServerDeploymentService
         DeploymentContext context,
         CancellationToken cancellationToken = default)
     {
-        if (servers == null) throw new ArgumentNullException(nameof(servers));
-        if (context == null) throw new ArgumentNullException(nameof(context));
+        if (servers is null) throw new ArgumentNullException(nameof(servers));
+        if (context is null) throw new ArgumentNullException(nameof(context));
 
         var targets = servers.Where(s => s.IsActive).ToList();
         var runResult = new MultiServerDeploymentResult();
@@ -177,7 +178,7 @@ public class MultiServerDeploymentService
             result.LogEvent("Verifying application exists on target server");
             var appCheck = await appService.GetApplicationAsync(target.ApplicationId);
 
-            if (!appCheck.Success || appCheck.Data == null)
+            if (!appCheck.Success || appCheck.Data is null)
             {
                 result.Success = false;
                 result.ErrorMessage = $"Application {target.ApplicationId} not found: {appCheck.Message}";

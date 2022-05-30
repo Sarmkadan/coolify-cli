@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -35,7 +36,7 @@ public class WebhookHandler
         _handlers[eventType].Add(async (payload) =>
         {
             var evt = payload.Deserialize<T>();
-            if (evt != null)
+            if (evt is not null)
                 await handler(evt);
         });
     }

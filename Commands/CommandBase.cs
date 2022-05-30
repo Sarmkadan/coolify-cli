@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -66,7 +67,7 @@ public abstract class CommandBase
     /// </summary>
     protected void ValidateRequired(object? value, string fieldName)
     {
-        if (value == null || (value is string str && string.IsNullOrWhiteSpace(str)))
+        if (value is null || (value is string str && string.IsNullOrWhiteSpace(str)))
         {
             throw new ValidationException($"{fieldName} is required");
         }

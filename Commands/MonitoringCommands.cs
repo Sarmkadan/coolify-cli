@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -135,7 +136,7 @@ public class MonitoringCommands : CommandBase
                     {
                         var result = await _logService.GetApplicationLogsAsync(appId.ToString(), 50);
 
-                        if (result.Success && result.Data != null)
+                        if (result.Success && result.Data is not null)
                         {
                             var filteredLogs = result.Data
                                 .Where(l => l.Timestamp > lastTimestamp)
@@ -181,7 +182,7 @@ public class MonitoringCommands : CommandBase
                 {
                     var result = await _logService.GetApplicationLogsAsync(appId.ToString(), 100);
 
-                    if (result.Success && result.Data != null)
+                    if (result.Success && result.Data is not null)
                     {
                         IEnumerable<LogEntry> logs = result.Data.OrderBy(l => l.Timestamp);
 
