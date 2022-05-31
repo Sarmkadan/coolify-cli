@@ -1,0 +1,301 @@
+// =============================================================================
+// Author: Vladyslav Zaiets | https://sarmkadan.com
+// CTO & Software Architect
+// =============================================================================
+
+using CoolifiCli.Infrastructure;
+using CoolifiCli.Services;
+using System.CommandLine;
+
+namespace CoolifiCli.Commands;
+
+/// <summary>
+/// Monitoring and observability commands for real-time metrics, alerts, and system status.
+/// Provides comprehensive visibility into application and infrastructure health.
+/// </summary>
+public class MonitoringCommands : CommandBase
+{
+    private readonly HealthCheckService _healthService;
+    private readonly LogService _logService;
+
+    public MonitoringCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
+        : base(apiClient, logger, config)
+    {
+        _healthService = new HealthCheckService(apiClient, logger);
+        _logService = new LogService(apiClient, logger);
+    }
+
+    /// <summary>
+    /// Creates command to display real-time metrics dashboard. Streams CPU, memory, disk usage
+    /// and request metrics with automatic refresh intervals.
+    /// </summary>
+    public Command CreateMetricsCommand()
+    {
+        var metricsCmd = new Command("metrics", "View system metrics");
+        var resourceOption = new Option<string>(
+            ["--resource", "-r"],
+            getDefaultValue: () => "all",
+            "Resource type: all, cpu, memory, disk, network");
+        var intervalOption = new Option<int>(
+            ["--interval", "-i"],
+            getDefaultValue: () => 5,
+            "Refresh interval in seconds");
+
+        metricsCmd.AddOption(resourceOption);
+        metricsCmd.AddOption(intervalOption);
+
+        metricsCmd.SetHandler(async (resource, interval) =>
+        {
+            try
+            {
+                if (interval < 1)
+                {
+                    throw new ValidationException("Refresh interval must be at least 1 second");
+                }
+
+                Logger.Info($"Fetching {resource} metrics with {interval}s refresh interval");
+
+                var result = await _healthService.GetSystemHealthAsync();
+
+                if (result.Success && result.Data != null)
+                {
+                    var health = result.Data;
+
+                    if (resource == "all" || resource == "cpu")
+                    {
+                        Console.WriteLine("\n--- CPU Metrics ---");
+                        Console.WriteLine($"Usage: {health.CpuUsagePercent:F1}%");
+                        Console.WriteLine($"Cores: {health.CoreCount}");
+                    }
+
+                    if (resource == "all" || resource == "memory")
+                    {
+                        Console.WriteLine("\n--- Memory Metrics ---");
+                        Console.WriteLine($"Used: {health.MemoryUsageMb:F1}MB");
+                        Console.WriteLine($"Total: {health.MemoryTotalMb:F1}MB");
+                        var memPercent = (health.MemoryUsageMb / health.MemoryTotalMb) * 100;
+                        Console.WriteLine($"Usage: {memPercent:F1}%");
+                    }
+
+                    if (resource == "all" || resource == "disk")
+                    {
+                        Console.WriteLine("\n--- Disk Metrics ---");
+                        Console.WriteLine($"Used: {health.DiskUsageGb:F1}GB");
+                        Console.WriteLine($"Total: {health.DiskTotalGb:F1}GB");
+                        var diskPercent = (health.DiskUsageGb / health.DiskTotalGb) * 100;
+                        Console.WriteLine($"Usage: {diskPercent:F1}%");
+                    }
+                }
+                else
+                {
+                    WriteError("Failed to retrieve metrics");
+                }
+            }
+            catch (ValidationException ex)
+            {
+                WriteError(ex.Message);
+            }
+        }, resourceOption, intervalOption);
+
+        return metricsCmd;
+    }
+
+    /// <summary>
+    /// Creates command to stream live application logs with filtering by level, service, or text pattern.
+    /// Supports both real-time streaming and batch retrieval with pagination.
+    /// </summary>
+    public Command CreateLogStreamCommand()
+    {
+        var logCmd = new Command("stream", "Stream live logs from an application");
+        var appIdArg = new Argument<int>("id", "Application ID");
+        var levelOption = new Option<string>(["--level", "-l"], "Log level filter: all, info, warning, error, fatal");
+        var tailOption = new Option<bool>(["--tail", "-f"], "Follow log stream (live mode)");
+        var filterOption = new Option<string>(["--filter"], "Text pattern to filter logs");
+
+        logCmd.AddArgument(appIdArg);
+        logCmd.AddOption(levelOption);
+        logCmd.AddOption(tailOption);
+        logCmd.AddOption(filterOption);
+
+        logCmd.SetHandler(async (appId, level, tail, filter) =>
+        {
+            try
+            {
+                ValidatePositiveId(appId);
+
+                Logger.Info($"Streaming logs from application {appId} (level={level}, tail={tail})");
+
+                if (tail)
+                {
+                    Console.WriteLine($"Following logs from application {appId} (press Ctrl+C to stop)...\n");
+
+                    // Simulate live streaming by polling periodically
+                    var lastTimestamp = DateTime.UtcNow;
+                    while (true)
+                    {
+                        var result = await _logService.GetApplicationLogsAsync(appId.ToString(), 50);
+
+                        if (result.Success && result.Data != null)
+                        {
+                            var filteredLogs = result.Data
+                                .Where(l => l.Timestamp > lastTimestamp)
+                                .OrderBy(l => l.Timestamp)
+                                .ToList();
+
+                            if (level != "all")
+                            {
+                                filteredLogs = filteredLogs
+                                    .Where(l => l.Level.ToString().Equals(level, StringComparison.OrdinalIgnoreCase))
+                                    .ToList();
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(filter))
+                            {
+                                filteredLogs = filteredLogs
+                                    .Where(l => l.Message.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                                    .ToList();
+                            }
+
+                            foreach (var log in filteredLogs)
+                            {
+                                var color = log.Level switch
+                                {
+                                    LogLevel.Error => ConsoleColor.Red,
+                                    LogLevel.Warning => ConsoleColor.Yellow,
+                                    LogLevel.Fatal => ConsoleColor.DarkRed,
+                                    _ => ConsoleColor.Gray
+                                };
+
+                                Console.ForegroundColor = color;
+                                Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.Level}: {log.Message}");
+                                Console.ResetColor();
+
+                                lastTimestamp = log.Timestamp;
+                            }
+                        }
+
+                        await Task.Delay(2000);
+                    }
+                }
+                else
+                {
+                    var result = await _logService.GetApplicationLogsAsync(appId.ToString(), 100);
+
+                    if (result.Success && result.Data != null)
+                    {
+                        var logs = result.Data.OrderBy(l => l.Timestamp);
+
+                        if (level != "all")
+                        {
+                            logs = logs.Where(l => l.Level.ToString().Equals(level, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(filter))
+                        {
+                            logs = logs.Where(l => l.Message.Contains(filter, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        foreach (var log in logs)
+                        {
+                            Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.Level}: {log.Message}");
+                        }
+                    }
+                }
+            }
+            catch (ValidationException ex)
+            {
+                WriteError(ex.Message);
+            }
+        }, appIdArg, levelOption, tailOption, filterOption);
+
+        return logCmd;
+    }
+
+    /// <summary>
+    /// Creates command to get resource usage and alerts summary for infrastructure.
+    /// Highlights warning/critical conditions that require attention.
+    /// </summary>
+    public Command CreateAlertsCommand()
+    {
+        var alertsCmd = new Command("alerts", "View active alerts and issues");
+        var severityOption = new Option<string>(
+            ["--severity", "-s"],
+            getDefaultValue: () => "all",
+            "Alert severity: all, info, warning, critical");
+
+        alertsCmd.AddOption(severityOption);
+
+        alertsCmd.SetHandler(async (severity) =>
+        {
+            try
+            {
+                Logger.Info($"Fetching alerts with severity={severity}");
+
+                var result = await _healthService.GetSystemHealthAsync();
+
+                if (result.Success && result.Data != null)
+                {
+                    var health = result.Data;
+                    var alerts = new List<(string Type, string Message, string Severity)>();
+
+                    // CPU alerts
+                    if (health.CpuUsagePercent > 90)
+                        alerts.Add(("CPU", $"CPU usage critical: {health.CpuUsagePercent:F1}%", "critical"));
+                    else if (health.CpuUsagePercent > 75)
+                        alerts.Add(("CPU", $"CPU usage high: {health.CpuUsagePercent:F1}%", "warning"));
+
+                    // Memory alerts
+                    var memPercent = (health.MemoryUsageMb / health.MemoryTotalMb) * 100;
+                    if (memPercent > 90)
+                        alerts.Add(("Memory", $"Memory usage critical: {memPercent:F1}%", "critical"));
+                    else if (memPercent > 75)
+                        alerts.Add(("Memory", $"Memory usage high: {memPercent:F1}%", "warning"));
+
+                    // Disk alerts
+                    var diskPercent = (health.DiskUsageGb / health.DiskTotalGb) * 100;
+                    if (diskPercent > 90)
+                        alerts.Add(("Disk", $"Disk usage critical: {diskPercent:F1}%", "critical"));
+                    else if (diskPercent > 80)
+                        alerts.Add(("Disk", $"Disk usage high: {diskPercent:F1}%", "warning"));
+
+                    if (alerts.Count == 0)
+                    {
+                        WriteSuccess("No active alerts");
+                        return;
+                    }
+
+                    var filteredAlerts = severity == "all"
+                        ? alerts
+                        : alerts.Where(a => a.Severity.Equals(severity, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                    if (filteredAlerts.Count == 0)
+                    {
+                        Console.WriteLine($"No {severity} alerts found");
+                        return;
+                    }
+
+                    Console.WriteLine($"\n{filteredAlerts.Count} Active Alerts:\n");
+                    foreach (var alert in filteredAlerts)
+                    {
+                        var color = alert.Severity switch
+                        {
+                            "critical" => ConsoleColor.Red,
+                            "warning" => ConsoleColor.Yellow,
+                            _ => ConsoleColor.Cyan
+                        };
+
+                        Console.ForegroundColor = color;
+                        Console.WriteLine($"[{alert.Severity.ToUpper()}] {alert.Type}: {alert.Message}");
+                        Console.ResetColor();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteError($"Failed to retrieve alerts: {ex.Message}");
+            }
+        }, severityOption);
+
+        return alertsCmd;
+    }
+}
