@@ -1,8 +1,8 @@
-#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
+#nullable enable
 
 using CoolifiCli.Infrastructure;
 using CoolifiCli.Services;
@@ -101,7 +101,7 @@ public class ErrorHandlingMiddleware : ICommandMiddleware
         Console.WriteLine("❌ Unauthorized: API key is missing or invalid");
         Console.ResetColor();
 
-        _logger.Warn("Unauthorized access attempt - check API key configuration");
+        _logger.Warn("Unauthorized access attempt - check API key configuration. If using a refresh token, ensure it's properly configured and not expired.");
     }
 
     /// <summary>
