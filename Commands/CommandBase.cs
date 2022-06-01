@@ -6,7 +6,6 @@
 using CoolifiCli.Infrastructure;
 using CoolifiCli.Services;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 
 namespace CoolifiCli.Commands;
 
@@ -31,30 +30,30 @@ public abstract class CommandBase
     /// Creates a Command with automatic error handling and logging integration.
     /// Wraps handler execution to catch and log exceptions consistently.
     /// </summary>
-    protected Command CreateCommand(string name, string description, Func<InvocationContext, Task> handler)
+    protected Command CreateCommand(string name, string description, Func<Task> handler)
     {
         var command = new Command(name, description);
-        command.SetHandler(async (ctx) =>
+        command.SetHandler(async () =>
         {
             try
             {
                 Logger.Debug($"Executing command: {name}");
-                await handler(ctx);
+                await handler();
             }
-            catch (CoolifyApiException apiEx)
+            catch (ApiException apiEx)
             {
                 Logger.Error($"API Error ({apiEx.StatusCode}): {apiEx.Message}");
-                ctx.ExitCode = Constants.ExitCodes.ApiError;
+                Environment.ExitCode = Constants.ExitCodes.ApiError;
             }
             catch (ValidationException valEx)
             {
                 Logger.Error($"Validation Error: {valEx.Message}");
-                ctx.ExitCode = Constants.ExitCodes.ValidationError;
+                Environment.ExitCode = Constants.ExitCodes.ValidationError;
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, $"Unexpected error in command '{name}'");
-                ctx.ExitCode = Constants.ExitCodes.UnhandledError;
+                Environment.ExitCode = Constants.ExitCodes.UnhandledError;
             }
         });
 

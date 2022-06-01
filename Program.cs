@@ -54,7 +54,7 @@ appListCommand.SetHandler(async () =>
                 return;
             }
 
-            Console.WriteLine($"\n{'ID',-5} {'Name',-25} {'Status',-12} {'Deployed At',-20}");
+            Console.WriteLine($"\n{"ID",-5} {"Name",-25} {"Status",-12} {"Deployed At",-20}");
             Console.WriteLine(new string('-', 62));
 
             foreach (var app in result.Data)
@@ -163,7 +163,7 @@ dbListCommand.SetHandler(async () =>
                 return;
             }
 
-            Console.WriteLine($"\n{'ID',-5} {'Name',-20} {'Type',-15} {'Host',-20} {'Status',-10}");
+            Console.WriteLine($"\n{"ID",-5} {"Name",-20} {"Type",-15} {"Host",-20} {"Status",-10}");
             Console.WriteLine(new string('-', 70));
 
             foreach (var db in result.Data)
