@@ -5,7 +5,7 @@
 
 namespace CoolifiCli.Utilities;
 
-using Newtonsoft.Json;
+using System.Text.Json;
 using CoolifiCli.Infrastructure;
 
 /// <summary>
@@ -15,6 +15,8 @@ public static class ConfigurationHelper
 {
     private static readonly string ConfigPath = Constants.Paths.ConfigFile;
     private static readonly string ConfigDir = Constants.Paths.ConfigDirectory;
+
+    private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
 
     /// <summary>
     /// Loads configuration from file if it exists, otherwise returns empty config.
@@ -31,7 +33,7 @@ public static class ConfigurationHelper
                 return new Dictionary<string, object>();
 
             var json = File.ReadAllText(ConfigPath);
-            var config = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+            var config = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
             return config ?? new Dictionary<string, object>();
         }
@@ -53,7 +55,7 @@ public static class ConfigurationHelper
             if (!Directory.Exists(ConfigDir))
                 Directory.CreateDirectory(ConfigDir);
 
-            var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var json = JsonSerializer.Serialize(config, WriteOptions);
             File.WriteAllText(ConfigPath, json);
         }
         catch (Exception ex)
@@ -209,7 +211,7 @@ public static class ConfigurationHelper
         try
         {
             var config = LoadConfiguration();
-            var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var json = JsonSerializer.Serialize(config, WriteOptions);
             File.WriteAllText(filePath, json);
             Console.WriteLine($"Configuration exported to {filePath}");
         }
@@ -234,7 +236,7 @@ public static class ConfigurationHelper
             }
 
             var json = File.ReadAllText(filePath);
-            var config = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+            var config = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
             if (config != null)
             {

@@ -3,8 +3,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace CoolifiCli.Utilities;
 
@@ -14,11 +15,17 @@ namespace CoolifiCli.Utilities;
 /// </summary>
 public static class JsonConverter
 {
-    private static readonly JsonSerializerSettings DefaultSettings = new()
+    private static readonly JsonSerializerOptions DefaultOptions = new()
     {
-        DateFormatString = "yyyy-MM-ddTHH:mm:ssZ",
-        NullValueHandling = NullValueHandling.Ignore,
-        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
+    };
+
+    private static readonly JsonSerializerOptions PrettyOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
     };
 
     /// <summary>
@@ -29,12 +36,7 @@ public static class JsonConverter
         if (obj == null)
             return "null";
 
-        var settings = new JsonSerializerSettings(DefaultSettings)
-        {
-            Formatting = prettyPrint ? Formatting.Indented : Formatting.None
-        };
-
-        return JsonConvert.SerializeObject(obj, settings);
+        return JsonSerializer.Serialize(obj, prettyPrint ? PrettyOptions : DefaultOptions);
     }
 
     /// <summary>
@@ -47,7 +49,7 @@ public static class JsonConverter
 
         try
         {
-            return JsonConvert.DeserializeObject<T>(json, DefaultSettings);
+            return JsonSerializer.Deserialize<T>(json, DefaultOptions);
         }
         catch (JsonException ex)
         {
@@ -65,7 +67,7 @@ public static class JsonConverter
 
         try
         {
-            return JsonConvert.DeserializeObject<dynamic>(json, DefaultSettings);
+            return JsonNode.Parse(json);
         }
         catch (JsonException ex)
         {
@@ -85,16 +87,20 @@ public static class JsonConverter
         if (obj2 == null)
             return obj1;
 
-        var json1 = JObject.Parse(ToJson(obj1));
-        var json2 = JObject.Parse(ToJson(obj2));
+        var node1 = JsonNode.Parse(ToJson(obj1))?.AsObject();
+        var node2 = JsonNode.Parse(ToJson(obj2))?.AsObject();
 
-        json1.Merge(json2);
+        if (node1 == null) return obj2;
+        if (node2 == null) return obj1;
 
-        return json1.ToObject<T>(JsonSerializer.Create(DefaultSettings));
+        foreach (var kvp in node2)
+            node1[kvp.Key] = kvp.Value?.DeepClone();
+
+        return JsonSerializer.Deserialize<T>(node1.ToJsonString(), DefaultOptions);
     }
 
     /// <summary>
-    /// Extracts a value from JSON using a JSON path expression.
+    /// Extracts a value from JSON using a dot-notation path expression.
     /// </summary>
     public static T? ExtractValue<T>(string json, string path)
     {
@@ -103,9 +109,16 @@ public static class JsonConverter
 
         try
         {
-            var jObject = JObject.Parse(json);
-            var token = jObject.SelectToken(path);
-            return token?.ToObject<T>();
+            JsonNode? node = JsonNode.Parse(json);
+            foreach (var part in path.Split('.'))
+            {
+                if (node is JsonObject obj)
+                    node = obj[part];
+                else
+                    return default;
+            }
+
+            return node.Deserialize<T>(DefaultOptions);
         }
         catch
         {
@@ -114,7 +127,7 @@ public static class JsonConverter
     }
 
     /// <summary>
-    /// Sets a value in JSON using a JSON path expression.
+    /// Sets a value in JSON by key.
     /// </summary>
     public static string SetValue(string json, string path, object? value)
     {
@@ -123,9 +136,9 @@ public static class JsonConverter
 
         try
         {
-            var jObject = JObject.Parse(json);
-            jObject[path] = JToken.FromObject(value);
-            return jObject.ToString();
+            var jObject = JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+            jObject[path] = value != null ? JsonSerializer.SerializeToNode(value, DefaultOptions) : null;
+            return jObject.ToJsonString();
         }
         catch (Exception ex)
         {
@@ -134,7 +147,7 @@ public static class JsonConverter
     }
 
     /// <summary>
-    /// Removes a property from JSON using a JSON path expression.
+    /// Removes a property from JSON by key.
     /// </summary>
     public static string RemoveProperty(string json, string path)
     {
@@ -143,10 +156,9 @@ public static class JsonConverter
 
         try
         {
-            var jObject = JObject.Parse(json);
-            var token = jObject.SelectToken(path);
-            token?.Parent?.Remove();
-            return jObject.ToString();
+            var jObject = JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+            jObject.Remove(path);
+            return jObject.ToJsonString();
         }
         catch (Exception ex)
         {
@@ -161,8 +173,8 @@ public static class JsonConverter
     {
         try
         {
-            var jObject = JObject.Parse(json);
-            return jObject.ToString(prettyPrint ? Formatting.Indented : Formatting.None);
+            var node = JsonNode.Parse(json);
+            return node?.ToJsonString(prettyPrint ? PrettyOptions : DefaultOptions) ?? "{}";
         }
         catch (JsonException ex)
         {
@@ -180,7 +192,7 @@ public static class JsonConverter
 
         try
         {
-            JToken.Parse(json);
+            JsonDocument.Parse(json).Dispose();
             return true;
         }
         catch
@@ -222,7 +234,7 @@ public static class JsonConverter
 
         try
         {
-            return JsonConvert.DeserializeObject<Dictionary<string, object?>>(json, DefaultSettings);
+            return JsonSerializer.Deserialize<Dictionary<string, object?>>(json, DefaultOptions);
         }
         catch
         {
@@ -240,19 +252,16 @@ public static class JsonConverter
 
         try
         {
-            var jObject = JObject.Parse(json);
+            var jObject = JsonNode.Parse(json)?.AsObject();
+            if (jObject == null) return json;
 
-            // Remove sensitive paths if specified
             if (pathsToRemove != null)
             {
                 foreach (var path in pathsToRemove)
-                {
-                    var token = jObject.SelectToken(path);
-                    token?.Parent?.Remove();
-                }
+                    jObject.Remove(path);
             }
 
-            return jObject.ToString();
+            return jObject.ToJsonString();
         }
         catch
         {
@@ -267,9 +276,9 @@ public static class JsonConverter
     {
         try
         {
-            var obj1 = JToken.Parse(json1);
-            var obj2 = JToken.Parse(json2);
-            return JToken.DeepEquals(obj1, obj2);
+            using var doc1 = JsonDocument.Parse(json1);
+            using var doc2 = JsonDocument.Parse(json2);
+            return JsonSerializer.Serialize(doc1.RootElement) == JsonSerializer.Serialize(doc2.RootElement);
         }
         catch
         {
@@ -286,21 +295,21 @@ public static class JsonConverter
 
         try
         {
-            var obj1 = JObject.Parse(json1);
-            var obj2 = JObject.Parse(json2);
+            var obj1 = JsonNode.Parse(json1)?.AsObject();
+            var obj2 = JsonNode.Parse(json2)?.AsObject();
 
-            var allKeys = new HashSet<string>(obj1.Properties().Select(p => p.Name)
-                .Concat(obj2.Properties().Select(p => p.Name)));
+            if (obj1 == null || obj2 == null) return differences;
+
+            var allKeys = new HashSet<string>(
+                obj1.Select(p => p.Key).Concat(obj2.Select(p => p.Key)));
 
             foreach (var key in allKeys)
             {
-                var val1 = obj1[key]?.ToString();
-                var val2 = obj2[key]?.ToString();
+                var val1 = obj1[key]?.ToJsonString();
+                var val2 = obj2[key]?.ToJsonString();
 
                 if (val1 != val2)
-                {
                     differences[key] = (val1, val2);
-                }
             }
         }
         catch
