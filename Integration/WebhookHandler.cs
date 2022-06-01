@@ -3,7 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace CoolifiCli.Integration;
 
@@ -14,7 +15,7 @@ namespace CoolifiCli.Integration;
 /// </summary>
 public class WebhookHandler
 {
-    private readonly Dictionary<string, List<Func<JObject, Task>>> _handlers = new();
+    private readonly Dictionary<string, List<Func<JsonObject, Task>>> _handlers = new();
     private readonly string? _webhookSecret;
 
     public WebhookHandler(string? webhookSecret = null)
@@ -29,13 +30,11 @@ public class WebhookHandler
     public void On<T>(string eventType, Func<T, Task> handler) where T : WebhookEvent
     {
         if (!_handlers.ContainsKey(eventType))
-        {
-            _handlers[eventType] = new List<Func<JObject, Task>>();
-        }
+            _handlers[eventType] = new List<Func<JsonObject, Task>>();
 
         _handlers[eventType].Add(async (payload) =>
         {
-            var evt = payload.ToObject<T>();
+            var evt = payload.Deserialize<T>();
             if (evt != null)
                 await handler(evt);
         });
@@ -44,12 +43,10 @@ public class WebhookHandler
     /// <summary>
     /// Registers a generic event handler that receives the raw event data.
     /// </summary>
-    public void OnRaw(string eventType, Func<JObject, Task> handler)
+    public void OnRaw(string eventType, Func<JsonObject, Task> handler)
     {
         if (!_handlers.ContainsKey(eventType))
-        {
-            _handlers[eventType] = new List<Func<JObject, Task>>();
-        }
+            _handlers[eventType] = new List<Func<JsonObject, Task>>();
 
         _handlers[eventType].Add(handler);
     }
@@ -62,15 +59,14 @@ public class WebhookHandler
         if (string.IsNullOrWhiteSpace(_webhookSecret))
             return true; // No validation if secret not set
 
-        using (var hmac = new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(_webhookSecret)))
-        {
-            var hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(payload));
-            var computed = System.Convert.ToBase64String(hash);
+        using var hmac = new System.Security.Cryptography.HMACSHA256(
+            System.Text.Encoding.UTF8.GetBytes(_webhookSecret));
+        var hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(payload));
+        var computed = System.Convert.ToBase64String(hash);
 
-            return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
-                System.Text.Encoding.UTF8.GetBytes(signature),
-                System.Text.Encoding.UTF8.GetBytes(computed));
-        }
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(signature),
+            System.Text.Encoding.UTF8.GetBytes(computed));
     }
 
     /// <summary>
@@ -79,16 +75,15 @@ public class WebhookHandler
     /// </summary>
     public async Task HandleWebhookAsync(string payload, string? signature = null)
     {
-        // Validate signature if provided
         if (!string.IsNullOrWhiteSpace(signature) && !ValidateSignature(payload, signature))
-        {
             throw new InvalidOperationException("Webhook signature validation failed");
-        }
 
         try
         {
-            var jObject = JObject.Parse(payload);
-            var eventType = jObject["type"]?.ToString() ?? "unknown";
+            var jObject = JsonNode.Parse(payload)?.AsObject()
+                ?? throw new InvalidOperationException("Payload is not a JSON object");
+
+            var eventType = jObject["type"]?.GetValue<string>() ?? "unknown";
 
             if (_handlers.ContainsKey(eventType))
             {
@@ -96,7 +91,7 @@ public class WebhookHandler
                 await Task.WhenAll(tasks);
             }
         }
-        catch (Exception ex)
+        catch (JsonException ex)
         {
             throw new InvalidOperationException($"Failed to process webhook: {ex.Message}", ex);
         }
