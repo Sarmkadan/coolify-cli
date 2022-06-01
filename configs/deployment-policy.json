@@ -1,0 +1,251 @@
+{
+  "version": "1.0",
+  "name": "Default Deployment Policy",
+  "description": "Standard deployment policy for production environments",
+  "author": "Vladyslav Zaiets",
+  "created": "2026-05-04T00:00:00Z",
+
+  "policies": {
+    "pre_deployment": {
+      "enabled": true,
+      "checks": [
+        {
+          "name": "api_health_check",
+          "type": "health",
+          "description": "Verify Coolify API is accessible",
+          "required": true,
+          "timeout_seconds": 30
+        },
+        {
+          "name": "application_exists",
+          "type": "existence",
+          "description": "Verify target application exists",
+          "required": true,
+          "timeout_seconds": 10
+        },
+        {
+          "name": "sufficient_disk_space",
+          "type": "resource",
+          "description": "Ensure sufficient disk space available",
+          "required": false,
+          "min_disk_gb": 10
+        },
+        {
+          "name": "backup_exists",
+          "type": "backup",
+          "description": "Create backup before deployment",
+          "required": true,
+          "retention_days": 7
+        }
+      ]
+    },
+
+    "deployment": {
+      "enabled": true,
+      "strategy": "blue-green",
+      "strategy_options": {
+        "health_check_timeout": 300,
+        "traffic_switch_delay": 30,
+        "post_deployment_monitoring_minutes": 10
+      },
+      "timeout_seconds": 600,
+      "max_concurrent_deployments": 1,
+      "rollback_on_failure": true,
+      "rollback_grace_period_seconds": 60
+    },
+
+    "post_deployment": {
+      "enabled": true,
+      "checks": [
+        {
+          "name": "health_check",
+          "type": "health",
+          "description": "Verify application health after deployment",
+          "required": true,
+          "timeout_seconds": 60,
+          "max_retries": 3,
+          "retry_delay_seconds": 10
+        },
+        {
+          "name": "smoke_tests",
+          "type": "test",
+          "description": "Run smoke tests to verify functionality",
+          "required": false,
+          "timeout_seconds": 120
+        },
+        {
+          "name": "performance_check",
+          "type": "performance",
+          "description": "Verify performance metrics within acceptable range",
+          "required": false,
+          "max_response_time_ms": 1000,
+          "max_error_rate_percent": 1
+        },
+        {
+          "name": "metrics_validation",
+          "type": "metrics",
+          "description": "Validate deployment metrics",
+          "required": false,
+          "memory_increase_threshold_percent": 50
+        }
+      ]
+    },
+
+    "notifications": {
+      "enabled": true,
+      "on_success": true,
+      "on_failure": true,
+      "on_rollback": true,
+      "channels": [
+        {
+          "type": "email",
+          "enabled": true,
+          "recipients": ["ops-team@example.com"],
+          "on_event": ["failure", "rollback"]
+        },
+        {
+          "type": "slack",
+          "enabled": true,
+          "webhook_url": "${SLACK_WEBHOOK_URL}",
+          "on_event": ["success", "failure", "rollback"],
+          "mention_on_failure": "@channel"
+        },
+        {
+          "type": "pagerduty",
+          "enabled": false,
+          "integration_key": "${PAGERDUTY_KEY}",
+          "on_event": ["failure"],
+          "severity": "error"
+        }
+      ]
+    },
+
+    "environment_restrictions": {
+      "production": {
+        "require_approval": true,
+        "approval_timeout_minutes": 60,
+        "require_backup": true,
+        "require_health_checks": true,
+        "allowed_strategies": ["blue-green"],
+        "allowed_users": ["devops-lead", "platform-engineer"],
+        "require_change_ticket": false,
+        "restricted_hours": {
+          "enabled": false,
+          "start_hour": 0,
+          "end_hour": 6
+        }
+      },
+      "staging": {
+        "require_approval": false,
+        "require_backup": true,
+        "require_health_checks": true,
+        "allowed_strategies": ["blue-green", "canary", "rolling"],
+        "allowed_users": ["any"]
+      },
+      "development": {
+        "require_approval": false,
+        "require_backup": false,
+        "require_health_checks": false,
+        "allowed_strategies": ["blue-green", "canary", "rolling"],
+        "allowed_users": ["any"]
+      }
+    },
+
+    "resource_quotas": {
+      "enabled": true,
+      "limits": {
+        "max_applications_per_deployment": 10,
+        "max_deployment_size_gb": 500,
+        "max_memory_per_application_mb": 2048,
+        "max_cpu_per_application_percent": 80,
+        "max_concurrent_backups": 2
+      },
+      "enforcement": "warn",
+      "enforcement_options": ["warn", "error"]
+    },
+
+    "logging": {
+      "enabled": true,
+      "level": "info",
+      "levels": ["debug", "info", "warning", "error"],
+      "log_deployment_details": true,
+      "log_environment_variables": false,
+      "retention_days": 30,
+      "audit_trail": true
+    },
+
+    "security": {
+      "require_https": true,
+      "verify_tls_certificate": true,
+      "enable_audit_logging": true,
+      "encrypt_sensitive_data": true,
+      "allowed_ip_ranges": [],
+      "require_mfa_for_production": false
+    }
+  },
+
+  "deployment_rules": [
+    {
+      "name": "office_hours_deployment",
+      "description": "Allow deployments during office hours",
+      "conditions": {
+        "environment": "production",
+        "time_range": {
+          "start": "09:00",
+          "end": "17:00",
+          "timezone": "UTC"
+        }
+      },
+      "action": "allow",
+      "priority": 100
+    },
+    {
+      "name": "after_hours_emergency",
+      "description": "Allow emergency deployments after hours with approval",
+      "conditions": {
+        "environment": "production",
+        "has_emergency_label": true
+      },
+      "action": "allow_with_approval",
+      "approvers": ["on-call-engineer"],
+      "priority": 90
+    },
+    {
+      "name": "staging_anytime",
+      "description": "Allow staging deployments anytime",
+      "conditions": {
+        "environment": "staging"
+      },
+      "action": "allow",
+      "priority": 10
+    }
+  ],
+
+  "approval_workflow": {
+    "enabled": true,
+    "levels": [
+      {
+        "name": "technical_review",
+        "description": "Technical review by DevOps",
+        "approvers": 1,
+        "allowed_roles": ["devops", "platform-engineer"],
+        "timeout_minutes": 30
+      },
+      {
+        "name": "security_review",
+        "description": "Security review for production changes",
+        "environments": ["production"],
+        "approvers": 1,
+        "allowed_roles": ["security"],
+        "timeout_minutes": 60
+      }
+    ]
+  },
+
+  "version_control": {
+    "track_changes": true,
+    "require_change_log": true,
+    "git_integration": true,
+    "branch_protection": true
+  }
+}
