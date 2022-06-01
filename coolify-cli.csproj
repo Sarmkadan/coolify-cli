@@ -11,10 +11,10 @@
     <Version>1.0.0</Version>
     <Authors>Vladyslav Zaiets</Authors>
     <Description>.NET CLI for Coolify API - deploy, manage apps, databases, view logs from terminal</Description>
-    <PackageProjectUrl>https://github.com/Vladyslav-Zaiets/coolify-cli</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Vladyslav-Zaiets/coolify-cli</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/sarmkadan/coolify-cli</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sarmkadan/coolify-cli</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <License>MIT</License>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

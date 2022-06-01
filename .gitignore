@@ -32,6 +32,7 @@ bld/
 *.user
 *.userosscache
 *.sln.docstates
+*.DotSettings.user
 
 # Test Results
 TestResults/
@@ -42,6 +43,7 @@ TestResults/
 *.nupkg
 *.snupkg
 .nuget/
+packages/
 
 # ReSharper
 *_Resharper.xml
@@ -49,6 +51,7 @@ TestResults/
 
 # Local config files
 appsettings.local.json
+appsettings.Development.json
 config.json
 .coolify-cli/
 
