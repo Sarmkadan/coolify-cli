@@ -5,6 +5,7 @@
 
 using CoolifiCli.Caching;
 using CoolifiCli.Events;
+using CoolifiCli.Infrastructure;
 using CoolifiCli.Services;
 
 namespace CoolifiCli.Models;

@@ -17,7 +17,7 @@ public interface IDeploymentStrategy
     /// <summary>
     /// Executes the deployment strategy.
     /// </summary>
-    Task<DeploymentResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context);
+    Task<StrategyResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context);
 
     /// <summary>
     /// Gets the strategy name.
@@ -39,7 +39,7 @@ public class BlueGreenDeploymentStrategy : IDeploymentStrategy
     public string Name => "blue-green";
     public string Description => "Deploy to alternate environment, switch traffic after validation";
 
-    public async Task<DeploymentResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
+    public async Task<StrategyResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
     {
         // Implementation would handle:
         // 1. Deploy to green environment (while blue is running)
@@ -48,7 +48,7 @@ public class BlueGreenDeploymentStrategy : IDeploymentStrategy
         // 4. Keep blue as rollback target
 
         await Task.Delay(100); // Placeholder async operation
-        return new DeploymentResult { IsSuccess = true, Message = "Blue-green deployment completed" };
+        return new StrategyResult { IsSuccess = true, Message = "Blue-green deployment completed" };
     }
 }
 
@@ -61,7 +61,7 @@ public class CanaryDeploymentStrategy : IDeploymentStrategy
     public string Name => "canary";
     public string Description => "Gradually roll out to small percentage of traffic";
 
-    public async Task<DeploymentResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
+    public async Task<StrategyResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
     {
         // Implementation would handle:
         // 1. Deploy new version
@@ -71,7 +71,7 @@ public class CanaryDeploymentStrategy : IDeploymentStrategy
         // 5. Full rollout or rollback based on metrics
 
         await Task.Delay(100); // Placeholder async operation
-        return new DeploymentResult { IsSuccess = true, Message = "Canary deployment completed" };
+        return new StrategyResult { IsSuccess = true, Message = "Canary deployment completed" };
     }
 }
 
@@ -84,7 +84,7 @@ public class RollingDeploymentStrategy : IDeploymentStrategy
     public string Name => "rolling";
     public string Description => "Gradually replace instances, maintaining availability";
 
-    public async Task<DeploymentResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
+    public async Task<StrategyResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
     {
         // Implementation would handle:
         // 1. Update instances one at a time
@@ -93,7 +93,7 @@ public class RollingDeploymentStrategy : IDeploymentStrategy
         // 4. Automatic rollback if health checks fail
 
         await Task.Delay(100); // Placeholder async operation
-        return new DeploymentResult { IsSuccess = true, Message = "Rolling deployment completed" };
+        return new StrategyResult { IsSuccess = true, Message = "Rolling deployment completed" };
     }
 }
 
@@ -106,10 +106,10 @@ public class ImmediateDeploymentStrategy : IDeploymentStrategy
     public string Name => "immediate";
     public string Description => "Deploy to all instances immediately";
 
-    public async Task<DeploymentResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
+    public async Task<StrategyResult> ExecuteAsync(ApplicationDeployment application, DeploymentContext context)
     {
         await Task.Delay(100); // Placeholder async operation
-        return new DeploymentResult { IsSuccess = true, Message = "Immediate deployment completed" };
+        return new StrategyResult { IsSuccess = true, Message = "Immediate deployment completed" };
     }
 }
 
@@ -156,7 +156,7 @@ public class DeploymentStrategyFactory
 /// <summary>
 /// Result of a deployment operation.
 /// </summary>
-public class DeploymentResult
+public class StrategyResult
 {
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
