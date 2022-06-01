@@ -1,0 +1,103 @@
+# =============================================================================
+# Author: Vladyslav Zaiets | https://sarmkadan.com
+# CTO & Software Architect
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # Coolify CLI service
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coolify-cli
+    image: sarmkadan/coolify-cli:latest
+    environment:
+      COOLIFY_API_URL: ${COOLIFY_API_URL:-https://coolify.example.com}
+      COOLIFY_API_KEY: ${COOLIFY_API_KEY}
+      COOLIFY_VERBOSE: ${COOLIFY_VERBOSE:-false}
+      COOLIFY_TIMEOUT: ${COOLIFY_TIMEOUT:-30}
+      COOLIFY_CACHE_ENABLED: ${COOLIFY_CACHE_ENABLED:-true}
+      COOLIFY_CACHE_TTL: ${COOLIFY_CACHE_TTL:-300}
+    volumes:
+      # Mount for accessing logs and reports
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      # Mount .env file for configuration
+      - ./.env:/app/.env:ro
+    networks:
+      - coolify-network
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Health monitor service (runs health checks)
+  health-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coolify-health-monitor
+    environment:
+      COOLIFY_API_URL: ${COOLIFY_API_URL:-https://coolify.example.com}
+      COOLIFY_API_KEY: ${COOLIFY_API_KEY}
+      COOLIFY_VERBOSE: true
+    volumes:
+      - ./logs:/app/logs
+      - ./examples/health-monitor.sh:/app/health-monitor.sh:ro
+    command: /bin/bash -c "while true; do /app/health-monitor.sh; sleep 300; done"
+    networks:
+      - coolify-network
+    restart: unless-stopped
+    depends_on:
+      - cli
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Scheduler service (for automated backups and deployments)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coolify-scheduler
+    environment:
+      COOLIFY_API_URL: ${COOLIFY_API_URL:-https://coolify.example.com}
+      COOLIFY_API_KEY: ${COOLIFY_API_KEY}
+    volumes:
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+      - ./examples/backup-databases.sh:/app/backup-databases.sh:ro
+      - /var/run/cron:/var/run/cron
+    command: >
+      /bin/bash -c "
+      (echo '0 2 * * * /app/backup-databases.sh >> /app/logs/backup.log 2>&1') | crontab - &&
+      crond -f"
+    networks:
+      - coolify-network
+    restart: unless-stopped
+    depends_on:
+      - cli
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  coolify-network:
+    driver: bridge
+
+volumes:
+  logs:
+  reports:
+  backups:
