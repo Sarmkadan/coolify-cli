@@ -12,6 +12,7 @@ A powerful, production-ready .NET 10 command-line interface for managing Coolify
 - [Features](#features)
 - [Architecture](#architecture)
 - [Installation](#installation)
+- [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [Usage Examples](#usage-examples)
 - [CLI Reference](#cli-reference)
@@ -193,6 +194,29 @@ coolify-cli version
 # Author: Vladyslav Zaiets
 # Website: https://sarmkadan.com
 ```
+
+## Quick Start
+
+```bash
+# 1. Set credentials
+export COOLIFY_API_KEY="sk_prod_xxxxxxxxxxxxxxxxxx"
+export COOLIFY_API_URL="https://coolify.example.com"
+
+# 2. Verify connectivity
+coolify-cli health
+# ✓ Connected to Coolify API
+
+# 3. List your applications
+coolify-cli app list
+
+# 4. Deploy an application
+coolify-cli app deploy <ID>
+
+# 5. Tail its logs
+coolify-cli logs <ID> --follow
+```
+
+See the [Usage Examples](#usage-examples) section for more commands.
 
 ## Configuration
 
@@ -828,6 +852,4 @@ See [LICENSE](LICENSE) file for full text.
 
 ---
 
-**Built by [Vladyslav Zaiets](https://sarmkadan.com) - CTO & Software Architect**
-
-[Portfolio](https://sarmkadan.com) | [GitHub](https://github.com/Sarmkadan) | [Telegram](https://t.me/sarmkadan)
+Built by [Vladyslav Zaiets](https://sarmkadan.com)
