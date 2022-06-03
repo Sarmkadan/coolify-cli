@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -157,7 +158,7 @@ public static class StringExtensions
     public static string[] SplitTrimmed(this string input, params char[] delimiters)
     {
         if (string.IsNullOrWhiteSpace(input))
-            return Array.Empty<string>();
+            return new string[0];
 
         return input
             .Split(delimiters, StringSplitOptions.RemoveEmptyEntries)

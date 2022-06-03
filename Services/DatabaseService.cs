@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -109,7 +110,7 @@ public class DatabaseService
         _logger.Info($"Checking health of database {databaseId}");
         var response = await _apiClient.GetAsync<ServiceHealth>($"/api/v1/databases/{databaseId}/health");
 
-        if (response.Success && response.Data != null)
+        if (response.Success && response.Data is not null)
         {
             _logger.Info($"Database {databaseId} health status: {response.Data.Status}");
         }

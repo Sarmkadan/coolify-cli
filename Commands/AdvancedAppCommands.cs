@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -125,7 +126,7 @@ public class AdvancedAppCommands : CommandBase
                 }
 
                 // Parse command-line variables
-                if (vars != null && vars.Length > 0)
+                if (vars is not null && vars.Length > 0)
                 {
                     foreach (var varPair in vars)
                     {
@@ -202,7 +203,7 @@ public class AdvancedAppCommands : CommandBase
 
                 Logger.Info($"Scaling application {appId} - instances={instances}, cpu={cpu}");
                 var appResult = await _appService.GetApplicationAsync(appId);
-                if (!appResult.Success || appResult.Data == null)
+                if (!appResult.Success || appResult.Data is null)
                 {
                     WriteError($"Failed to get application: {appResult.Message}");
                     return;
