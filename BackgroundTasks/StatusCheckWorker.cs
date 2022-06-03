@@ -71,14 +71,13 @@ public class StatusCheckWorker : IDisposable
 
             var result = await _healthService.GetSystemHealthAsync();
 
-            if (result.Success && result.Data != null)
+            if (result.Success && result.Data is CoolifiCli.Models.ServiceHealth health)
             {
-                var health = result.Data;
-                await CheckComponentHealth("system", health.IsHealthy ? "healthy" : "unhealthy");
+                await CheckComponentHealth("system", health.IsHealthy() ? "healthy" : "unhealthy");
                 await CheckComponentHealth("api", "healthy"); // API is up if we got a response
                 await CheckComponentHealth("cpu", GetCpuStatus(health.CpuUsagePercent));
-                await CheckComponentHealth("memory", GetMemoryStatus(health.MemoryUsageMb, health.MemoryTotalMb));
-                await CheckComponentHealth("disk", GetDiskStatus(health.DiskUsageGb, health.DiskTotalGb));
+                await CheckComponentHealth("memory", GetMemoryStatus(health.MemoryUsageMb));
+                await CheckComponentHealth("error-rate", GetErrorRateStatus(health.ErrorRatePercent));
             }
             else
             {
@@ -138,32 +137,28 @@ public class StatusCheckWorker : IDisposable
     }
 
     /// <summary>
-    /// Determines memory health status based on usage percentage.
+    /// Determines memory health status based on usage in MB.
     /// </summary>
-    private string GetMemoryStatus(double usedMb, double totalMb)
+    private string GetMemoryStatus(double usedMb)
     {
-        var usagePercent = (usedMb / totalMb) * 100;
-
-        if (usagePercent > 90)
+        if (usedMb > 900)
             return "critical";
 
-        if (usagePercent > 75)
+        if (usedMb > 768)
             return "warning";
 
         return "healthy";
     }
 
     /// <summary>
-    /// Determines disk health status based on usage percentage.
+    /// Determines health status based on error rate percentage.
     /// </summary>
-    private string GetDiskStatus(double usedGb, double totalGb)
+    private string GetErrorRateStatus(double errorRatePercent)
     {
-        var usagePercent = (usedGb / totalGb) * 100;
-
-        if (usagePercent > 90)
+        if (errorRatePercent > 10)
             return "critical";
 
-        if (usagePercent > 80)
+        if (errorRatePercent > 5)
             return "warning";
 
         return "healthy";

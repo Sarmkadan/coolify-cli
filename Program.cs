@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
+using CoolifiCli.Commands;
 using CoolifiCli.Infrastructure;
 using CoolifiCli.Models;
 using CoolifiCli.Services;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 
 var config = CoolifyConfiguration.FromEnvironment();
 var validationErrors = config.Validate().ToList();
@@ -32,14 +32,12 @@ logger.Info($"Coolify CLI v{Constants.ApplicationVersion}");
 logger.Debug($"API URL: {config.ApiUrl}");
 
 // Root command
-var rootCommand = new RootCommand("Coolify CLI - Manage Coolify infrastructure from the terminal")
-{
-    new Option<bool>(["--verbose", "-v"], "Enable verbose logging")
-};
+var rootCommand = new RootCommand("Coolify CLI - Manage Coolify infrastructure from the terminal");
+rootCommand.Add(new Option<bool>("--verbose", ["-v"]) { Description = "Enable verbose logging" });
 
 // Application commands
 var appListCommand = new Command("list", "List all applications");
-appListCommand.SetHandler(async () =>
+appListCommand.SetAction(async (parseResult, ct) =>
 {
     try
     {
@@ -75,10 +73,11 @@ appListCommand.SetHandler(async () =>
 });
 
 var appGetCommand = new Command("get", "Get application details");
-var appIdArg = new Argument<int>("id", "Application ID");
-appGetCommand.AddArgument(appIdArg);
-appGetCommand.SetHandler(async (id) =>
+var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+appGetCommand.Add(appIdArg);
+appGetCommand.SetAction(async (parseResult, ct) =>
 {
+    var id = parseResult.GetValue(appIdArg);
     try
     {
         var appService = new ApplicationService(apiClient, logger);
@@ -107,13 +106,14 @@ appGetCommand.SetHandler(async (id) =>
     {
         logger.Error(ex, "Failed to get application");
     }
-}, appIdArg);
+});
 
 var appDeployCommand = new Command("deploy", "Deploy an application");
-var deployAppIdArg = new Argument<int>("id", "Application ID to deploy");
-appDeployCommand.AddArgument(deployAppIdArg);
-appDeployCommand.SetHandler(async (id) =>
+var deployAppIdArg = new Argument<int>("id") { Description = "Application ID to deploy" };
+appDeployCommand.Add(deployAppIdArg);
+appDeployCommand.SetAction(async (parseResult, ct) =>
 {
+    var id = parseResult.GetValue(deployAppIdArg);
     try
     {
         var appService = new ApplicationService(apiClient, logger);
@@ -144,11 +144,11 @@ appDeployCommand.SetHandler(async (id) =>
     {
         logger.Error(ex, "Deployment error");
     }
-}, deployAppIdArg);
+});
 
 // Database commands
 var dbListCommand = new Command("list", "List all databases");
-dbListCommand.SetHandler(async () =>
+dbListCommand.SetAction(async (parseResult, ct) =>
 {
     try
     {
@@ -184,10 +184,11 @@ dbListCommand.SetHandler(async () =>
 });
 
 var dbHealthCommand = new Command("health", "Check database health");
-var dbIdArg = new Argument<int>("id", "Database ID");
-dbHealthCommand.AddArgument(dbIdArg);
-dbHealthCommand.SetHandler(async (id) =>
+var dbIdArg = new Argument<int>("id") { Description = "Database ID" };
+dbHealthCommand.Add(dbIdArg);
+dbHealthCommand.SetAction(async (parseResult, ct) =>
 {
+    var id = parseResult.GetValue(dbIdArg);
     try
     {
         var dbService = new DatabaseService(apiClient, logger);
@@ -213,16 +214,18 @@ dbHealthCommand.SetHandler(async (id) =>
     {
         logger.Error(ex, "Health check error");
     }
-}, dbIdArg);
+});
 
 // Log commands
 var logsCommand = new Command("logs", "View application logs");
-var logAppIdArg = new Argument<int>("id", "Application ID");
-var linesOption = new Option<int>(["--lines", "-n"], getDefaultValue: () => 100, "Number of log lines to display");
-logsCommand.AddArgument(logAppIdArg);
-logsCommand.AddOption(linesOption);
-logsCommand.SetHandler(async (appId, lines) =>
+var logAppIdArg = new Argument<int>("id") { Description = "Application ID" };
+var linesOption = new Option<int>("--lines", ["-n"]) { Description = "Number of log lines to display", DefaultValueFactory = _ => 100 };
+logsCommand.Add(logAppIdArg);
+logsCommand.Add(linesOption);
+logsCommand.SetAction(async (parseResult, ct) =>
 {
+    var appId = parseResult.GetValue(logAppIdArg);
+    var lines = parseResult.GetValue(linesOption);
     try
     {
         var logService = new LogService(apiClient, logger);
@@ -255,19 +258,19 @@ logsCommand.SetHandler(async (appId, lines) =>
     {
         logger.Error(ex, "Failed to retrieve logs");
     }
-}, logAppIdArg, linesOption);
+});
 
 // Build command hierarchy
 var appCommand = new Command("app", "Manage applications") { appListCommand, appGetCommand, appDeployCommand };
 var dbCommand = new Command("db", "Manage databases") { dbListCommand, dbHealthCommand };
 
-rootCommand.AddCommand(appCommand);
-rootCommand.AddCommand(dbCommand);
-rootCommand.AddCommand(logsCommand);
+rootCommand.Add(appCommand);
+rootCommand.Add(dbCommand);
+rootCommand.Add(logsCommand);
 
 // Health command
 var healthCommand = new Command("health", "Check system health");
-healthCommand.SetHandler(async () =>
+healthCommand.SetAction(async (parseResult, ct) =>
 {
     try
     {
@@ -297,17 +300,25 @@ healthCommand.SetHandler(async () =>
     }
 });
 
-rootCommand.AddCommand(healthCommand);
+rootCommand.Add(healthCommand);
+
+// Infrastructure-as-code commands (iac apply | validate | diff | export | init)
+var iacCommand = InfrastructureCommands.CreateIacCommand(
+    new ApplicationService(apiClient, logger),
+    new DatabaseService(apiClient, logger),
+    logger);
+rootCommand.Add(iacCommand);
 
 // Version command
 var versionCommand = new Command("version", "Display version information");
-versionCommand.SetHandler(() =>
+versionCommand.SetAction((parseResult, ct) =>
 {
     Console.WriteLine($"Coolify CLI v{Constants.ApplicationVersion}");
     Console.WriteLine($"Author: {Constants.Author}");
     Console.WriteLine($"Website: {Constants.AuthorUrl}");
+    return Task.CompletedTask;
 });
 
-rootCommand.AddCommand(versionCommand);
+rootCommand.Add(versionCommand);
 
-return await rootCommand.InvokeAsync(args);
+return await rootCommand.Parse(args).InvokeAsync();

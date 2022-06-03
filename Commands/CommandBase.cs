@@ -33,7 +33,7 @@ public abstract class CommandBase
     protected Command CreateCommand(string name, string description, Func<Task> handler)
     {
         var command = new Command(name, description);
-        command.SetHandler(async () =>
+        command.SetAction(async (parseResult, ct) =>
         {
             try
             {
