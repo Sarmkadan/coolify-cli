@@ -12,11 +12,17 @@ namespace CoolifiCli.Data;
 /// <typeparam name="T">Entity type.</typeparam>
 public interface IRepository<T> where T : class
 {
+    /// <summary>Retrieves an entity by its integer primary key.</summary>
     Task<T?> GetByIdAsync(int id);
+    /// <summary>Returns all entities from the data source.</summary>
     Task<IEnumerable<T>> GetAllAsync();
+    /// <summary>Adds a new entity to the data source.</summary>
     Task<T> AddAsync(T entity);
+    /// <summary>Updates an existing entity in the data source.</summary>
     Task<T> UpdateAsync(T entity);
+    /// <summary>Deletes an entity by ID. Returns <c>false</c> if not found.</summary>
     Task<bool> DeleteAsync(int id);
+    /// <summary>Persists pending changes. Returns the number of affected entities.</summary>
     Task<int> SaveChangesAsync();
 }
 
