@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Utilities;
+namespace CoolifyCli.Utilities;
 
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Helper utilities for CLI output formatting and user interaction.

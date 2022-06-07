@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 using System.Text.RegularExpressions;
-using CoolifiCli.Infrastructure;
+using CoolifyCli.Infrastructure;
 
 /// <summary>
 /// Resolves <c>${VAR_NAME}</c> placeholder tokens embedded in raw YAML template text by

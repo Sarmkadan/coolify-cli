@@ -7,7 +7,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace CoolifiCli.Integration;
+namespace CoolifyCli.Integration;
 
 /// <summary>
 /// Handles webhook processing for deployment events, status updates, and notifications.

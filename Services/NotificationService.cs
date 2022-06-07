@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 /// <summary>
 /// Notification service for sending notifications about deployment, health, and system events.

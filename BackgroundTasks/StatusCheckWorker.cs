@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Events;
-using CoolifiCli.Services;
+using CoolifyCli.Events;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.BackgroundTasks;
+namespace CoolifyCli.BackgroundTasks;
 
 /// <summary>
 /// Background worker for periodic health status checks of applications and databases.
@@ -72,7 +72,7 @@ public class StatusCheckWorker : IDisposable
 
             var result = await _healthService.GetSystemHealthAsync();
 
-            if (result.Success && result.Data is CoolifiCli.Models.ServiceHealth health)
+            if (result.Success && result.Data is CoolifyCli.Models.ServiceHealth health)
             {
                 await CheckComponentHealth("system", health.IsHealthy() ? "healthy" : "unhealthy");
                 await CheckComponentHealth("api", "healthy"); // API is up if we got a response

@@ -4,12 +4,12 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 using System.CommandLine;
 
-namespace CoolifiCli.Commands;
+namespace CoolifyCli.Commands;
 
 /// <summary>
 /// Database management commands for backup, restore, and maintenance operations.

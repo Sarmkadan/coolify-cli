@@ -4,11 +4,11 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Extensions;
+namespace CoolifyCli.Extensions;
 
 using Microsoft.Extensions.DependencyInjection;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 
 /// <summary>
 /// Extension methods that integrate the infrastructure-as-code template engine into both

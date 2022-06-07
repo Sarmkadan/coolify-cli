@@ -4,13 +4,13 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Caching;
-using CoolifiCli.Models;
+using CoolifyCli.Caching;
+using CoolifyCli.Models;
 using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace CoolifiCli.Tests;
+namespace CoolifyCli.Tests;
 
 public class DeploymentTests
 {

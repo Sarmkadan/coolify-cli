@@ -6,7 +6,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace CoolifiCli.Utilities;
+namespace CoolifyCli.Utilities;
 
 /// <summary>
 /// Helper class for input validation. Provides reusable validation methods for

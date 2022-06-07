@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace CoolifiCli.Formatters;
+namespace CoolifyCli.Formatters;
 
 /// <summary>
 /// Formats data as JSON output. Supports pretty-printing, filtering, and selective serialization.

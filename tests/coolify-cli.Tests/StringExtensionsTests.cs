@@ -4,11 +4,11 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Extensions;
+using CoolifyCli.Extensions;
 using FluentAssertions;
 using Xunit;
 
-namespace CoolifiCli.Tests;
+namespace CoolifyCli.Tests;
 
 public class StringExtensionsTests
 {

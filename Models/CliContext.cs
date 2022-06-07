@@ -4,12 +4,12 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Caching;
-using CoolifiCli.Events;
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Services;
+using CoolifyCli.Caching;
+using CoolifyCli.Events;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.Models;
+namespace CoolifyCli.Models;
 
 /// <summary>
 /// Global context for CLI execution. Acts as a service container providing access to

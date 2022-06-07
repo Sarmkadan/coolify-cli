@@ -5,7 +5,7 @@
 
 #nullable enable
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 /// <summary>
 /// Console-based logger implementation. Outputs log messages to console with

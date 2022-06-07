@@ -6,7 +6,7 @@
 
 using System.Text;
 
-namespace CoolifiCli.Formatters;
+namespace CoolifyCli.Formatters;
 
 /// <summary>
 /// Formats data as plain text output with various styling options.

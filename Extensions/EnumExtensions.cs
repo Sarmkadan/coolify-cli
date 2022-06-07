@@ -7,7 +7,7 @@
 using System.ComponentModel;
 using System.Reflection;
 
-namespace CoolifiCli.Extensions;
+namespace CoolifyCli.Extensions;
 
 /// <summary>
 /// Extension methods for Enum manipulation.

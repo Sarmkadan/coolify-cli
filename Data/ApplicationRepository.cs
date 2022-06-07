@@ -4,18 +4,18 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Data;
+namespace CoolifyCli.Data;
 
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Repository for application deployment data access with query capabilities.
 /// </summary>
 public class ApplicationRepository : BaseRepository<ApplicationDeployment>
 {
-    private readonly CoolifiCli.Services.CoolifyApiClient _apiClient;
+    private readonly CoolifyCli.Services.CoolifyApiClient _apiClient;
 
-    public ApplicationRepository(CoolifiCli.Services.CoolifyApiClient apiClient)
+    public ApplicationRepository(CoolifyCli.Services.CoolifyApiClient apiClient)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }

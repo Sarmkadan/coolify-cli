@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Extensions;
+namespace CoolifyCli.Extensions;
 
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 
 /// <summary>
 /// Extension methods that simplify multi-server deployment workflows —
