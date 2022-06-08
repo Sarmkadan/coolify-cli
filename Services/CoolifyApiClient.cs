@@ -163,19 +163,27 @@ public class CoolifyApiClient
 
     /// <summary>
     /// Tests the connection to the Coolify API.
+    /// Returns false (rather than throwing) when the server is unreachable or the request times out.
     /// </summary>
     /// <returns>True if connection is successful.</returns>
     public async Task<bool> TestConnectionAsync()
     {
         try
         {
-            var response = await _httpClient.GetAsync("/health");
+            using var cts = new System.Threading.CancellationTokenSource(_httpClient.Timeout);
+            var response = await _httpClient.GetAsync("/health", cts.Token);
             return response.IsSuccessStatusCode;
+        }
+        catch (TaskCanceledException)
+        {
+            return false;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
         }
         catch (Exception ex)
         {
-            // Log the exception for debugging purposes
-            // In a real implementation, you might want to use a logger here
             System.Diagnostics.Debug.WriteLine($"Connection test failed: {ex.Message}");
             return false;
         }

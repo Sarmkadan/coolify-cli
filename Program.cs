@@ -119,11 +119,38 @@ appDeployCommand.SetAction(async (parseResult, ct) =>
     {
         var appService = new ApplicationService(apiClient, logger);
 
+        // Pre-flight: verify server is reachable before attempting deployment
+        logger.Info("Checking server connectivity...");
+        bool connected;
+        try
+        {
+            connected = await apiClient.TestConnectionAsync();
+        }
+        catch (TaskCanceledException)
+        {
+            connected = false;
+        }
+        catch (HttpRequestException)
+        {
+            connected = false;
+        }
+
+        if (!connected)
+        {
+            logger.Error(
+                $"Cannot reach Coolify server at {config.ApiUrl}. " +
+                $"Verify COOLIFY_API_URL is correct and the server is running. " +
+                $"Current timeout: {config.RequestTimeoutSeconds}s (override via COOLIFY_TIMEOUT).");
+            Environment.ExitCode = 1;
+            return;
+        }
+
         // Get application details
         var appResult = await appService.GetApplicationAsync(id);
         if (!appResult.Success || appResult.Data is null)
         {
             logger.Error($"Failed to get application: {appResult.Message}");
+            Environment.ExitCode = 1;
             return;
         }
 
@@ -139,11 +166,28 @@ appDeployCommand.SetAction(async (parseResult, ct) =>
         else
         {
             logger.Error($"Deployment failed: {deployResult.Message}");
+            Environment.ExitCode = 1;
         }
+    }
+    catch (TaskCanceledException)
+    {
+        logger.Error(
+            $"Deployment timed out after {config.RequestTimeoutSeconds}s. " +
+            $"The Coolify server at {config.ApiUrl} did not respond in time. " +
+            $"Increase the timeout via COOLIFY_TIMEOUT (current: {config.RequestTimeoutSeconds}s).");
+        Environment.ExitCode = 1;
+    }
+    catch (HttpRequestException ex)
+    {
+        logger.Error(
+            $"Network error connecting to {config.ApiUrl}: {ex.Message}. " +
+            $"Ensure the server is reachable and COOLIFY_API_URL is set correctly.");
+        Environment.ExitCode = 1;
     }
     catch (Exception ex)
     {
         logger.Error(ex, "Deployment error");
+        Environment.ExitCode = 1;
     }
 });
 
