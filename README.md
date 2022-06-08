@@ -12,6 +12,7 @@ A powerful, production-ready .NET 10 command-line interface for managing Coolify
 - [Features](#features)
 - [Architecture](#architecture)
 - [Installation](#installation)
+- [Getting Started](#getting-started)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [Usage Examples](#usage-examples)
@@ -217,6 +218,181 @@ coolify-cli logs <ID> --follow
 ```
 
 See the [Usage Examples](#usage-examples) section for more commands.
+
+## Getting Started
+
+This section walks you through installing the CLI, obtaining a Coolify API token, and
+running your first deployment — everything you need to go from zero to deployed.
+
+### Step 1 — Install the CLI
+
+**Option A: Install as a .NET global tool**
+
+```bash
+dotnet tool install --global coolify-cli
+```
+
+After installation, verify it works:
+
+```bash
+coolify-cli version
+# Coolify CLI v1.x.x
+```
+
+**Option B: Download a pre-built binary**
+
+Pre-built binaries for Linux, macOS, and Windows are available on the
+[Releases](https://github.com/sarmkadan/coolify-cli/releases) page. Download the
+archive for your platform, extract it, and add the directory to your `PATH`.
+
+```bash
+# Linux/macOS example
+tar -xzf coolify-cli-linux-x64.tar.gz
+sudo mv coolify-cli /usr/local/bin/
+coolify-cli version
+```
+
+**Option C: Build from source**
+
+```bash
+git clone https://github.com/sarmkadan/coolify-cli.git
+cd coolify-cli
+dotnet publish -c Release -r linux-x64 --self-contained
+# Binary is at: bin/Release/net10.0/linux-x64/publish/coolify-cli
+```
+
+---
+
+### Step 2 — Generate a Coolify API Token
+
+1. Log in to your Coolify dashboard (e.g., `https://coolify.example.com`).
+2. Click your avatar or username in the top-right corner and choose **Profile** (or **Security**).
+3. Scroll to the **API Tokens** section and click **Create Token**.
+4. Give the token a descriptive name (e.g., `coolify-cli`) and click **Save**.
+5. **Copy the token immediately** — it will not be shown again.
+
+> **Security note:** Treat your API token like a password. Never commit it to source
+> control. Use environment variables, a secrets manager, or a `.env` file that is
+> listed in `.gitignore`.
+
+---
+
+### Step 3 — Configure the CLI
+
+Set the two required environment variables:
+
+```bash
+export COOLIFY_API_KEY="<paste-your-token-here>"
+export COOLIFY_API_URL="https://coolify.example.com"   # your Coolify instance URL
+```
+
+To make these permanent, add them to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.)
+or place them in a `.env` file in your project root:
+
+```dotenv
+# .env  (add this file to .gitignore)
+COOLIFY_API_KEY=sk_prod_xxxxxxxxxxxxxxxxxx
+COOLIFY_API_URL=https://coolify.example.com
+```
+
+---
+
+### Step 4 — Verify Connectivity
+
+Run the built-in health check to confirm the CLI can reach your server:
+
+```bash
+coolify-cli health
+```
+
+Expected output:
+
+```
+✓ Connected to Coolify API
+✓ System health check passed
+```
+
+If you see `Cannot reach Coolify server`, double-check `COOLIFY_API_URL` and ensure
+the server is accessible from your machine. You can increase the connection timeout if
+needed:
+
+```bash
+export COOLIFY_TIMEOUT=60   # seconds
+coolify-cli health
+```
+
+---
+
+### Step 5 — List Your Applications
+
+```bash
+coolify-cli app list
+```
+
+Example output:
+
+```
+ID    Name                      Status       Deployed At
+----- ------------------------- ------------ --------------------
+1     my-web-app                running      2024-11-01 14:32:00
+2     api-service               running      2024-10-28 09:10:45
+3     background-worker         stopped      Never
+```
+
+Note the **ID** of the application you want to deploy.
+
+---
+
+### Step 6 — Run Your First Deployment
+
+```bash
+coolify-cli app deploy <ID>
+```
+
+Replace `<ID>` with the numeric ID from the previous step:
+
+```bash
+coolify-cli app deploy 1
+# [14:35:01] [INFO] Checking server connectivity...
+# [14:35:01] [INFO] Starting deployment of my-web-app
+# [14:35:02] [INFO] Deployment initiated successfully
+# Deployment ID: dep_a1b2c3d4
+```
+
+---
+
+### Step 7 — Tail Logs in Real Time
+
+Follow the deployment progress by streaming the application logs:
+
+```bash
+coolify-cli logs 1 --watch      # or: -f / --follow
+```
+
+Press **Ctrl+C** to stop the stream. The CLI automatically reconnects if the connection
+is interrupted.
+
+---
+
+### Next Steps
+
+| Task | Command |
+|---|---|
+| View static log snapshot | `coolify-cli logs <id> -n 200` |
+| Set an environment variable | `coolify-cli env set <id> KEY VALUE` |
+| Edit all env vars at once | `coolify-cli env set <id> --interactive` |
+| List env vars | `coolify-cli env list <id>` |
+| Check database health | `coolify-cli db health <id>` |
+| View system metrics | `coolify-cli monitor metrics` |
+| Pipe logs without color noise | `coolify-cli logs <id> --no-color \| grep ERROR` |
+
+For a full list of commands and options, run:
+
+```bash
+coolify-cli --help
+coolify-cli app --help
+coolify-cli logs --help
+```
 
 ## Configuration
 
