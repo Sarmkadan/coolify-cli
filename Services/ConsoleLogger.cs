@@ -61,7 +61,7 @@ public class ConsoleLogger : ILogger
     /// <summary>
     /// Logs an error with exception details.
     /// </summary>
-    public void Error(Exception exception, string message)
+    public void Error(Exception exception, string message = "")
     {
         Error($"{message}: {exception.Message}");
 
@@ -83,22 +83,7 @@ public class ConsoleLogger : ILogger
         Log("FATAL", message, ConsoleColor.DarkRed);
     }
 
-    /// <summary>
-    /// Logs a fatal error with exception details.
-    /// </summary>
-    public void Fatal(Exception exception, string message)
-    {
-        Fatal($"{message}: {exception.Message}");
 
-        if (_verboseLogging && exception.StackTrace is not null)
-        {
-            var lines = exception.StackTrace.Split('\n');
-            foreach (var line in lines)
-            {
-                Debug($"  {line.Trim()}");
-            }
-        }
-    }
 
     /// <summary>
     /// Internal method to log with formatting.
