@@ -6,6 +6,7 @@
 
 namespace CoolifyCli.Services;
 
+using System.Runtime.CompilerServices;
 using CoolifyCli.Models;
 
 /// <summary>
@@ -173,7 +174,7 @@ public class HealthCheckService
     /// <param name="intervalSeconds">Check interval in seconds.</param>
     /// <param name="cancellationToken">Token to stop monitoring.</param>
     /// <returns>Async enumerable of health snapshots.</returns>
-    public async IAsyncEnumerable<ServiceHealth> MonitorHealthAsync(int applicationId, int intervalSeconds = 30, System.Threading.CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ServiceHealth> MonitorHealthAsync(int applicationId, int intervalSeconds = 30, [EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
     {
         if (intervalSeconds < 5 || intervalSeconds > 300)
             yield break;

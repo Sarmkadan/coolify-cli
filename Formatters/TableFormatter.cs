@@ -17,7 +17,6 @@ public class TableFormatter : IOutputFormatter
 {
     private readonly TableStyle _style;
     private readonly List<string>? _columnNames;
-    private readonly Dictionary<string, int>? _columnWidths;
 
     public TableFormatter(TableStyle style = TableStyle.Simple, List<string>? columnNames = null)
     {

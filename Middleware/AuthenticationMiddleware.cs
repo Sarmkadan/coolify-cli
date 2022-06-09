@@ -95,6 +95,6 @@ public class AuthenticationMiddleware : ICommandMiddleware
         }
 
         // Otherwise, use a hash of the key for anonymity
-        return $"user_{_config.ApiKey.GetHashCode():X8}";
+        return $"user_{_config.ApiKey!.GetHashCode():X8}";
     }
 }

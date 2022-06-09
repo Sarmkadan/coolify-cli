@@ -95,7 +95,7 @@ public static class InfrastructureCommands
                       {
                           DryRun       = dry,
                           AutoApprove  = yes,
-                          OutputFormat = fmt,
+                          OutputFormat = fmt!,
                           ShowDiff     = true
                       };
 
@@ -175,7 +175,7 @@ public static class InfrastructureCommands
             var fmt  = parseResult.GetValue(fmtOpt);
             try
             {
-                var options    = new IacTemplateOptions { OutputFormat = fmt };
+                var options    = new IacTemplateOptions { OutputFormat = fmt! };
                 var loadResult = await engine.LoadWithVariablesAsync(file!, resolver);
 
                 if (!loadResult.Success)
@@ -230,7 +230,7 @@ public static class InfrastructureCommands
             var fmt  = parseResult.GetValue(fmtOpt);
             try
             {
-                var options    = new IacTemplateOptions { OutputFormat = fmt, ShowDiff = true };
+                var options    = new IacTemplateOptions { OutputFormat = fmt!, ShowDiff = true };
                 var loadResult = await engine.LoadWithVariablesAsync(file!, resolver);
 
                 if (!loadResult.Success)
@@ -306,7 +306,7 @@ public static class InfrastructureCommands
                 // Override the metadata name while keeping all other exported properties.
                 var exported = exportResponse.Data with
                 {
-                    Metadata = exportResponse.Data.Metadata with { Name = name }
+                    Metadata = exportResponse.Data.Metadata with { Name = name! }
                 };
 
                 var yaml = InfrastructureTemplateEngine.SerializeToYaml(exported);
