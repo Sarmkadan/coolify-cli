@@ -631,6 +631,11 @@ healthCommand.SetAction(async (parseResult, ct) =>
 
 rootCommand.Add(healthCommand);
 
+
+// TUI command
+var tuiCmds = new TuiCommands(apiClient, logger, config);
+rootCommand.Add(tuiCmds.CreateTuiCommand());
+
 // Infrastructure-as-code commands (iac apply | validate | diff | export | init)
 var iacCommand = InfrastructureCommands.CreateIacCommand(
     new ApplicationService(apiClient, logger),
