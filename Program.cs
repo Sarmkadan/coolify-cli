@@ -550,7 +550,7 @@ envSetCommand.SetAction(async (parseResult, ct) =>
 
             Console.WriteLine($"\nChanges to apply: {toSet.Count} set, {deleted.Count} deleted.");
             Console.Write("Apply changes? [y/N]: ");
-            var confirm = Console.ReadLine()?.Trim();
+            var confirm = Console.ReadLine()?.Trim() ?? string.Empty;
             if (!confirm.Equals("y", StringComparison.OrdinalIgnoreCase) &&
                 !confirm.Equals("yes", StringComparison.OrdinalIgnoreCase))
             {
