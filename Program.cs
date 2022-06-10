@@ -370,8 +370,21 @@ logsCommand.SetAction(async (parseResult, ct) =>
     }
 });
 
+
 // Build command hierarchy
-var appCommand = new Command("app", "Manage applications") { appListCommand, appGetCommand, appDeployCommand };
+var advancedCmds = new AdvancedAppCommands(apiClient, logger, config);
+var diffCmds = new DeploymentDiffCommands(apiClient, logger, config);
+var appCommand = new Command("app", "Manage applications")
+{
+    appListCommand,
+    appGetCommand,
+    appDeployCommand,
+    advancedCmds.CreateRestartCommand(),
+    advancedCmds.CreateSetEnvCommand(),
+    advancedCmds.CreateScaleCommand(),
+    advancedCmds.CreateRollbackCommand(),
+    diffCmds.CreateDiffCommand(),
+};
 var dbCommand = new Command("db", "Manage databases") { dbListCommand, dbHealthCommand };
 
 // Environment variable commands
