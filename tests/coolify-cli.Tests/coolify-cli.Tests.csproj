@@ -28,6 +28,11 @@
     <Compile Include="../../Utilities/ValidationHelper.cs" />
     <Compile Include="../../Models/Enums.cs" />
     <Compile Include="../../Models/ApplicationDeployment.cs" />
+    <Compile Include="../../Models/DatabaseConfiguration.cs" />
+    <Compile Include="../../Models/ServiceHealth.cs" />
+    <Compile Include="../../Models/TuiState.cs" />
+    <Compile Include="../../Models/DeploymentDiff.cs" />
+    <Compile Include="../../Models/ResourceUsage.cs" />
     <Compile Include="../../Caching/ICacheProvider.cs" />
     <Compile Include="../../Caching/MemoryCacheProvider.cs" />
   </ItemGroup>
