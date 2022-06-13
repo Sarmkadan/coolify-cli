@@ -1,7 +1,3 @@
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =============================================================================
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
