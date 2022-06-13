@@ -7,7 +7,7 @@ namespace CoolifyCli.Infrastructure;
 public static class Constants
 {
     public const string ApplicationName = "coolify-cli";
-    public const string ApplicationVersion = "1.0.0";
+    public const string ApplicationVersion = "2.0.2";
     public const string Author = "Vladyslav Zaiets";
     public const string AuthorUrl = "https://sarmkadan.com";
 
