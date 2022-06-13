@@ -1,9 +1,4 @@
 #!/bin/bash
-# =============================================================================
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
-# =============================================================================
-
 # Continuous health monitoring with alerting
 
 set -e
