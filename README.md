@@ -31,6 +31,14 @@ coolify-cli health
 coolify-cli app list
 ```
 
+## Examples
+
+You can find code examples showcasing how to use the underlying services in the `examples/` directory:
+
+- `BasicUsage.cs`: Demonstrates listing applications.
+- `AdvancedUsage.cs`: Shows deployment with error handling and custom configuration.
+- `IntegrationExample.cs`: Illustrates how to wire services into an ASP.NET Core DI container.
+
 ## Configuration
 
 | Variable | Default | Description |
