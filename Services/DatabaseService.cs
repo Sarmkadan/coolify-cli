@@ -200,7 +200,7 @@ public class DatabaseService
     /// <returns>Deletion status.</returns>
     public async Task<ApiResponse<object>> DeleteDatabaseAsync(int databaseId)
     {
-        _logger.Warning($"Deleting database {databaseId}");
+        _logger.Warn($"Deleting database {databaseId}");
         var response = await _apiClient.DeleteAsync<object>($"/api/v1/databases/{databaseId}");
 
         if (response.Success)

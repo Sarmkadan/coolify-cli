@@ -112,7 +112,7 @@ public class EnvironmentVariableService
     /// <returns>Deletion status.</returns>
     public async Task<ApiResponse<object>> DeleteVariableAsync(int variableId)
     {
-        _logger.Warning($"Deleting environment variable {variableId}");
+        _logger.Warn($"Deleting environment variable {variableId}");
         var response = await _apiClient.DeleteAsync<object>($"/api/v1/env-vars/{variableId}");
 
         if (response.Success)
@@ -193,7 +193,7 @@ public class EnvironmentVariableService
         if (variableIds == null || variableIds.Count == 0)
             return ApiResponse<object>.ErrorResponse("At least one variable ID is required.", 400);
 
-        _logger.Warning($"Rotating {variableIds.Count} secrets for application {applicationId}");
+        _logger.Warn($"Rotating {variableIds.Count} secrets for application {applicationId}");
 
         var rotateRequest = new { VariableIds = variableIds };
         var response = await _apiClient.PostAsync<object>(

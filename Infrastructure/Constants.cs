@@ -51,11 +51,40 @@ public static class Constants
 
     public static class Environment
     {
-        public const string ApiKeyVariableName = "COOLIFY_API_KEY";
-        public const string ApiUrlVariableName = "COOLIFY_API_URL";
-        public const string VerboseVariableName = "COOLIFY_VERBOSE";
-        public const string TimeoutVariableName = "COOLIFY_TIMEOUT";
+        public const string ApiKeyVariableName             = "COOLIFY_API_KEY";
+        public const string ApiUrlVariableName             = "COOLIFY_API_URL";
+        public const string VerboseVariableName            = "COOLIFY_VERBOSE";
+        public const string TimeoutVariableName            = "COOLIFY_TIMEOUT";
         public const string DefaultEnvironmentVariableName = "COOLIFY_ENVIRONMENT";
+        public const string EnvironmentIdVariableName      = "COOLIFY_ENVIRONMENT_ID";
+    }
+
+    /// <summary>Constants for the infrastructure-as-code template subsystem.</summary>
+    public static class Iac
+    {
+        /// <summary>The canonical apiVersion value written into new templates.</summary>
+        public const string DefaultApiVersion = "v2";
+
+        /// <summary>The only accepted <c>kind</c> discriminator value.</summary>
+        public const string SupportedKind = "CoolifyInfrastructure";
+
+        /// <summary>Default filename produced by <c>iac init</c> and used as an option default.</summary>
+        public const string DefaultTemplateFileName = "coolify.yaml";
+
+        /// <summary>
+        /// Regex pattern matching <c>${VAR_NAME}</c> placeholder tokens in raw YAML text.
+        /// Capture group 1 contains the variable name.
+        /// </summary>
+        public const string TemplateVariablePattern = @"\$\{([A-Za-z_][A-Za-z0-9_]*)\}";
+
+        /// <summary>Maximum number of resource operations to run in parallel during apply.</summary>
+        public const int DefaultMaxConcurrentOperations = 3;
+
+        /// <summary>Maximum directory levels ascended when searching for a template file.</summary>
+        public const int MaxTemplateSearchDepth = 5;
+
+        /// <summary>Default wall-clock budget for a complete apply phase.</summary>
+        public static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(5);
     }
 
     public static class Paths
@@ -75,5 +104,9 @@ public static class Constants
         public const int ConfigurationError = 3;
         public const int ApiError = 4;
         public const int Timeout = 5;
+        public const int ValidationError = 6;
+        public const int UnhandledError = 7;
+        public const int UnauthorizedAccess = 8;
+        public const int TimeoutError = 9;
     }
 }
