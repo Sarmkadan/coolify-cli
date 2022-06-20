@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -139,7 +140,7 @@ public class LogService
             {
                 var response = await GetApplicationLogsAsync(applicationId, 20);
 
-                if (response.Success && response.Data != null)
+                if (response.Success && response.Data is not null)
                 {
                     var newLogs = response.Data
                         .Where(l => l.Timestamp > lastTimestamp)

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -22,7 +23,7 @@ public static class EnumExtensions
     {
         var field = value.GetType().GetField(value.ToString());
 
-        if (field == null)
+        if (field is null)
             return value.ToString();
 
         var attribute = field.GetCustomAttribute<DescriptionAttribute>();

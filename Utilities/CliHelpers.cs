@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -228,7 +229,7 @@ public static class CliHelpers
     /// <param name="rows">Table rows (list of column values).</param>
     public static void PrintTable(string[] headers, List<string[]> rows)
     {
-        if (headers == null || headers.Length == 0)
+        if (headers is null || headers.Length == 0)
             return;
 
         // Calculate column widths

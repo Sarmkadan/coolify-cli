@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -39,7 +40,7 @@ public class JsonFormatter : IOutputFormatter
     /// </summary>
     public string Format(object? data)
     {
-        if (data == null)
+        if (data is null)
             return "null";
 
         var json = JsonSerializer.Serialize(data, _options);
@@ -51,7 +52,7 @@ public class JsonFormatter : IOutputFormatter
     /// </summary>
     public string FormatCollection<T>(IEnumerable<T> items)
     {
-        if (items == null)
+        if (items is null)
             return "[]";
 
         var json = JsonSerializer.Serialize(items.ToList(), _options);
@@ -63,7 +64,7 @@ public class JsonFormatter : IOutputFormatter
     /// </summary>
     public string FormatDictionary(Dictionary<string, object?> data)
     {
-        if (data == null || data.Count == 0)
+        if (data is null || data.Count == 0)
             return "{}";
 
         var json = JsonSerializer.Serialize(data, _options);
@@ -148,18 +149,18 @@ public class JsonFormatter : IOutputFormatter
     /// </summary>
     private string FilterJson(string json)
     {
-        if (_includeFields == null && _excludeFields == null)
+        if (_includeFields is null && _excludeFields is null)
             return json;
 
         try
         {
             var jObject = JsonNode.Parse(json)?.AsObject();
-            if (jObject == null) return json;
+            if (jObject is null) return json;
 
-            if (_includeFields != null && _includeFields.Count > 0)
+            if (_includeFields is not null && _includeFields.Count > 0)
                 jObject = FilterByInclude(jObject);
 
-            if (_excludeFields != null && _excludeFields.Count > 0)
+            if (_excludeFields is not null && _excludeFields.Count > 0)
                 jObject = FilterByExclude(jObject);
 
             return jObject.ToJsonString(_options);
