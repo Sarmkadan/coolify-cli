@@ -58,6 +58,7 @@ public class DeploymentOrchestrator
             if (!preCheckResult.Success)
             {
                 result.Success = false;
+                result.CompletedAt = DateTime.UtcNow;
                 result.LogEvent($"Pre-deployment checks failed: {string.Join(", ", preCheckResult.Errors)}");
                 return result;
             }
@@ -87,6 +88,7 @@ public class DeploymentOrchestrator
             if (!deployResult.Success)
             {
                 result.Success = false;
+                result.CompletedAt = DateTime.UtcNow;
                 result.LogEvent($"Deployment failed: {deployResult.Message}");
                 return result;
             }
@@ -115,12 +117,14 @@ public class DeploymentOrchestrator
                 }
             }
 
+            result.CompletedAt = DateTime.UtcNow;
             return result;
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "Deployment orchestration error");
             result.Success = false;
+            result.CompletedAt = DateTime.UtcNow;
             result.LogEvent($"Critical error: {ex.Message}");
             return result;
         }
