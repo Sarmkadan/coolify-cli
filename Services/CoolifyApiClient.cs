@@ -42,7 +42,7 @@ public class CoolifyApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync(endpoint);
+            using var response = await _httpClient.GetAsync(endpoint);
             return await ProcessResponse<T>(response);
         }
         catch (HttpRequestException ex)
@@ -66,7 +66,7 @@ public class CoolifyApiClient
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(endpoint, content);
+            using var response = await _httpClient.PostAsJsonAsync(endpoint, content);
             return await ProcessResponse<T>(response);
         }
         catch (HttpRequestException ex)
@@ -90,7 +90,7 @@ public class CoolifyApiClient
     {
         try
         {
-            var response = await _httpClient.PutAsJsonAsync(endpoint, content);
+            using var response = await _httpClient.PutAsJsonAsync(endpoint, content);
             return await ProcessResponse<T>(response);
         }
         catch (HttpRequestException ex)
@@ -113,7 +113,7 @@ public class CoolifyApiClient
     {
         try
         {
-            var response = await _httpClient.DeleteAsync(endpoint);
+            using var response = await _httpClient.DeleteAsync(endpoint);
             return await ProcessResponse<T>(response);
         }
         catch (HttpRequestException ex)
