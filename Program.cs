@@ -25,7 +25,12 @@ if (validationErrors.Count > 0)
     return Constants.ExitCodes.ConfigurationError;
 }
 
-var logger = new ConsoleLogger(config.VerboseLogging);
+// Disable color when stdout is redirected/piped, NO_COLOR env var is set, or --no-color is passed
+bool colorOutput = !Console.IsOutputRedirected
+    && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR"))
+    && !args.Contains("--no-color");
+
+var logger = new ConsoleLogger(config.VerboseLogging, colorOutput);
 var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(config.RequestTimeoutSeconds) };
 var apiClient = new CoolifyApiClient(httpClient, config.ApiUrl, config.ApiKey!);
 
@@ -35,6 +40,7 @@ logger.Debug($"API URL: {config.ApiUrl}");
 // Root command
 var rootCommand = new RootCommand("Coolify CLI - Manage Coolify infrastructure from the terminal");
 rootCommand.Add(new Option<bool>("--verbose", ["-v"]) { Description = "Enable verbose logging" });
+rootCommand.Add(new Option<bool>("--no-color") { Description = "Disable color output (also auto-disabled when stdout is not a TTY)" });
 
 // Application commands
 var appListCommand = new Command("list", "List all applications");
@@ -281,17 +287,23 @@ logsCommand.SetAction(async (parseResult, ct) =>
             Console.WriteLine($"\nLogs for application {appId} (showing {result.Data.Count} lines):\n");
             foreach (var log in result.Data.OrderBy(l => l.Timestamp))
             {
-                var color = log.Level switch
+                if (colorOutput)
                 {
-                    LogLevel.Error => ConsoleColor.Red,
-                    LogLevel.Warning => ConsoleColor.Yellow,
-                    LogLevel.Fatal => ConsoleColor.DarkRed,
-                    _ => ConsoleColor.Gray
-                };
-
-                Console.ForegroundColor = color;
-                Console.WriteLine(log.ToString());
-                Console.ResetColor();
+                    var color = log.Level switch
+                    {
+                        LogLevel.Error => ConsoleColor.Red,
+                        LogLevel.Warning => ConsoleColor.Yellow,
+                        LogLevel.Fatal => ConsoleColor.DarkRed,
+                        _ => ConsoleColor.Gray
+                    };
+                    Console.ForegroundColor = color;
+                    Console.WriteLine(log.ToString());
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine(log.ToString());
+                }
             }
         }
         else

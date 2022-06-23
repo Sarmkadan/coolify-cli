@@ -159,17 +159,23 @@ public class MonitoringCommands : CommandBase
 
                             foreach (var log in filteredLogs)
                             {
-                                var color = log.Level switch
+                                if (!Console.IsOutputRedirected)
                                 {
-                                    LogLevel.Error => ConsoleColor.Red,
-                                    LogLevel.Warning => ConsoleColor.Yellow,
-                                    LogLevel.Fatal => ConsoleColor.DarkRed,
-                                    _ => ConsoleColor.Gray
-                                };
-
-                                Console.ForegroundColor = color;
-                                Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.Level}: {log.Message}");
-                                Console.ResetColor();
+                                    var color = log.Level switch
+                                    {
+                                        LogLevel.Error => ConsoleColor.Red,
+                                        LogLevel.Warning => ConsoleColor.Yellow,
+                                        LogLevel.Fatal => ConsoleColor.DarkRed,
+                                        _ => ConsoleColor.Gray
+                                    };
+                                    Console.ForegroundColor = color;
+                                    Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.Level}: {log.Message}");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.Level}: {log.Message}");
+                                }
 
                                 lastTimestamp = log.Timestamp;
                             }
@@ -277,16 +283,22 @@ public class MonitoringCommands : CommandBase
                     Console.WriteLine($"\n{filteredAlerts.Count} Active Alerts:\n");
                     foreach (var alert in filteredAlerts)
                     {
-                        var color = alert.Severity switch
+                        if (!Console.IsOutputRedirected)
                         {
-                            "critical" => ConsoleColor.Red,
-                            "warning" => ConsoleColor.Yellow,
-                            _ => ConsoleColor.Cyan
-                        };
-
-                        Console.ForegroundColor = color;
-                        Console.WriteLine($"[{alert.Severity.ToUpper()}] {alert.Type}: {alert.Message}");
-                        Console.ResetColor();
+                            var color = alert.Severity switch
+                            {
+                                "critical" => ConsoleColor.Red,
+                                "warning" => ConsoleColor.Yellow,
+                                _ => ConsoleColor.Cyan
+                            };
+                            Console.ForegroundColor = color;
+                            Console.WriteLine($"[{alert.Severity.ToUpper()}] {alert.Type}: {alert.Message}");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[{alert.Severity.ToUpper()}] {alert.Type}: {alert.Message}");
+                        }
                     }
                 }
             }
