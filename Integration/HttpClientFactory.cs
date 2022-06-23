@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Services;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.Integration;
+namespace CoolifyCli.Integration;
 
 /// <summary>
 /// Factory for creating configured HttpClient instances with authentication and interceptors.

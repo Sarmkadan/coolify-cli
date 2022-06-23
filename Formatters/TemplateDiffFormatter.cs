@@ -4,12 +4,12 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Formatters;
+namespace CoolifyCli.Formatters;
 
 using System.Text;
 using System.Text.Json;
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Renders <see cref="TemplateDiffResult"/>, <see cref="TemplateApplyResult"/>, and

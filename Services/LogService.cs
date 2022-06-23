@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Service for retrieving and managing application logs from Coolify.

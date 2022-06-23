@@ -4,14 +4,14 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Commands;
+namespace CoolifyCli.Commands;
 
 using System.CommandLine;
-using CoolifiCli.Extensions;
-using CoolifiCli.Formatters;
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Extensions;
+using CoolifyCli.Formatters;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 
 /// <summary>
 /// Factory that creates the top-level <c>iac</c> command group and its complete subcommand

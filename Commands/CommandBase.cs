@@ -4,11 +4,11 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Services;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Services;
 using System.CommandLine;
 
-namespace CoolifiCli.Commands;
+namespace CoolifyCli.Commands;
 
 /// <summary>
 /// Base class for all CLI commands providing common functionality like logging,

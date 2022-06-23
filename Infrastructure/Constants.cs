@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Infrastructure;
+namespace CoolifyCli.Infrastructure;
 
 /// <summary>
 /// Application-wide constants and configuration values.

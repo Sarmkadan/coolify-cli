@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Contract for an engine that loads, validates, diffs, and applies declarative YAML

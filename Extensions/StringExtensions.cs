@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Extensions;
+namespace CoolifyCli.Extensions;
 
 /// <summary>
 /// Extension methods for string manipulation and validation.

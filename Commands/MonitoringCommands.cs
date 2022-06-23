@@ -4,12 +4,12 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 using System.CommandLine;
 
-namespace CoolifiCli.Commands;
+namespace CoolifyCli.Commands;
 
 /// <summary>
 /// Monitoring and observability commands for real-time metrics, alerts, and system status.

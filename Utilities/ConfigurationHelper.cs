@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Utilities;
+namespace CoolifyCli.Utilities;
 
 using System.Text.Json;
-using CoolifiCli.Infrastructure;
+using CoolifyCli.Infrastructure;
 
 /// <summary>
 /// Helper for managing CLI configuration files and settings persistence.

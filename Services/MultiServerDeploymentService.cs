@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 using System.Collections.Concurrent;
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Orchestrates parallel deployments across multiple Coolify server instances.

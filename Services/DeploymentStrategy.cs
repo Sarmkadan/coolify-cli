@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 /// <summary>
 /// Defines deployment strategies for rolling out application updates.

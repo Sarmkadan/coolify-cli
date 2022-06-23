@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace CoolifiCli.Utilities;
+namespace CoolifyCli.Utilities;
 
 /// <summary>
 /// JSON conversion utilities for serialization, deserialization, and transformation.

@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Data;
+namespace CoolifyCli.Data;
 
 /// <summary>
 /// Generic repository interface for data access operations.

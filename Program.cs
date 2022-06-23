@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Commands;
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Commands;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 using System.CommandLine;
 
 var config = CoolifyConfiguration.FromEnvironment();

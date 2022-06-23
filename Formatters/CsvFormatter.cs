@@ -7,7 +7,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace CoolifiCli.Formatters;
+namespace CoolifyCli.Formatters;
 
 /// <summary>
 /// Formats data as CSV output. Handles proper escaping, quoting, and delimiter handling.

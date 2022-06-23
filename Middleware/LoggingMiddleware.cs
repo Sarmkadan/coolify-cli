@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Services;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.Middleware;
+namespace CoolifyCli.Middleware;
 
 /// <summary>
 /// Middleware for request/response logging. Captures command name, arguments, duration,

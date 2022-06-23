@@ -4,10 +4,10 @@
 // =============================================================================
 #nullable enable
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Services;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.Middleware;
+namespace CoolifyCli.Middleware;
 
 /// <summary>
 /// Middleware for API authentication. Validates API key presence and validity.

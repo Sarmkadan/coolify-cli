@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 /// <summary>
 /// Interface for application logging. Supports structured logging with different levels.

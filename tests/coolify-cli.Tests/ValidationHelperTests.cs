@@ -4,11 +4,11 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Utilities;
+using CoolifyCli.Utilities;
 using FluentAssertions;
 using Xunit;
 
-namespace CoolifiCli.Tests;
+namespace CoolifyCli.Tests;
 
 public class ValidationHelperTests
 {

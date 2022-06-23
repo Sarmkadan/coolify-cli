@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Orchestrates complex deployment workflows including pre-deployment checks,

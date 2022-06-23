@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Infrastructure;
+namespace CoolifyCli.Infrastructure;
 
 /// <summary>
 /// Base exception for all Coolify CLI specific errors.
