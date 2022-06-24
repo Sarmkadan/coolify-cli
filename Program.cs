@@ -271,44 +271,97 @@ dbHealthCommand.SetAction(async (parseResult, ct) =>
 var logsCommand = new Command("logs", "View application logs");
 var logAppIdArg = new Argument<int>("id") { Description = "Application ID" };
 var linesOption = new Option<int>("--lines", ["-n"]) { Description = "Number of log lines to display", DefaultValueFactory = _ => 100 };
+var watchOption = new Option<bool>("--watch", ["-f", "--follow"]) { Description = "Stream logs in real-time (follow mode). Reconnects automatically if the stream is interrupted." };
 logsCommand.Add(logAppIdArg);
 logsCommand.Add(linesOption);
+logsCommand.Add(watchOption);
 logsCommand.SetAction(async (parseResult, ct) =>
 {
     var appId = parseResult.GetValue(logAppIdArg);
     var lines = parseResult.GetValue(linesOption);
+    var watch = parseResult.GetValue(watchOption);
     try
     {
         var logService = new LogService(apiClient, logger);
-        var result = await logService.GetApplicationLogsAsync(appId.ToString(), lines);
 
-        if (result.Success && result.Data is not null)
+        if (watch)
         {
-            Console.WriteLine($"\nLogs for application {appId} (showing {result.Data.Count} lines):\n");
-            foreach (var log in result.Data.OrderBy(l => l.Timestamp))
+            Console.WriteLine($"Streaming logs for application {appId} (press Ctrl+C to stop)...\n");
+            using var cts = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(ct);
+            Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
+
+            int reconnectDelayMs = 2000;
+            while (!cts.Token.IsCancellationRequested)
             {
-                if (colorOutput)
+                try
                 {
-                    var color = log.Level switch
+                    await foreach (var log in logService.StreamLogsAsync(appId.ToString(), cts.Token))
                     {
-                        LogLevel.Error => ConsoleColor.Red,
-                        LogLevel.Warning => ConsoleColor.Yellow,
-                        LogLevel.Fatal => ConsoleColor.DarkRed,
-                        _ => ConsoleColor.Gray
-                    };
-                    Console.ForegroundColor = color;
-                    Console.WriteLine(log.ToString());
-                    Console.ResetColor();
+                        if (colorOutput)
+                        {
+                            var color = log.Level switch
+                            {
+                                LogLevel.Error => ConsoleColor.Red,
+                                LogLevel.Warning => ConsoleColor.Yellow,
+                                LogLevel.Fatal => ConsoleColor.DarkRed,
+                                _ => ConsoleColor.Gray
+                            };
+                            Console.ForegroundColor = color;
+                            Console.WriteLine(log.ToString());
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.WriteLine(log.ToString());
+                        }
+                        reconnectDelayMs = 2000; // reset backoff on successful receive
+                    }
                 }
-                else
+                catch (TaskCanceledException)
                 {
-                    Console.WriteLine(log.ToString());
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (cts.Token.IsCancellationRequested) break;
+                    logger.Warn($"Log stream interrupted ({ex.Message}). Reconnecting in {reconnectDelayMs / 1000}s...");
+                    try { await Task.Delay(reconnectDelayMs, cts.Token); } catch (TaskCanceledException) { break; }
+                    reconnectDelayMs = Math.Min(reconnectDelayMs * 2, 30000); // exponential backoff, max 30s
                 }
             }
         }
         else
         {
-            logger.Error($"Failed to retrieve logs: {result.Message}");
+            var result = await logService.GetApplicationLogsAsync(appId.ToString(), lines);
+
+            if (result.Success && result.Data is not null)
+            {
+                Console.WriteLine($"\nLogs for application {appId} (showing {result.Data.Count} lines):\n");
+                foreach (var log in result.Data.OrderBy(l => l.Timestamp))
+                {
+                    if (colorOutput)
+                    {
+                        var color = log.Level switch
+                        {
+                            LogLevel.Error => ConsoleColor.Red,
+                            LogLevel.Warning => ConsoleColor.Yellow,
+                            LogLevel.Fatal => ConsoleColor.DarkRed,
+                            _ => ConsoleColor.Gray
+                        };
+                        Console.ForegroundColor = color;
+                        Console.WriteLine(log.ToString());
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.WriteLine(log.ToString());
+                    }
+                }
+            }
+            else
+            {
+                logger.Error($"Failed to retrieve logs: {result.Message}");
+            }
         }
     }
     catch (Exception ex)
