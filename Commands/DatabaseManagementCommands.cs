@@ -72,7 +72,7 @@ public class DatabaseManagementCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(result.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
@@ -136,7 +136,7 @@ public class DatabaseManagementCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(result.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
@@ -188,7 +188,7 @@ public class DatabaseManagementCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(result.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
@@ -241,7 +241,7 @@ public class DatabaseManagementCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(result.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
