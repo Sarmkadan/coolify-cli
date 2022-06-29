@@ -1,9 +1,4 @@
 #nullable enable
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =============================================================================
-
 using CoolifyCli.Caching;
 using CoolifyCli.Models;
 using FluentAssertions;

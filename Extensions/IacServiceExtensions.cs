@@ -1,45 +1,18 @@
 #nullable enable
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =============================================================================
 
 namespace CoolifyCli.Extensions;
 
-using Microsoft.Extensions.DependencyInjection;
 using CoolifyCli.Models;
 using CoolifyCli.Services;
 
 /// <summary>
-/// Extension methods that integrate the infrastructure-as-code template engine into both
-/// container-managed and manually-constructed service graphs.
+/// Extension methods for the infrastructure-as-code template engine.
 /// </summary>
 public static class IacServiceExtensions
 {
     /// <summary>
-    /// Registers the infrastructure-as-code template engine and its supporting services with
-    /// the DI container.
-    /// <para>
-    /// Prerequisites: <see cref="CoolifyApiClient"/>, <see cref="ApplicationService"/>,
-    /// <see cref="DatabaseService"/>, and <see cref="ILogger"/> must already be registered
-    /// before calling this method.
-    /// </para>
-    /// </summary>
-    /// <param name="services">The service collection to extend.</param>
-    /// <returns>The same collection for fluent chaining.</returns>
-    public static IServiceCollection AddInfrastructureTemplateEngine(
-        this IServiceCollection services)
-    {
-        services.AddTransient<TemplateVariableResolver>();
-        services.AddTransient<IInfrastructureTemplateEngine, InfrastructureTemplateEngine>();
-        return services;
-    }
-
-    /// <summary>
     /// Creates a ready-to-use <see cref="IInfrastructureTemplateEngine"/> from the three
-    /// concrete dependencies it requires.  Intended for use in top-level programs and
-    /// integration tests that build their object graph manually rather than through a DI
-    /// container.
+    /// concrete dependencies it requires.
     /// </summary>
     /// <param name="appService">Application lifecycle service.</param>
     /// <param name="dbService">Database management service.</param>
