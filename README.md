@@ -71,12 +71,19 @@ Coolify CLI is a modern command-line tool for DevOps engineers, system administr
 - **Health Verification**: Post-deployment health validation
 - **Deployment Strategies**: Support for blue-green, canary, and rolling deployments
 - **Resource Quotas**: Monitor and enforce resource limits
+- **Deployment Diff Preview**: See exactly what will change before triggering a deploy
 
 ### Monitoring & Observability
 - **System Health Checks**: Verify API connectivity and system status
 - **Performance Metrics**: Track response times, CPU, memory, and error rates
 - **Health Dashboards**: Aggregated health status across applications and databases
 - **Event Publishing**: Webhook support for deployment events and alerts
+- **Resource Usage Monitoring**: Real-time CPU, memory, and network usage per application
+
+### Interactive TUI
+- **Keyboard-Driven Dashboard**: Browse and inspect applications and databases without memorising commands
+- **Live Navigation**: Arrow-key selection, instant detail view, background refresh
+- **Color-Coded Status**: At-a-glance health and deployment status
 
 ## Architecture
 
@@ -613,6 +620,70 @@ coolify-cli health                            # System health check
 coolify-cli version                           # Display version
 coolify-cli config                            # Show configuration
 ```
+
+### Interactive TUI
+
+Launch a keyboard-driven dashboard for managing applications and databases without memorising individual sub-commands:
+
+```bash
+coolify-cli tui
+```
+
+**Keyboard shortcuts inside the TUI:**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `k` | Move selection up |
+| `↓` / `j` | Move selection down |
+| `Enter` | Open application detail panel |
+| `Esc` / `Backspace` | Return to application list |
+| `d` | Toggle database list view |
+| `r` | Refresh data from the API |
+| `h` / `F1` | Toggle help panel |
+| `q` | Quit TUI mode |
+
+> **Note:** TUI mode requires an interactive terminal. It will refuse to run when stdin or stdout is redirected.
+
+### Deployment Diff Preview
+
+Preview what configuration changes will be applied before triggering a deployment. Useful for peer review and avoiding accidental changes in production:
+
+```bash
+# Show all configuration changes for application 5
+coolify-cli app diff 5
+
+# Preview what a branch change would look like
+coolify-cli app diff 5 --branch release/v3
+
+# Also show properties that have not changed
+coolify-cli app diff 5 --show-all
+
+# Preview a combined build-command and branch change
+coolify-cli app diff 5 --branch hotfix/auth --build-command "dotnet publish -c Release"
+```
+
+The diff output uses unified diff colours (red = current, green = proposed) and flags **high-risk** changes (repository URL, environment ID, or port modifications) with a warning banner.
+
+### Resource Usage Monitoring
+
+Inspect real-time CPU, memory, and network consumption per application.
+
+```bash
+# One-shot snapshot for a specific application
+coolify-cli resources show 5
+
+# One-shot snapshot for all applications
+coolify-cli resources show
+
+# Continuously watch resource usage every 5 seconds (default)
+coolify-cli resources watch 5
+
+# Watch with a custom poll interval
+coolify-cli resources watch 5 --interval 10
+```
+
+Output columns: **ID**, **Name**, **CPU %**, **Memory (MB)**, **Mem %**, **Net RX**, **Net TX**.  
+Rows are color-coded: green = normal, yellow = warning (CPU ≥ 80 % or Mem ≥ 85 %), red = critical (CPU ≥ 95 % or Mem ≥ 95 %).
 
 ## Configuration Reference
 
