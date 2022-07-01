@@ -2,8 +2,6 @@
 
 # =============================================================================
 # Coolify CLI Development Setup Script
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
 # =============================================================================
 
 set -euo pipefail

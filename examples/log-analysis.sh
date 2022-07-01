@@ -1,9 +1,4 @@
 #!/bin/bash
-# =============================================================================
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
-# =============================================================================
-
 # Analyze application logs for errors, warnings, and patterns
 
 set -e

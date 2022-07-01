@@ -1,9 +1,4 @@
 #!/bin/bash
-# =============================================================================
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
-# =============================================================================
-
 # Automated database backup with retention and verification
 
 set -e
