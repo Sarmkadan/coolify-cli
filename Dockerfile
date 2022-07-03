@@ -40,6 +40,9 @@ WORKDIR /app
 # Copy from builder
 COPY --from=builder /publish .
 
+# Expose port 8080
+EXPOSE 8080
+
 # Create non-root user
 RUN groupadd -r coolify && useradd -r -g coolify coolify
 USER coolify

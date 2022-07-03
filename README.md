@@ -39,6 +39,30 @@ You can find code examples showcasing how to use the underlying services in the 
 - `AdvancedUsage.cs`: Shows deployment with error handling and custom configuration.
 - `IntegrationExample.cs`: Illustrates how to wire services into an ASP.NET Core DI container.
 
+## Docker
+
+You can run the CLI inside Docker or use `docker-compose` to manage health monitoring and automated tasks.
+
+### Running with Docker
+
+```bash
+docker build -t coolify-cli .
+docker run --rm -e COOLIFY_API_KEY="your-api-token" coolify-cli --help
+```
+
+### Using docker-compose
+
+The project includes `docker-compose.yml` for running the CLI along with health monitoring and scheduler services.
+
+```bash
+# Create a .env file
+cp configs/prod.env.example .env
+# Fill in your API Key and URL in .env
+
+# Start services
+docker-compose up -d
+```
+
 ## Configuration
 
 | Variable | Default | Description |
