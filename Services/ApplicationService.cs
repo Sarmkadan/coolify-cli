@@ -1,6 +1,7 @@
 #nullable enable
 namespace CoolifyCli.Services;
 
+using CoolifyCli.Infrastructure;
 using CoolifyCli.Models;
 
 /// <summary>
@@ -101,12 +102,18 @@ public class ApplicationService
     /// <returns>Deployment status result.</returns>
     public async Task<ApiResponse<DeploymentContext>> DeployApplicationAsync(int applicationId, DeploymentContext deploymentContext)
     {
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
+
+        if (deploymentContext is null)
+            throw new ArgumentNullException(nameof(deploymentContext), "Deployment context cannot be null.");
+
         _logger.Info($"Initiating deployment for application {applicationId}");
 
         var validationErrors = deploymentContext.Validate().ToList();
         if (validationErrors.Count > 0)
         {
-            return ApiResponse<DeploymentContext>.ErrorResponse(validationErrors, 400);
+            throw new ValidationException("Deployment validation failed.", validationErrors);
         }
 
         try
@@ -116,22 +123,41 @@ public class ApplicationService
                 $"/api/v1/applications/{applicationId}/deploy",
                 deploymentContext);
 
-            if (response.Success)
+            if (!response.Success)
             {
-                _logger.Info($"Deployment initiated successfully for application {applicationId}");
-            }
-            else
-            {
-                _logger.Error($"Deployment failed: {response.Message}");
+                if (response.StatusCode == 404)
+                {
+                    throw new ApplicationNotFoundException(applicationId);
+                }
+                throw new DeploymentException($"Deployment failed for application {applicationId}: {response.Message}", applicationId.ToString());
             }
 
+            _logger.Info($"Deployment initiated successfully for application {applicationId}");
             return response;
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            _logger.Error(ex, "Application not found during deployment");
+            deploymentContext.LogEvent($"Application {applicationId} not found", LogLevel.Fatal);
+            throw new ApplicationNotFoundException(applicationId);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.Error(ex, "HTTP error during deployment");
+            deploymentContext.LogEvent($"HTTP error: {ex.Message}", LogLevel.Fatal);
+            throw new ApiCommunicationException($"HTTP error during deployment: {ex.Message}", ex, (int)ex.StatusCode);
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.Error("Deployment timeout exceeded");
+            deploymentContext.LogEvent("Deployment timeout exceeded", LogLevel.Fatal);
+            throw new OperationTimeoutException("Deployment operation timed out.", TimeSpan.FromSeconds(_apiClient.GetTimeoutSeconds()));
         }
         catch (Exception ex)
         {
-            _logger.Error($"Exception during deployment: {ex.Message}");
+            _logger.Error(ex, "Exception during deployment");
             deploymentContext.LogEvent($"Deployment error: {ex.Message}", LogLevel.Fatal);
-            return ApiResponse<DeploymentContext>.ErrorResponse($"Deployment error: {ex.Message}", 500);
+            throw new DeploymentException($"Deployment failed for application {applicationId}: {ex.Message}", applicationId.ToString());
         }
     }
 
@@ -143,12 +169,13 @@ public class ApplicationService
     /// <returns>Rollback status.</returns>
     public async Task<ApiResponse<ApplicationDeployment>> RollbackApplicationAsync(int applicationId, string version)
     {
-        _logger.Info($"Initiating rollback for application {applicationId} to version {version}");
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
 
         if (string.IsNullOrWhiteSpace(version))
-        {
-            return ApiResponse<ApplicationDeployment>.ErrorResponse("Target version is required for rollback.", 400);
-        }
+            throw new ArgumentException("Target version is required for rollback.", nameof(version));
+
+        _logger.Info($"Initiating rollback for application {applicationId} to version {version}");
 
         var rollbackRequest = new { TargetVersion = version };
         var response = await _apiClient.PostAsync<ApplicationDeployment>(

@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -52,11 +53,19 @@ public class CoolifyApiClient
         }
         catch (HttpRequestException ex)
         {
+            if (ex.StatusCode.HasValue)
+            {
+                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
+            }
             return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
         }
         catch (TaskCanceledException)
         {
             return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
+        }
+        catch (OperationCanceledException)
+        {
+            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
         }
     }
 
@@ -78,11 +87,19 @@ public class CoolifyApiClient
         }
         catch (HttpRequestException ex)
         {
+            if (ex.StatusCode.HasValue)
+            {
+                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
+            }
             return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
         }
         catch (TaskCanceledException)
         {
             return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
+        }
+        catch (OperationCanceledException)
+        {
+            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
         }
     }
 
@@ -104,11 +121,19 @@ public class CoolifyApiClient
         }
         catch (HttpRequestException ex)
         {
+            if (ex.StatusCode.HasValue)
+            {
+                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
+            }
             return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
         }
         catch (TaskCanceledException)
         {
             return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
+        }
+        catch (OperationCanceledException)
+        {
+            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
         }
     }
 
@@ -129,11 +154,19 @@ public class CoolifyApiClient
         }
         catch (HttpRequestException ex)
         {
+            if (ex.StatusCode.HasValue)
+            {
+                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
+            }
             return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
         }
         catch (TaskCanceledException)
         {
             return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
+        }
+        catch (OperationCanceledException)
+        {
+            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
         }
     }
 

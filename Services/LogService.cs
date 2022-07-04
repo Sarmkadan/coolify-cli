@@ -98,10 +98,13 @@ public class LogService
     public async Task<ApiResponse<List<LogEntry>>> GetLogsByTimeRangeAsync(string applicationId, DateTime startTime, DateTime endTime)
     {
         if (string.IsNullOrWhiteSpace(applicationId))
-            return ApiResponse<List<LogEntry>>.ErrorResponse("Application ID is required.", 400);
+            throw new ArgumentException("Application ID is required.", nameof(applicationId));
 
         if (startTime >= endTime)
-            return ApiResponse<List<LogEntry>>.ErrorResponse("Start time must be before end time.", 400);
+            throw new ArgumentException("Start time must be before end time.", nameof(startTime));
+
+        if (applicationId.All(char.IsDigit) && int.TryParse(applicationId, out var appId) && appId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
 
         _logger.Info($"Fetching logs for application {applicationId} from {startTime:O} to {endTime:O}");
 
@@ -180,6 +183,12 @@ public class LogService
     /// <returns>Database log entries.</returns>
     public async Task<ApiResponse<List<LogEntry>>> GetDatabaseLogsAsync(int databaseId, int lines = 100)
     {
+        if (databaseId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
+
+        if (lines <= 0 || lines > 10000)
+            throw new ArgumentOutOfRangeException(nameof(lines), "Lines must be between 1 and 10000.");
+
         _logger.Info($"Fetching {lines} log lines for database {databaseId}");
         var response = await _apiClient.GetAsync<List<LogEntry>>($"/api/v1/databases/{databaseId}/logs?lines={lines}");
 

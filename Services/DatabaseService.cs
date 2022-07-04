@@ -102,6 +102,9 @@ public class DatabaseService
     /// <returns>Health status of the database.</returns>
     public async Task<ApiResponse<ServiceHealth>> CheckDatabaseHealthAsync(int databaseId)
     {
+        if (databaseId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
+
         _logger.Info($"Checking health of database {databaseId}");
         var response = await _apiClient.GetAsync<ServiceHealth>($"/api/v1/databases/{databaseId}/health");
 
@@ -155,10 +158,13 @@ public class DatabaseService
     /// <returns>Restore operation status.</returns>
     public async Task<ApiResponse<object>> RestoreDatabaseAsync(int databaseId, string backupId)
     {
-        _logger.Info($"Restoring database {databaseId} from backup {backupId}");
+        if (databaseId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
 
         if (string.IsNullOrWhiteSpace(backupId))
-            return ApiResponse<object>.ErrorResponse("Backup ID is required for restore.", 400);
+            throw new ArgumentException("Backup ID is required for restore.", nameof(backupId));
+
+        _logger.Info($"Restoring database {databaseId} from backup {backupId}");
 
         var restoreRequest = new { BackupId = backupId };
         var response = await _apiClient.PostAsync<object>($"/api/v1/databases/{databaseId}/restore", restoreRequest);
@@ -178,6 +184,9 @@ public class DatabaseService
     /// <returns>True if connection successful.</returns>
     public async Task<ApiResponse<bool>> TestConnectionAsync(int databaseId)
     {
+        if (databaseId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
+
         _logger.Info($"Testing connection to database {databaseId}");
         var response = await _apiClient.GetAsync<bool>($"/api/v1/databases/{databaseId}/test-connection");
 
