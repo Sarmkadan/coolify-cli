@@ -15,6 +15,8 @@ public static class Constants
     {
         public const string DefaultBaseUrl = "https://api.coolify.io";
         public const string ApiVersion = "v1";
+        public const string ApplicationsEndpoint = "/api/v1/applications";
+        public const string DatabasesEndpoint = "/api/v1/databases";
         public const int DefaultTimeoutSeconds = 30;
         public const int MaxRetries = 3;
     }
