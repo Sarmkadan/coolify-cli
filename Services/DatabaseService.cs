@@ -25,7 +25,7 @@ public sealed class DatabaseService
     public async Task<ApiResponse<List<DatabaseConfiguration>>> GetAllDatabasesAsync()
     {
         _logger.Info("Fetching all databases");
-        var response = await _apiClient.GetAsync<List<DatabaseConfiguration>>("/api/v1/databases");
+        var response = await _apiClient.GetAsync<List<DatabaseConfiguration>>(Constants.Api.DatabasesEndpoint);
         return response;
     }
 
@@ -37,7 +37,7 @@ public sealed class DatabaseService
     public async Task<ApiResponse<DatabaseConfiguration>> GetDatabaseAsync(int databaseId)
     {
         _logger.Info($"Fetching database {databaseId}");
-        var response = await _apiClient.GetAsync<DatabaseConfiguration>($"/api/v1/databases/{databaseId}");
+        var response = await _apiClient.GetAsync<DatabaseConfiguration>($"{Constants.Api.DatabasesEndpoint}/{databaseId}");
         return response;
     }
 
@@ -56,7 +56,7 @@ public sealed class DatabaseService
         }
 
         _logger.Info($"Creating new {database.Type} database: {database.Name}");
-        var response = await _apiClient.PostAsync<DatabaseConfiguration>("/api/v1/databases", database);
+        var response = await _apiClient.PostAsync<DatabaseConfiguration>(Constants.Api.DatabasesEndpoint, database);
 
         if (response.Success)
         {

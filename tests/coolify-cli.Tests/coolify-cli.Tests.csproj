@@ -36,6 +36,7 @@
     <Compile Include="../../Models/EnvironmentVariable.cs" />
     <Compile Include="../../Caching/ICacheProvider.cs" />
     <Compile Include="../../Caching/MemoryCacheProvider.cs" />
+    <Compile Include="../../Infrastructure/Constants.cs" />
   </ItemGroup>
 
 </Project>
