@@ -6,7 +6,7 @@ namespace CoolifyCli.Services;
 /// Console-based logger implementation. Outputs log messages to console with
 /// color coding based on log level. Supports verbose and quiet modes.
 /// </summary>
-public class ConsoleLogger : ILogger
+public sealed class ConsoleLogger : ILogger
 {
     private readonly bool _verboseLogging;
     private readonly bool _colorOutput;

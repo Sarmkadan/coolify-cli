@@ -7,7 +7,7 @@ namespace CoolifyCli.Services;
 /// Computes and formats deployment diffs by fetching the live configuration from
 /// the API and comparing it against a proposed configuration.
 /// </summary>
-public class DeploymentDiffService
+public sealed class DeploymentDiffService
 {
     private readonly ApplicationService _appService;
     private readonly ILogger _logger;

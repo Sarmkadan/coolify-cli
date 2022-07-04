@@ -7,7 +7,7 @@ using CoolifyCli.Models;
 /// Service for managing database configurations and operations.
 /// Handles provisioning, backups, health checks, and connection management.
 /// </summary>
-public class DatabaseService
+public sealed class DatabaseService
 {
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
