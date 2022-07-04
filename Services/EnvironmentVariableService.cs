@@ -41,6 +41,9 @@ public class EnvironmentVariableService
     /// <returns>Environment variable details.</returns>
     public async Task<ApiResponse<EnvironmentVariable>> GetVariableAsync(int variableId)
     {
+        if (variableId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(variableId), "Variable ID must be positive.");
+
         _logger.Info($"Fetching environment variable {variableId}");
         var response = await _apiClient.GetAsync<EnvironmentVariable>($"/api/v1/env-vars/{variableId}");
 
@@ -108,6 +111,9 @@ public class EnvironmentVariableService
     /// <returns>Deletion status.</returns>
     public async Task<ApiResponse<object>> DeleteVariableAsync(int variableId)
     {
+        if (variableId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(variableId), "Variable ID must be positive.");
+
         _logger.Warn($"Deleting environment variable {variableId}");
         var response = await _apiClient.DeleteAsync<object>($"/api/v1/env-vars/{variableId}");
 
@@ -184,10 +190,16 @@ public class EnvironmentVariableService
     public async Task<ApiResponse<object>> RotateSecretsAsync(string applicationId, List<int> variableIds)
     {
         if (string.IsNullOrWhiteSpace(applicationId))
-            return ApiResponse<object>.ErrorResponse("Application ID is required.", 400);
+            throw new ArgumentException("Application ID is required.", nameof(applicationId));
 
         if (variableIds is null || variableIds.Count == 0)
-            return ApiResponse<object>.ErrorResponse("At least one variable ID is required.", 400);
+            throw new ArgumentException("At least one variable ID is required.", nameof(variableIds));
+
+        foreach (var id in variableIds)
+        {
+            if (id <= 0)
+                throw new ArgumentOutOfRangeException(nameof(variableIds), "All variable IDs must be positive.");
+        }
 
         _logger.Warn($"Rotating {variableIds.Count} secrets for application {applicationId}");
 

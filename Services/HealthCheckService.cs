@@ -26,6 +26,9 @@ public class HealthCheckService
     /// <returns>Health status information.</returns>
     public async Task<ApiResponse<ServiceHealth>> CheckApplicationHealthAsync(int applicationId)
     {
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
+
         _logger.Info($"Performing health check for application {applicationId}");
 
         try
@@ -58,7 +61,13 @@ public class HealthCheckService
     public async Task<ApiResponse<Dictionary<int, ServiceHealth>>> CheckBulkHealthAsync(List<int> applicationIds)
     {
         if (applicationIds is null || applicationIds.Count == 0)
-            return ApiResponse<Dictionary<int, ServiceHealth>>.ErrorResponse("Application IDs are required.", 400);
+            throw new ArgumentException("Application IDs are required.", nameof(applicationIds));
+
+        foreach (var id in applicationIds)
+        {
+            if (id <= 0)
+                throw new ArgumentOutOfRangeException(nameof(applicationIds), "All application IDs must be positive.");
+        }
 
         _logger.Info($"Performing bulk health check for {applicationIds.Count} applications");
         var idsStr = string.Join(",", applicationIds);
@@ -75,8 +84,11 @@ public class HealthCheckService
     /// <returns>Historical health data.</returns>
     public async Task<ApiResponse<List<ServiceHealth>>> GetHealthHistoryAsync(int applicationId, int days = 7)
     {
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
+
         if (days < 1 || days > 90)
-            return ApiResponse<List<ServiceHealth>>.ErrorResponse("Days must be between 1 and 90.", 400);
+            throw new ArgumentOutOfRangeException(nameof(days), "Days must be between 1 and 90.");
 
         _logger.Info($"Fetching {days} days of health history for application {applicationId}");
         var response = await _apiClient.GetAsync<List<ServiceHealth>>(
@@ -93,6 +105,12 @@ public class HealthCheckService
     /// <returns>Metrics data.</returns>
     public async Task<ApiResponse<object>> GetMetricsAsync(int applicationId, string metricType = "all")
     {
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
+
+        if (string.IsNullOrWhiteSpace(metricType))
+            throw new ArgumentException("Metric type is required.", nameof(metricType));
+
         _logger.Info($"Fetching {metricType} metrics for application {applicationId}");
         var response = await _apiClient.GetAsync<object>(
             $"/api/v1/applications/{applicationId}/metrics?type={metricType}");
@@ -139,10 +157,13 @@ public class HealthCheckService
     /// <returns>Updated alert status.</returns>
     public async Task<ApiResponse<object>> AcknowledgeAlertAsync(int alertId, string acknowledgedBy)
     {
-        _logger.Info($"Acknowledging alert {alertId} by {acknowledgedBy}");
+        if (alertId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(alertId), "Alert ID must be positive.");
 
         if (string.IsNullOrWhiteSpace(acknowledgedBy))
-            return ApiResponse<object>.ErrorResponse("Acknowledged by is required.", 400);
+            throw new ArgumentException("Acknowledged by is required.", nameof(acknowledgedBy));
+
+        _logger.Info($"Acknowledging alert {alertId} by {acknowledgedBy}");
 
         var acknowledgeRequest = new { AcknowledgedBy = acknowledgedBy, AcknowledgedAt = DateTime.UtcNow };
         var response = await _apiClient.PostAsync<object>($"/api/v1/alerts/{alertId}/acknowledge", acknowledgeRequest);

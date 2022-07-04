@@ -1,0 +1,178 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 1 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/" /p:OutDir="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/bin/Release/net10.0/" /p:OutputPath="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/bin/Release/net10.0/" /p:PublishDir="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/publish/" in /home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2
+// command took 1.57 sec and exited with 0
+// start dotnet  build -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/" /p:OutDir="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/bin/Release/net10.0/" /p:OutputPath="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/bin/Release/net10.0/" /p:PublishDir="/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/publish/" --output "/home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/bin/Release/net10.0/" in /home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2
+// command took 10.42 sec and exited with 0
+// ***** Done, took 00:00:11 (12 sec)   *****
+// Found 1 benchmarks:
+//   DeploymentBenchmarks.ComputeDiff: DefaultJob
+
+// **************************
+// Benchmark: DeploymentBenchmarks.ComputeDiff: DefaultJob
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet coolify-cli.Benchmarks-DefaultJob-2.dll --anonymousPipes 122 123 --benchmarkName CoolifyCli.Benchmarks.DeploymentBenchmarks.ComputeDiff --job Default --benchmarkId 0 in /home/redrocket/task-factory/workdir/coolify-cli/benchmarks/coolify-cli.Benchmarks/bin/Release/net10.0/coolify-cli.Benchmarks-DefaultJob-2/bin/Release/net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: DefaultJob
+
+OverheadJitting  1: 1 op, 268932.00 ns, 268.9320 us/op
+WorkloadJitting  1: 1 op, 3217261.00 ns, 3.2173 ms/op
+
+OverheadJitting  2: 16 op, 580286.00 ns, 36.2679 us/op
+WorkloadJitting  2: 16 op, 733654.00 ns, 45.8534 us/op
+
+WorkloadPilot    1: 16 op, 157965.00 ns, 9.8728 us/op
+WorkloadPilot    2: 32 op, 266570.00 ns, 8.3303 us/op
+WorkloadPilot    3: 64 op, 420497.00 ns, 6.5703 us/op
+WorkloadPilot    4: 128 op, 711843.00 ns, 5.5613 us/op
+WorkloadPilot    5: 256 op, 1443021.00 ns, 5.6368 us/op
+WorkloadPilot    6: 512 op, 2921077.00 ns, 5.7052 us/op
+WorkloadPilot    7: 1024 op, 6579423.00 ns, 6.4252 us/op
+WorkloadPilot    8: 2048 op, 12950609.00 ns, 6.3235 us/op
+WorkloadPilot    9: 4096 op, 23920559.00 ns, 5.8400 us/op
+WorkloadPilot   10: 8192 op, 45410039.00 ns, 5.5432 us/op
+WorkloadPilot   11: 16384 op, 91458332.00 ns, 5.5822 us/op
+WorkloadPilot   12: 32768 op, 177577370.00 ns, 5.4192 us/op
+WorkloadPilot   13: 65536 op, 158105909.00 ns, 2.4125 us/op
+WorkloadPilot   14: 131072 op, 216402075.00 ns, 1.6510 us/op
+WorkloadPilot   15: 262144 op, 447489444.00 ns, 1.7070 us/op
+WorkloadPilot   16: 524288 op, 872923261.00 ns, 1.6650 us/op
+
+OverheadWarmup   1: 524288 op, 2119538.00 ns, 4.0427 ns/op
+OverheadWarmup   2: 524288 op, 2067711.00 ns, 3.9438 ns/op
+OverheadWarmup   3: 524288 op, 2212460.00 ns, 4.2199 ns/op
+OverheadWarmup   4: 524288 op, 2130397.00 ns, 4.0634 ns/op
+OverheadWarmup   5: 524288 op, 2202282.00 ns, 4.2005 ns/op
+OverheadWarmup   6: 524288 op, 2168718.00 ns, 4.1365 ns/op
+
+OverheadActual   1: 524288 op, 2157868.00 ns, 4.1158 ns/op
+OverheadActual   2: 524288 op, 2145125.00 ns, 4.0915 ns/op
+OverheadActual   3: 524288 op, 2098347.00 ns, 4.0023 ns/op
+OverheadActual   4: 524288 op, 2195921.00 ns, 4.1884 ns/op
+OverheadActual   5: 524288 op, 2089781.00 ns, 3.9859 ns/op
+OverheadActual   6: 524288 op, 2286539.00 ns, 4.3612 ns/op
+OverheadActual   7: 524288 op, 2220407.00 ns, 4.2351 ns/op
+OverheadActual   8: 524288 op, 2155665.00 ns, 4.1116 ns/op
+OverheadActual   9: 524288 op, 2108366.00 ns, 4.0214 ns/op
+OverheadActual  10: 524288 op, 2202302.00 ns, 4.2006 ns/op
+OverheadActual  11: 524288 op, 2542328.00 ns, 4.8491 ns/op
+OverheadActual  12: 524288 op, 2241164.00 ns, 4.2747 ns/op
+OverheadActual  13: 524288 op, 2644429.00 ns, 5.0438 ns/op
+OverheadActual  14: 524288 op, 2515197.00 ns, 4.7974 ns/op
+OverheadActual  15: 524288 op, 2120570.00 ns, 4.0447 ns/op
+
+WorkloadWarmup   1: 524288 op, 874429270.00 ns, 1.6678 us/op
+WorkloadWarmup   2: 524288 op, 934441156.00 ns, 1.7823 us/op
+WorkloadWarmup   3: 524288 op, 937970071.00 ns, 1.7890 us/op
+WorkloadWarmup   4: 524288 op, 917991079.00 ns, 1.7509 us/op
+WorkloadWarmup   5: 524288 op, 867653548.00 ns, 1.6549 us/op
+WorkloadWarmup   6: 524288 op, 857111787.00 ns, 1.6348 us/op
+WorkloadWarmup   7: 524288 op, 905489400.00 ns, 1.7271 us/op
+WorkloadWarmup   8: 524288 op, 904745259.00 ns, 1.7257 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 524288 op, 878370214.00 ns, 1.6754 us/op
+WorkloadActual   2: 524288 op, 895251089.00 ns, 1.7076 us/op
+WorkloadActual   3: 524288 op, 891929884.00 ns, 1.7012 us/op
+WorkloadActual   4: 524288 op, 894370060.00 ns, 1.7059 us/op
+WorkloadActual   5: 524288 op, 904344108.00 ns, 1.7249 us/op
+WorkloadActual   6: 524288 op, 927587159.00 ns, 1.7692 us/op
+WorkloadActual   7: 524288 op, 896812521.00 ns, 1.7105 us/op
+WorkloadActual   8: 524288 op, 902481671.00 ns, 1.7213 us/op
+WorkloadActual   9: 524288 op, 913617944.00 ns, 1.7426 us/op
+WorkloadActual  10: 524288 op, 873495331.00 ns, 1.6661 us/op
+WorkloadActual  11: 524288 op, 866602891.00 ns, 1.6529 us/op
+WorkloadActual  12: 524288 op, 876519269.00 ns, 1.6718 us/op
+WorkloadActual  13: 524288 op, 888589801.00 ns, 1.6949 us/op
+WorkloadActual  14: 524288 op, 905711728.00 ns, 1.7275 us/op
+WorkloadActual  15: 524288 op, 903327324.00 ns, 1.7230 us/op
+
+// AfterActualRun
+WorkloadResult   1: 524288 op, 876174293.00 ns, 1.6712 us/op
+WorkloadResult   2: 524288 op, 893055168.00 ns, 1.7034 us/op
+WorkloadResult   3: 524288 op, 889733963.00 ns, 1.6970 us/op
+WorkloadResult   4: 524288 op, 892174139.00 ns, 1.7017 us/op
+WorkloadResult   5: 524288 op, 902148187.00 ns, 1.7207 us/op
+WorkloadResult   6: 524288 op, 925391238.00 ns, 1.7650 us/op
+WorkloadResult   7: 524288 op, 894616600.00 ns, 1.7063 us/op
+WorkloadResult   8: 524288 op, 900285750.00 ns, 1.7172 us/op
+WorkloadResult   9: 524288 op, 911422023.00 ns, 1.7384 us/op
+WorkloadResult  10: 524288 op, 871299410.00 ns, 1.6619 us/op
+WorkloadResult  11: 524288 op, 864406970.00 ns, 1.6487 us/op
+WorkloadResult  12: 524288 op, 874323348.00 ns, 1.6676 us/op
+WorkloadResult  13: 524288 op, 886393880.00 ns, 1.6907 us/op
+WorkloadResult  14: 524288 op, 903515807.00 ns, 1.7233 us/op
+WorkloadResult  15: 524288 op, 901131403.00 ns, 1.7188 us/op
+// GC:  186 1 0 1560281088 524288
+// Threading:  0 0 524288
+
+// AfterAll
+// Benchmark Process 2647872 has exited with code 0.
+
+Mean = 1.702 μs, StdErr = 0.008 μs (0.47%), N = 15, StdDev = 0.031 μs
+Min = 1.649 μs, Q1 = 1.681 μs, Median = 1.703 μs, Q3 = 1.720 μs, Max = 1.765 μs
+IQR = 0.039 μs, LowerFence = 1.623 μs, UpperFence = 1.778 μs
+ConfidenceInterval = [1.669 μs; 1.735 μs] (CI 99.9%), Margin = 0.033 μs (1.94% of Mean)
+Skewness = 0.07, Kurtosis = 2.26, MValue = 2
+
+// ** Remained 0 (0.0%) benchmark(s) to run. Estimated finish 2026-07-01 8:12 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts/results/CoolifyCli.Benchmarks.DeploymentBenchmarks-report.csv
+  BenchmarkDotNet.Artifacts/results/CoolifyCli.Benchmarks.DeploymentBenchmarks-report-github.md
+  BenchmarkDotNet.Artifacts/results/CoolifyCli.Benchmarks.DeploymentBenchmarks-report.html
+
+// * Detailed results *
+DeploymentBenchmarks.ComputeDiff: DefaultJob
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 1.702 μs, StdErr = 0.008 μs (0.47%), N = 15, StdDev = 0.031 μs
+Min = 1.649 μs, Q1 = 1.681 μs, Median = 1.703 μs, Q3 = 1.720 μs, Max = 1.765 μs
+IQR = 0.039 μs, LowerFence = 1.623 μs, UpperFence = 1.778 μs
+ConfidenceInterval = [1.669 μs; 1.735 μs] (CI 99.9%), Margin = 0.033 μs (1.94% of Mean)
+Skewness = 0.07, Kurtosis = 2.26, MValue = 2
+-------------------- Histogram --------------------
+[1.643 μs ; 1.690 μs) | @@@@
+[1.690 μs ; 1.769 μs) | @@@@@@@@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.15.8, Linux Ubuntu 26.04 LTS (Resolute Raccoon)
+AMD EPYC-Rome Processor 2.45GHz, 1 CPU, 16 logical and 16 physical cores
+.NET SDK 10.0.300
+  [Host]     : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+
+
+| Method      | Mean     | Error     | StdDev    | Gen0   | Gen1   | Allocated |
+|------------ |---------:|----------:|----------:|-------:|-------:|----------:|
+| ComputeDiff | 1.702 μs | 0.0330 μs | 0.0309 μs | 0.3548 | 0.0019 |   2.91 KB |
+
+// * Legends *
+  Mean      : Arithmetic mean of all measurements
+  Error     : Half of 99.9% confidence interval
+  StdDev    : Standard deviation of all measurements
+  Gen0      : GC Generation 0 collects per 1000 operations
+  Gen1      : GC Generation 1 collects per 1000 operations
+  Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  1 μs      : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:23 (23.9 sec), executed benchmarks: 1
+
+Global total time: 00:00:35 (35.9 sec), executed benchmarks: 1
+// * Artifacts cleanup *
+Artifacts cleanup is finished
