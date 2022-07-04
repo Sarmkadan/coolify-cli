@@ -8,7 +8,7 @@ using CoolifyCli.Models;
 /// Service for managing application deployments in Coolify.
 /// Orchestrates deployment lifecycle, scaling, and rollback operations.
 /// </summary>
-public class ApplicationService
+public sealed class ApplicationService
 {
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
