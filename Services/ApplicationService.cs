@@ -126,7 +126,7 @@ public sealed class ApplicationService
         {
             _logger.Error("Deployment timeout exceeded");
             deploymentContext.LogEvent("Deployment timeout exceeded", LogLevel.Fatal);
-            throw new OperationTimeoutException("Deployment operation timed out.", TimeSpan.FromSeconds(_apiClient.GetTimeoutSeconds()));
+            throw new OperationTimeoutException("Deployment operation timed out.", TimeSpan.FromSeconds(Constants.Api.DefaultTimeoutSeconds));
         }
         catch (Exception ex)
         {

@@ -1,6 +1,7 @@
 #nullable enable
 namespace CoolifyCli.Services;
 
+using CoolifyCli.Infrastructure;
 using CoolifyCli.Models;
 
 /// <summary>
