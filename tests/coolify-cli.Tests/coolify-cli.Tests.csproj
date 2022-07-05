@@ -28,6 +28,7 @@
     <Compile Include="../../Utilities/ValidationHelper.cs" />
     <Compile Include="../../Models/Enums.cs" />
     <Compile Include="../../Models/ApplicationDeployment.cs" />
+    <Compile Include="../../Models/ApiResponse.cs" />
     <Compile Include="../../Models/DatabaseConfiguration.cs" />
     <Compile Include="../../Models/ServiceHealth.cs" />
     <Compile Include="../../Models/TuiState.cs" />
@@ -37,6 +38,14 @@
     <Compile Include="../../Caching/ICacheProvider.cs" />
     <Compile Include="../../Caching/MemoryCacheProvider.cs" />
     <Compile Include="../../Infrastructure/Constants.cs" />
+    <Compile Include="../../Services/ApplicationService.cs" />
+    <Compile Include="../../Services/ILogger.cs" />
+    <Compile Include="../../Services/CoolifyApiClient.cs" />
+    <Compile Include="../../Infrastructure/CoolifyApiClientOptions.cs" />
+    <Compile Include="../../Infrastructure/CoolifyConfiguration.cs" />
+    <Compile Include="../../Infrastructure/CoolifyExceptions.cs" />
+    <Compile Include="../../Models/DeploymentContext.cs" />
+    <Compile Include="../../Models/LogEntry.cs" />
   </ItemGroup>
 
 </Project>
