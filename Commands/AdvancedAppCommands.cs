@@ -10,7 +10,7 @@ namespace CoolifyCli.Commands;
 /// Advanced application management commands for deployment configuration, environment variables,
 /// and rollback operations. Provides fine-grained control over application lifecycle.
 /// </summary>
-public class AdvancedAppCommands : CommandBase
+public sealed class AdvancedAppCommands : CommandBase
 {
     private readonly ApplicationService _appService;
     private readonly EnvironmentVariableService _envVarService;
@@ -36,37 +36,40 @@ public class AdvancedAppCommands : CommandBase
 
         restartCmd.SetAction(async (parseResult, ct) =>
         {
-            var appId = parseResult.GetValue(appIdArg);
-            var force = parseResult.GetValue(forceOption);
-            try
-            {
-                ValidatePositiveId(appId);
-                Logger.Info($"Restarting application {appId} (force={force})");
-
-                var stopResult = await _appService.StopApplicationAsync(appId);
-                if (!stopResult.Success && !force)
-                {
-                    WriteError($"Stop failed: {stopResult.Message}");
-                    return;
-                }
-
-                var startResult = await _appService.StartApplicationAsync(appId);
-                if (startResult.Success)
-                {
-                    WriteSuccess($"Application {appId} restart initiated");
-                }
-                else
-                {
-                    WriteError(startResult.Message ?? string.Empty);
-                }
-            }
-            catch (ValidationException ex)
-            {
-                WriteError(ex.Message);
-            }
+            await HandleRestartAsync(parseResult.GetValue(appIdArg), parseResult.GetValue(forceOption));
         });
 
         return restartCmd;
+    }
+
+    private async Task HandleRestartAsync(int appId, bool force)
+    {
+        try
+        {
+            ValidatePositiveId(appId);
+            Logger.Info($"Restarting application {appId} (force={force})");
+
+            var stopResult = await _appService.StopApplicationAsync(appId);
+            if (!stopResult.Success && !force)
+            {
+                WriteError($"Stop failed: {stopResult.Message}");
+                return;
+            }
+
+            var startResult = await _appService.StartApplicationAsync(appId);
+            if (startResult.Success)
+            {
+                WriteSuccess($"Application {appId} restart initiated");
+            }
+            else
+            {
+                WriteError(startResult.Message ?? string.Empty);
+            }
+        }
+        catch (ValidationException ex)
+        {
+            WriteError(ex.Message);
+        }
     }
 
     /// <summary>
@@ -86,82 +89,84 @@ public class AdvancedAppCommands : CommandBase
 
         setEnvCmd.SetAction(async (parseResult, ct) =>
         {
-            var appId = parseResult.GetValue(appIdArg);
-            var filePath = parseResult.GetValue(fileOption);
-            var vars = parseResult.GetValue(varOption);
-            try
-            {
-                ValidatePositiveId(appId);
-
-                var envVars = new List<EnvironmentVariable>();
-
-                // Load from file if provided
-                if (!string.IsNullOrWhiteSpace(filePath))
-                {
-                    if (!File.Exists(filePath))
-                    {
-                        throw new ValidationException($"Environment file not found: {filePath}");
-                    }
-
-                    var lines = File.ReadAllLines(filePath);
-                    foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#")))
-                    {
-                        if (line.Contains("="))
-                        {
-                            var parts = line.Split("=", 2);
-                            envVars.Add(new EnvironmentVariable
-                            {
-                                Key = parts[0].Trim(),
-                                Value = parts[1].Trim()
-                            });
-                        }
-                    }
-
-                    Logger.Info($"Loaded {envVars.Count} environment variables from {filePath}");
-                }
-
-                // Parse command-line variables
-                if (vars is not null && vars.Length > 0)
-                {
-                    foreach (var varPair in vars)
-                    {
-                        if (varPair.Contains("="))
-                        {
-                            var parts = varPair.Split("=", 2);
-                            envVars.Add(new EnvironmentVariable
-                            {
-                                Key = parts[0].Trim(),
-                                Value = parts[1].Trim()
-                            });
-                        }
-                    }
-                }
-
-                if (envVars.Count == 0)
-                {
-                    WriteWarning("No environment variables to set");
-                    return;
-                }
-
-                Logger.Info($"Setting {envVars.Count} environment variables for application {appId}");
-                var result = await _envVarService.BulkUpdateVariablesAsync(appId.ToString(), envVars);
-
-                if (result.Success)
-                {
-                    WriteSuccess($"Set {envVars.Count} environment variables");
-                }
-                else
-                {
-                    WriteError(result.Message ?? string.Empty);
-                }
-            }
-            catch (ValidationException ex)
-            {
-                WriteError(ex.Message);
-            }
+            await HandleSetEnvAsync(parseResult.GetValue(appIdArg), parseResult.GetValue(fileOption), parseResult.GetValue(varOption));
         });
 
         return setEnvCmd;
+    }
+
+    private async Task HandleSetEnvAsync(int appId, string? filePath, string[]? vars)
+    {
+        try
+        {
+            ValidatePositiveId(appId);
+
+            var envVars = new List<EnvironmentVariable>();
+
+            // Load from file if provided
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                if (!File.Exists(filePath))
+                {
+                    throw new ValidationException($"Environment file not found: {filePath}");
+                }
+
+                var lines = File.ReadAllLines(filePath);
+                foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#")))
+                {
+                    if (line.Contains("="))
+                    {
+                        var parts = line.Split("=", 2);
+                        envVars.Add(new EnvironmentVariable
+                        {
+                            Key = parts[0].Trim(),
+                            Value = parts[1].Trim()
+                        });
+                    }
+                }
+
+                Logger.Info($"Loaded {envVars.Count} environment variables from {filePath}");
+            }
+
+            // Parse command-line variables
+            if (vars is not null && vars.Length > 0)
+            {
+                foreach (var varPair in vars)
+                {
+                    if (varPair.Contains("="))
+                    {
+                        var parts = varPair.Split("=", 2);
+                        envVars.Add(new EnvironmentVariable
+                        {
+                            Key = parts[0].Trim(),
+                            Value = parts[1].Trim()
+                        });
+                    }
+                }
+            }
+
+            if (envVars.Count == 0)
+            {
+                WriteWarning("No environment variables to set");
+                return;
+            }
+
+            Logger.Info($"Setting {envVars.Count} environment variables for application {appId}");
+            var result = await _envVarService.BulkUpdateVariablesAsync(appId.ToString(), envVars);
+
+            if (result.Success)
+            {
+                WriteSuccess($"Set {envVars.Count} environment variables");
+            }
+            else
+            {
+                WriteError(result.Message ?? string.Empty);
+            }
+        }
+        catch (ValidationException ex)
+        {
+            WriteError(ex.Message);
+        }
     }
 
     /// <summary>
