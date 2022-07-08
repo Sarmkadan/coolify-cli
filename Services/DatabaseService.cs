@@ -13,6 +13,11 @@ public sealed class DatabaseService
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
 
+        /// <summary>
+    /// Initialises a new <see cref="DatabaseService"/> instance.
+    /// </summary>
+    /// <param name="apiClient">Authenticated HTTP client for Coolify API communication.</param>
+    /// <param name="logger">Logger for diagnostic and informational messages.</param>
     public DatabaseService(CoolifyApiClient apiClient, ILogger logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
@@ -20,9 +25,9 @@ public sealed class DatabaseService
     }
 
     /// <summary>
-    /// Retrieves all database configurations.
+    /// Retrieves all database configurations from the Coolify environment.
     /// </summary>
-    /// <returns>List of databases.</returns>
+    /// <returns>List of database configurations with API response metadata.</returns>
     public async Task<ApiResponse<List<DatabaseConfiguration>>> GetAllDatabasesAsync()
     {
         _logger.Info("Fetching all databases");
