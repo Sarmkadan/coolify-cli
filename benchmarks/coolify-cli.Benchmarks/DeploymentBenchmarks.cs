@@ -3,12 +3,25 @@ using CoolifyCli.Models;
 
 namespace CoolifyCli.Benchmarks;
 
+/// <summary>
+/// Deployment benchmark class.
+/// </summary>
 [MemoryDiagnoser]
 public class DeploymentBenchmarks
 {
+    /// <summary>
+    /// The current application deployment.
+    /// </summary>
     private ApplicationDeployment _current = null!;
+
+    /// <summary>
+    /// The proposed application deployment.
+    /// </summary>
     private ApplicationDeployment _proposed = null!;
 
+    /// <summary>
+    /// Sets up the benchmark by initializing the current and proposed deployments.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -33,6 +46,10 @@ public class DeploymentBenchmarks
         };
     }
 
+    /// <summary>
+    /// Computes the deployment difference between the current and proposed deployments.
+    /// </summary>
+    /// <returns>The deployment difference.</returns>
     [Benchmark]
     public DeploymentDiff ComputeDiff()
     {
