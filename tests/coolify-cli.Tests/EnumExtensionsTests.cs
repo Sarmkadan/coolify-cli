@@ -5,12 +5,16 @@ using CoolifyCli.Models;
 using FluentAssertions;
 using Xunit;
 
-namespace CoolifyCli.Tests;
-
+/// <summary>
+/// Tests for the EnumExtensions class.
+/// </summary>
 public class EnumExtensionsTests
 {
     // ---- GetDescription ------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that GetDescription returns the member name when no Description attribute is present.
+    /// </summary>
     [Fact]
     public void GetDescription_WithNoDescriptionAttribute_ReturnsMemberName()
     {
@@ -21,6 +25,9 @@ public class EnumExtensionsTests
 
     // ---- ToDisplayString -----------------------------------------------------
 
+    /// <summary>
+    /// Verifies that ToDisplayString returns a formatted string for a simple enum value.
+    /// </summary>
     [Fact]
     public void ToDisplayString_SimpleEnumValue_ReturnsFormattedString()
     {
@@ -33,6 +40,9 @@ public class EnumExtensionsTests
         display.Should().ContainAll("I");
     }
 
+    /// <summary>
+    /// Verifies that ToDisplayString returns non-empty strings for all deployment statuses.
+    /// </summary>
     [Fact]
     public void ToDisplayString_AllDeploymentStatuses_ReturnNonEmptyStrings()
     {
@@ -44,6 +54,9 @@ public class EnumExtensionsTests
 
     // ---- ParseEnum -----------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that ParseEnum returns the correct value when the input matches exactly.
+    /// </summary>
     [Fact]
     public void ParseEnum_WithExactMatch_ReturnsCorrectValue()
     {
@@ -52,6 +65,9 @@ public class EnumExtensionsTests
         result.Should().Be(DeploymentStatus.Deployed);
     }
 
+    /// <summary>
+    /// Verifies that ParseEnum returns the correct value when the input matches case-insensitively.
+    /// </summary>
     [Fact]
     public void ParseEnum_CaseInsensitive_ReturnsCorrectValue()
     {
@@ -60,6 +76,9 @@ public class EnumExtensionsTests
         result.Should().Be(DeploymentStatus.Failed);
     }
 
+    /// <summary>
+    /// Verifies that ParseEnum throws an ArgumentException when the input is invalid.
+    /// </summary>
     [Fact]
     public void ParseEnum_WithInvalidValue_ThrowsArgumentException()
     {
@@ -69,6 +88,9 @@ public class EnumExtensionsTests
             .WithMessage("*not a valid value*");
     }
 
+    /// <summary>
+    /// Verifies that ParseEnum throws an ArgumentException when the input is empty.
+    /// </summary>
     [Fact]
     public void ParseEnum_WithEmptyString_ThrowsArgumentException()
     {
@@ -80,6 +102,9 @@ public class EnumExtensionsTests
 
     // ---- TryParseEnum --------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that TryParseEnum returns the correct value when the input is valid.
+    /// </summary>
     [Fact]
     public void TryParseEnum_WithValidString_ReturnsValue()
     {
@@ -88,6 +113,9 @@ public class EnumExtensionsTests
         result.Should().Be(DeploymentStatus.Pending);
     }
 
+    /// <summary>
+    /// Verifies that TryParseEnum returns null when the input is invalid.
+    /// </summary>
     [Fact]
     public void TryParseEnum_WithInvalidString_ReturnsNull()
     {
@@ -96,6 +124,9 @@ public class EnumExtensionsTests
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that TryParseEnum returns null when the input is null.
+    /// </summary>
     [Fact]
     public void TryParseEnum_WithNullString_ReturnsNull()
     {
@@ -107,6 +138,9 @@ public class EnumExtensionsTests
 
     // ---- GetAllValues --------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that GetAllValues returns all defined enum members.
+    /// </summary>
     [Fact]
     public void GetAllValues_ReturnsAllDefinedEnumMembers()
     {
@@ -119,6 +153,9 @@ public class EnumExtensionsTests
 
     // ---- GetValueDescriptionMap ----------------------------------------------
 
+    /// <summary>
+    /// Verifies that GetValueDescriptionMap contains an entry for each enum member.
+    /// </summary>
     [Fact]
     public void GetValueDescriptionMap_ContainsEntryForEachEnumMember()
     {
@@ -130,6 +167,9 @@ public class EnumExtensionsTests
 
     // ---- ToCliFormat ---------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that ToCliFormat produces kebab-case for a camel-case value.
+    /// </summary>
     [Fact]
     public void ToCliFormat_CamelCaseValue_ProducesKebabCase()
     {
@@ -140,6 +180,9 @@ public class EnumExtensionsTests
         cli.Should().Be("in-progress");
     }
 
+    /// <summary>
+    /// Verifies that ToCliFormat returns a lowercased string for a single-word value.
+    /// </summary>
     [Fact]
     public void ToCliFormat_SingleWordValue_ReturnsLowercased()
     {
@@ -150,6 +193,9 @@ public class EnumExtensionsTests
 
     // ---- ToInt / ToLong ------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that ToInt returns the underlying integer value.
+    /// </summary>
     [Fact]
     public void ToInt_ReturnsUnderlyingIntegerValue()
     {
@@ -157,6 +203,9 @@ public class EnumExtensionsTests
         DeploymentStatus.InProgress.ToInt().Should().Be(1);
     }
 
+    /// <summary>
+    /// Verifies that ToLong returns the underlying long value.
+    /// </summary>
     [Fact]
     public void ToLong_ReturnsUnderlyingLongValue()
     {
@@ -165,12 +214,18 @@ public class EnumExtensionsTests
 
     // ---- EqualsIgnoreCase ----------------------------------------------------
 
+    /// <summary>
+    /// Verifies that EqualsIgnoreCase returns true when the input matches the enum member name.
+    /// </summary>
     [Fact]
     public void EqualsIgnoreCase_WithMatchingName_ReturnsTrue()
     {
         DeploymentStatus.Failed.EqualsIgnoreCase("FAILED").Should().BeTrue();
     }
 
+    /// <summary>
+    /// Verifies that EqualsIgnoreCase returns false when the input does not match the enum member name.
+    /// </summary>
     [Fact]
     public void EqualsIgnoreCase_WithDifferentName_ReturnsFalse()
     {
@@ -179,6 +234,9 @@ public class EnumExtensionsTests
 
     // ---- GetDisplayStrings ---------------------------------------------------
 
+    /// <summary>
+    /// Verifies that GetDisplayStrings returns one string per enum member.
+    /// </summary>
     [Fact]
     public void GetDisplayStrings_ReturnsOneStringPerEnumMember()
     {
