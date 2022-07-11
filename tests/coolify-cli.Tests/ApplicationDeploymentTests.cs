@@ -4,8 +4,14 @@ using CoolifyCli.Models;
 
 namespace CoolifyCli.Tests;
 
+/// <summary>
+/// Tests for the ApplicationDeployment class.
+/// </summary>
 public class ApplicationDeploymentTests
 {
+    /// <summary>
+    /// Verifies that the Validate method returns an error when the name is missing.
+    /// </summary>
     [Fact]
     public void Validate_ShouldReturnError_WhenNameIsMissing()
     {
@@ -14,6 +20,9 @@ public class ApplicationDeploymentTests
         errors.Should().Contain("Application name is required.");
     }
 
+    /// <summary>
+    /// Verifies that the Validate method returns an error when the ports are empty.
+    /// </summary>
     [Fact]
     public void Validate_ShouldReturnError_WhenPortsAreEmpty()
     {
