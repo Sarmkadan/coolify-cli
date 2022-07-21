@@ -4,8 +4,14 @@ using CoolifyCli.Models;
 
 namespace CoolifyCli.Tests;
 
+/// <summary>
+/// Tests for the EnvironmentVariable model validation logic.
+/// </summary>
 public class EnvironmentVariableTests
 {
+    /// <summary>
+    /// Validates that an invalid key format returns the expected error message.
+    /// </summary>
     [Fact]
     public void Validate_ShouldReturnError_WhenKeyIsInvalidFormat()
     {
@@ -14,6 +20,9 @@ public class EnvironmentVariableTests
         errors.Should().Contain("Environment variable key must contain only alphanumeric characters and underscores.");
     }
 
+    /// <summary>
+    /// Validates that a secret value shorter than the required length returns the expected error message.
+    /// </summary>
     [Fact]
     public void Validate_ShouldReturnError_WhenSecretValueIsTooShort()
     {
