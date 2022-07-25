@@ -1,6 +1,7 @@
 #nullable enable
 using CoolifyCli.Models;
 using FluentAssertions;
+using System.Collections.Generic;
 using Xunit;
 
 namespace CoolifyCli.Tests;
@@ -16,11 +17,14 @@ public class DeploymentDiffTests
         EnvironmentId = "env-prod",
         BuildCommand  = "dotnet publish",
         StartCommand  = "dotnet run",
-        Ports         = ["8080"],
+        Ports         = new List<string> { "8080" },
         HealthCheckIntervalSeconds = 30,
         EnvironmentVariables = new Dictionary<string, string> { ["LOG_LEVEL"] = "info" }
     };
 
+    /// <summary>
+    /// Verifies that when both configurations are identical, the deployment diff reports no changes.
+    /// </summary>
     [Fact]
     public void Compute_WhenBothConfigurationsIdentical_ReportsNoChanges()
     {
@@ -33,6 +37,9 @@ public class DeploymentDiffTests
         diff.Changes.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Verifies that when the branch is changed, the deployment diff detects one branch change.
+    /// </summary>
     [Fact]
     public void Compute_WhenBranchChanged_DetectsOneBranchChange()
     {
@@ -48,6 +55,9 @@ public class DeploymentDiffTests
         diff.Changes.Single(e => e.Property == "Branch").ProposedValue.Should().Be("release/v2");
     }
 
+    /// <summary>
+    /// Verifies that when the repository is changed, the deployment diff flags high risk.
+    /// </summary>
     [Fact]
     public void Compute_WhenRepositoryChanged_FlagsHighRisk()
     {
@@ -60,6 +70,9 @@ public class DeploymentDiffTests
         diff.IsHighRisk.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Verifies that when only the build command is changed, the deployment diff is not high risk.
+    /// </summary>
     [Fact]
     public void Compute_WhenOnlyBuildCommandChanged_IsNotHighRisk()
     {
@@ -73,6 +86,9 @@ public class DeploymentDiffTests
         diff.IsHighRisk.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies that when an environment variable is added, the deployment diff includes the environment variable change.
+    /// </summary>
     [Fact]
     public void Compute_WhenEnvVarAdded_IncludesEnvVarChange()
     {
@@ -88,6 +104,9 @@ public class DeploymentDiffTests
         diff.Changes.Single(e => e.Property == "env:NEW_VAR").ProposedValue.Should().Be("new-value");
     }
 
+    /// <summary>
+    /// Verifies that when an environment variable is removed, the deployment diff includes the deletion change.
+    /// </summary>
     [Fact]
     public void Compute_WhenEnvVarRemoved_IncludesDeletionChange()
     {
@@ -103,6 +122,9 @@ public class DeploymentDiffTests
         logChange.ProposedValue.Should().Be("(not set)");
     }
 
+    /// <summary>
+    /// Verifies that the deployment diff sets the application ID and name.
+    /// </summary>
     [Fact]
     public void Compute_SetsApplicationIdAndName()
     {
@@ -116,6 +138,9 @@ public class DeploymentDiffTests
         diff.ApplicationName.Should().Be("my-service");
     }
 
+    /// <summary>
+    /// Verifies that the DeploymentDiffEntry class has a HasChange property that returns false for identical values.
+    /// </summary>
     [Fact]
     public void DeploymentDiffEntry_HasChange_ReturnsFalseForIdenticalValues()
     {
@@ -129,6 +154,9 @@ public class DeploymentDiffTests
         entry.HasChange.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies that the DeploymentDiffEntry class has a HasChange property that returns true for different values.
+    /// </summary>
     [Fact]
     public void DeploymentDiffEntry_HasChange_ReturnsTrueForDifferentValues()
     {
