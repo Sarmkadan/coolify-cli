@@ -7,6 +7,9 @@ using Xunit;
 
 namespace CoolifyCli.Tests;
 
+/// <summary>
+/// Tests for the <see cref="ApplicationDeployment"/> class.
+/// </summary>
 public class DeploymentTests
 {
     [Fact]
@@ -18,7 +21,7 @@ public class DeploymentTests
             Repository = "https://github.com/user/repo",
             EnvironmentId = "env-prod",
             BuildCommand = "npm run build",
-            Ports = ["3000"]
+            Ports = new[] { "3000" }.ToList() // Explicitly convert to List<string>
         };
 
         // Act
@@ -38,7 +41,7 @@ public class DeploymentTests
             Repository = "https://github.com/user/my-service",
             EnvironmentId = "env-production",
             BuildCommand = "dotnet publish -c Release",
-            Ports = ["8080"],
+            Ports = new[] { "8080" }.ToList(), // Explicitly convert to List<string>
             HealthCheckIntervalSeconds = 30
         };
 
