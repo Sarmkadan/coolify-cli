@@ -8,10 +8,17 @@ using CoolifyCollectionExtensions = CoolifyCli.Extensions.CollectionExtensions;
 
 namespace CoolifyCli.Tests;
 
+/// <summary>
+/// Provides unit tests for the <see cref="CoolifyCli.Extensions.CollectionExtensions"/> class.
+/// Tests various extension methods for collections including batching, filtering, and transformation operations.
+/// </summary>
 public class CollectionExtensionsTests
 {
     // ---- IsNullOrEmpty -------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}?.IsNullOrEmpty()"/> returns true when the collection is null.
+    /// </summary>
     [Fact]
     public void IsNullOrEmpty_WithNullCollection_ReturnsTrue()
     {
@@ -19,12 +26,18 @@ public class CollectionExtensionsTests
         collection.IsNullOrEmpty().Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}.IsNullOrEmpty()"/> returns true when the collection is empty.
+    /// </summary>
     [Fact]
     public void IsNullOrEmpty_WithEmptyCollection_ReturnsTrue()
     {
         new List<string>().IsNullOrEmpty().Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}.IsNullOrEmpty()"/> returns false when the collection contains elements.
+    /// </summary>
     [Fact]
     public void IsNullOrEmpty_WithNonEmptyCollection_ReturnsFalse()
     {
@@ -33,6 +46,9 @@ public class CollectionExtensionsTests
 
     // ---- Batch ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> splits a collection into equal-sized batches when the collection size is an exact multiple of the batch size.
+    /// </summary>
     [Fact]
     public void Batch_WithExactMultiple_ProducesEqualSizedBatches()
     {
@@ -44,6 +60,9 @@ public class CollectionExtensionsTests
         batches.Should().AllSatisfy(b => b.Should().HaveCount(2));
     }
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> splits a collection into batches where the last batch contains any remaining items when the collection size is not an exact multiple of the batch size.
+    /// </summary>
     [Fact]
     public void Batch_WithRemainder_LastBatchContainsLeftoverItems()
     {
@@ -55,6 +74,9 @@ public class CollectionExtensionsTests
         batches.Last().Should().HaveCount(1);
     }
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> throws an <see cref="ArgumentException"/> when the batch size is zero.
+    /// </summary>
     [Fact]
     public void Batch_WithZeroSize_ThrowsArgumentException()
     {
@@ -65,6 +87,9 @@ public class CollectionExtensionsTests
         act.Should().Throw<ArgumentException>().WithMessage("*greater than zero*");
     }
 
+    /// <summary>
+    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> returns an empty sequence when the source collection is empty.
+    /// </summary>
     [Fact]
     public void Batch_WithEmptySource_ProducesNoBatches()
     {
@@ -75,6 +100,9 @@ public class CollectionExtensionsTests
 
     // ---- DistinctBy ----------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.DistinctBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> removes duplicates based on a key selector function.
+    /// </summary>
     [Fact]
     public void DistinctBy_RemovesDuplicatesBasedOnKeySelector()
     {
@@ -89,6 +117,9 @@ public class CollectionExtensionsTests
 
     // ---- Split ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.Split{T}(IEnumerable{T},Func{T,bool})"/> partitions items into two collections based on a predicate.
+    /// </summary>
     [Fact]
     public void Split_PartitionsItemsByPredicate()
     {
@@ -102,6 +133,9 @@ public class CollectionExtensionsTests
 
     // ---- Flatten -------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.Flatten{T}(IEnumerable{IEnumerable{T}})"/> combines nested collections into a single flattened sequence.
+    /// </summary>
     [Fact]
     public void Flatten_CombinesNestedCollectionsIntoSingleSequence()
     {
@@ -119,6 +153,9 @@ public class CollectionExtensionsTests
 
     // ---- MaxBy / MinBy -------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.MaxBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> returns the item with the largest key value according to the key selector function.
+    /// </summary>
     [Fact]
     public void MaxBy_ReturnsItemWithLargestKeyValue()
     {
@@ -130,6 +167,9 @@ public class CollectionExtensionsTests
         longest.Should().Be("elephant");
     }
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.MinBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> returns the item with the smallest key value according to the key selector function.
+    /// </summary>
     [Fact]
     public void MinBy_ReturnsItemWithSmallestKeyValue()
     {
@@ -141,6 +181,9 @@ public class CollectionExtensionsTests
         shortest.Should().Be("cat");
     }
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.MaxBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> returns null when the source collection is empty.
+    /// </summary>
     [Fact]
     public void MaxBy_WithEmptyCollection_ReturnsDefault()
     {
@@ -151,6 +194,9 @@ public class CollectionExtensionsTests
 
     // ---- WhereNotNull --------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.WhereNotNull{T}(IEnumerable{T?})"/> filters out null references from the collection.
+    /// </summary>
     [Fact]
     public void WhereNotNull_FiltersOutNullReferences()
     {
@@ -163,6 +209,9 @@ public class CollectionExtensionsTests
 
     // ---- Merge ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.Merge{TKey,TValue}(IDictionary{TKey,TValue},IDictionary{TKey,TValue})"/> merges two dictionaries, with values from the second dictionary overwriting values from the first dictionary for keys that exist in both.
+    /// </summary>
     [Fact]
     public void Merge_SecondDictionaryValuesOverwriteFirst()
     {
@@ -176,6 +225,9 @@ public class CollectionExtensionsTests
         merged["c"].Should().Be(3);
     }
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.Merge{TKey,TValue}(IDictionary{TKey,TValue},IDictionary{TKey,TValue})"/> does not modify the original dictionaries when merging.
+    /// </summary>
     [Fact]
     public void Merge_DoesNotModifyOriginalDictionaries()
     {
@@ -189,6 +241,9 @@ public class CollectionExtensionsTests
 
     // ---- ToQueryString -------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.ToQueryString(IDictionary{string,string})"/> with multiple entries produces an ampersand-separated query string with key-value pairs.
+    /// </summary>
     [Fact]
     public void ToQueryString_WithMultipleEntries_ProducesAmpersandSeparatedPairs()
     {
@@ -205,6 +260,9 @@ public class CollectionExtensionsTests
         qs.Should().Contain("&");
     }
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.ToQueryString(IDictionary{string,string})"/> with an empty dictionary returns an empty string.
+    /// </summary>
     [Fact]
     public void ToQueryString_WithEmptyDictionary_ReturnsEmptyString()
     {
@@ -215,6 +273,9 @@ public class CollectionExtensionsTests
 
     // ---- GroupConsecutive ----------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="CollectionExtensions.GroupConsecutive{T}(IEnumerable{T},Func{T,T,bool})"/> groups adjacent items that satisfy a consecutive condition into separate collections.
+    /// </summary>
     [Fact]
     public void GroupConsecutive_GroupsAdjacentItemsMeetingCondition()
     {
