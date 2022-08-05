@@ -3,10 +3,14 @@ using CoolifyCli.Models;
 using FluentAssertions;
 using Xunit;
 
-namespace CoolifyCli.Tests;
-
+/// <summary>
+/// Tests for the TuiState class.
+/// </summary>
 public class TuiStateTests
 {
+    /// <summary>
+    /// Verifies that moving down when at the start of the list increments the selected index.
+    /// </summary>
     [Fact]
     public void MoveDown_WhenAtStart_IncrementsSelectedIndex()
     {
@@ -25,6 +29,9 @@ public class TuiStateTests
         state.SelectedIndex.Should().Be(1);
     }
 
+    /// <summary>
+    /// Verifies that moving down when at the last item does not exceed the boundary.
+    /// </summary>
     [Fact]
     public void MoveDown_WhenAtLastItem_DoesNotExceedBoundary()
     {
@@ -43,6 +50,9 @@ public class TuiStateTests
         state.SelectedIndex.Should().Be(1);
     }
 
+    /// <summary>
+    /// Verifies that moving up when at the second item decrements the selected index.
+    /// </summary>
     [Fact]
     public void MoveUp_WhenAtSecondItem_DecrementsSelectedIndex()
     {
@@ -53,6 +63,9 @@ public class TuiStateTests
         state.SelectedIndex.Should().Be(1);
     }
 
+    /// <summary>
+    /// Verifies that moving up when at the first item remains at zero.
+    /// </summary>
     [Fact]
     public void MoveUp_WhenAtFirstItem_RemainsAtZero()
     {
@@ -63,6 +76,10 @@ public class TuiStateTests
         state.SelectedIndex.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that getting the selected app with a valid index returns the correct app.
+    /// </summary>
+    /// <param name="state">The TuiState instance to test.</param>
     [Fact]
     public void GetSelectedApp_WithValidIndex_ReturnsCorrectApp()
     {
@@ -83,6 +100,9 @@ public class TuiStateTests
         selected.Name.Should().Be("beta");
     }
 
+    /// <summary>
+    /// Verifies that getting the selected app with an empty list returns null.
+    /// </summary>
     [Fact]
     public void GetSelectedApp_WithEmptyList_ReturnsNull()
     {
@@ -93,6 +113,9 @@ public class TuiStateTests
         selected.Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that resetting the selection sets the index and offset to zero.
+    /// </summary>
     [Fact]
     public void ResetSelection_SetsIndexAndOffsetToZero()
     {
@@ -104,6 +127,9 @@ public class TuiStateTests
         state.ScrollOffset.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that getting the visible apps scrolls down when the selection exceeds the window.
+    /// </summary>
     [Fact]
     public void GetVisibleApps_ScrollsDownWhenSelectionExceedsWindow()
     {
@@ -119,6 +145,9 @@ public class TuiStateTests
         visible.First().Id.Should().Be(4); // scrolled so index 7 is visible at bottom of window
     }
 
+    /// <summary>
+    /// Verifies that getting the visible apps with zero rows returns an empty list.
+    /// </summary>
     [Fact]
     public void GetVisibleApps_WithZeroRows_ReturnsEmptyList()
     {
