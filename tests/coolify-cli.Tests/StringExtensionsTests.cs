@@ -3,10 +3,14 @@ using CoolifyCli.Extensions;
 using FluentAssertions;
 using Xunit;
 
-namespace CoolifyCli.Tests;
-
+/// <summary>
+/// Tests for the StringExtensions class.
+/// </summary>
 public class StringExtensionsTests
 {
+    /// <summary>
+    /// Tests the ToPascalCase method with a hyphen-delimited input string.
+    /// </summary>
     [Fact]
     public void ToPascalCase_WithHyphenDelimitedWords_ReturnsConcatenatedPascalWords()
     {
@@ -20,6 +24,9 @@ public class StringExtensionsTests
         result.Should().Be("DeployMyApp");
     }
 
+    /// <summary>
+    /// Tests the Truncate method when the input string exceeds the specified maximum length.
+    /// </summary>
     [Fact]
     public void Truncate_WhenInputExceedsMaxLength_TruncatesAndAddsEllipsis()
     {
@@ -33,6 +40,9 @@ public class StringExtensionsTests
         result.Should().Be("Hello...");
     }
 
+    /// <summary>
+    /// Tests the Truncate method when the input string is within the specified maximum length.
+    /// </summary>
     [Fact]
     public void Truncate_WhenInputWithinMaxLength_ReturnsOriginalString()
     {
@@ -46,6 +56,9 @@ public class StringExtensionsTests
         result.Should().Be("Hi");
     }
 
+    /// <summary>
+    /// Tests the MaskSensitive method with a long API key.
+    /// </summary>
     [Fact]
     public void MaskSensitive_WithLongApiKey_ExposesOnlyEdgeCharacters()
     {
@@ -59,6 +72,9 @@ public class StringExtensionsTests
         result.Should().Be("abcd********5678");
     }
 
+    /// <summary>
+    /// Tests the SplitTrimmed method with a whitespace-padded input string.
+    /// </summary>
     [Fact]
     public void SplitTrimmed_WithWhitespacePaddedParts_ReturnsCleanSegments()
     {
