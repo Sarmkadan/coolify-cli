@@ -9,6 +9,9 @@ using CoolifyCli.Models;
 
 namespace CoolifyCli.Tests;
 
+/// <summary>
+/// Tests for the ApplicationService class.
+/// </summary>
 public class ApplicationServiceTests
 {
     private readonly Mock<ILogger> _loggerMock;
@@ -16,6 +19,9 @@ public class ApplicationServiceTests
     private readonly HttpClient _httpClient;
     private readonly ApplicationService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ApplicationServiceTests"/> class.
+    /// </summary>
     public ApplicationServiceTests()
     {
         _loggerMock = new Mock<ILogger>();
@@ -27,6 +33,9 @@ public class ApplicationServiceTests
         _service = new ApplicationService(apiClient, _loggerMock.Object);
     }
 
+    /// <summary>
+    /// Tests that GetAllApplicationsAsync returns applications when the API returns success.
+    /// </summary>
     [Fact]
     public async Task GetAllApplicationsAsync_ShouldReturnApplications_WhenApiReturnsSuccess()
     {
@@ -56,6 +65,9 @@ public class ApplicationServiceTests
         result.Data![0].Name.Should().Be("app1");
     }
 
+    /// <summary>
+    /// Tests that GetApplicationAsync returns an application when the API returns success.
+    /// </summary>
     [Fact]
     public async Task GetApplicationAsync_ShouldReturnApplication_WhenApiReturnsSuccess()
     {
