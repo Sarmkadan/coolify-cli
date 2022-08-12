@@ -5,8 +5,14 @@ using Xunit;
 
 namespace CoolifyCli.Tests;
 
+/// <summary>
+/// Tests for the <see cref="ResourceUsage"/> model.
+/// </summary>
 public class ResourceUsageTests
 {
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.MemoryPercent"/> returns 0 when <see cref="ResourceUsage.MemoryLimitMb"/> is zero.
+    /// </summary>
     [Fact]
     public void MemoryPercent_WhenLimitIsZero_ReturnsZero()
     {
@@ -15,6 +21,9 @@ public class ResourceUsageTests
         usage.MemoryPercent.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.MemoryPercent"/> returns 50.0 when the memory usage is half of the limit.
+    /// </summary>
     [Fact]
     public void MemoryPercent_WhenHalfOfLimit_ReturnsFiftyPercent()
     {
@@ -23,6 +32,9 @@ public class ResourceUsageTests
         usage.MemoryPercent.Should().Be(50.0);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.GetAlertSeverity"/> returns <c>null</c> when all metrics are within normal ranges.
+    /// </summary>
     [Fact]
     public void GetAlertSeverity_WhenAllMetricsNormal_ReturnsNull()
     {
@@ -36,6 +48,9 @@ public class ResourceUsageTests
         usage.GetAlertSeverity().Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.GetAlertSeverity"/> returns <see cref="SeverityLevel.Warning"/> when CPU usage exceeds 80%.
+    /// </summary>
     [Fact]
     public void GetAlertSeverity_WhenCpuAboveEighty_ReturnsWarning()
     {
@@ -44,6 +59,9 @@ public class ResourceUsageTests
         usage.GetAlertSeverity().Should().Be(SeverityLevel.Warning);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.GetAlertSeverity"/> returns <see cref="SeverityLevel.Critical"/> when CPU usage exceeds 95%.
+    /// </summary>
     [Fact]
     public void GetAlertSeverity_WhenCpuAboveNinetyFive_ReturnsCritical()
     {
@@ -52,6 +70,9 @@ public class ResourceUsageTests
         usage.GetAlertSeverity().Should().Be(SeverityLevel.Critical);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.GetAlertSeverity"/> returns <see cref="SeverityLevel.Warning"/> when memory usage exceeds 85% of the limit.
+    /// </summary>
     [Fact]
     public void GetAlertSeverity_WhenMemoryPercentAboveEightyFive_ReturnsWarning()
     {
@@ -65,6 +86,9 @@ public class ResourceUsageTests
         usage.GetAlertSeverity().Should().Be(SeverityLevel.Warning);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.GetAlertSeverity"/> returns <see cref="SeverityLevel.Critical"/> when memory usage exceeds 95% of the limit.
+    /// </summary>
     [Fact]
     public void GetAlertSeverity_WhenMemoryPercentAboveNinetyFive_ReturnsCritical()
     {
@@ -78,6 +102,9 @@ public class ResourceUsageTests
         usage.GetAlertSeverity().Should().Be(SeverityLevel.Critical);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ResourceUsage.ToSummaryLine"/> includes the application ID, name, and CPU percentage in its output.
+    /// </summary>
     [Fact]
     public void ToSummaryLine_IncludesApplicationIdAndName()
     {
