@@ -13,7 +13,7 @@ namespace CoolifyCli.Tests;
 /// </summary>
 public class MemoryCacheProviderTests : IDisposable
 {
-	private readonly MemoryCacheProvider _cache;
+	internal readonly MemoryCacheProvider _cache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MemoryCacheProviderTests"/> class.
