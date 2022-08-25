@@ -13,12 +13,10 @@ public static class CoolifyConfigurationExtensions
     /// </summary>
     /// <param name="configuration">The configuration instance.</param>
     /// <returns>API URL with trailing slash.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
     public static string GetApiUrlWithTrailingSlash(this CoolifyConfiguration configuration)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return configuration.ApiUrl.TrimEnd('/') + '/';
     }
@@ -28,9 +26,11 @@ public static class CoolifyConfigurationExtensions
     /// </summary>
     /// <param name="configuration">The configuration instance.</param>
     /// <returns>True if verbose logging is enabled; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
     public static bool ShouldLogVerbose(this CoolifyConfiguration configuration)
     {
-        return configuration?.VerboseLogging == true;
+        ArgumentNullException.ThrowIfNull(configuration);
+        return configuration.VerboseLogging;
     }
 
     /// <summary>
@@ -38,12 +38,10 @@ public static class CoolifyConfigurationExtensions
     /// </summary>
     /// <param name="configuration">The configuration instance.</param>
     /// <returns>Timeout in milliseconds.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
     public static int GetRequestTimeoutMilliseconds(this CoolifyConfiguration configuration)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return configuration.RequestTimeoutSeconds * 1000;
     }
@@ -53,23 +51,21 @@ public static class CoolifyConfigurationExtensions
     /// </summary>
     /// <param name="configuration">The configuration instance to copy.</param>
     /// <returns>A new instance with the same values.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
     public static CoolifyConfiguration Clone(this CoolifyConfiguration configuration)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return new CoolifyConfiguration
         {
-            ApiUrl = configuration.ApiUrl,
+            ApiUrl = configuration.ApiUrl ?? string.Empty,
             ApiKey = configuration.ApiKey,
             RequestTimeoutSeconds = configuration.RequestTimeoutSeconds,
             VerboseLogging = configuration.VerboseLogging,
-            DefaultEnvironment = configuration.DefaultEnvironment,
+            DefaultEnvironment = configuration.DefaultEnvironment ?? string.Empty,
             AutoRetry = configuration.AutoRetry,
             MaxRetries = configuration.MaxRetries,
-            TrustedHosts = new List<string>(configuration.TrustedHosts)
+            TrustedHosts = new List<string>(configuration.TrustedHosts ?? [])
         };
     }
 }
