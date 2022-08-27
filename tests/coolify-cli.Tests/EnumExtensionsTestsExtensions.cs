@@ -20,9 +20,11 @@ namespace CoolifyCli.Tests
         /// <typeparam name="TEnum">The enum type.</typeparam>
         /// <param name="value">The string value to parse.</param>
         /// <returns>The parsed enum value.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when parsing fails.</exception>
         public static TEnum ParseTestEnum<TEnum>(this string value) where TEnum : struct, Enum
         {
+            ArgumentNullException.ThrowIfNull(value);
             return value.ParseEnum<TEnum>();
         }
 
@@ -45,7 +47,7 @@ namespace CoolifyCli.Tests
         public static Dictionary<TEnum, string> GetEnumValueDisplayMap<TEnum>() where TEnum : struct, Enum
         {
             var values = EnumExtensions.GetAllValues<TEnum>();
-            var map = new Dictionary<TEnum, string>();
+            var map = new Dictionary<TEnum, string>(values.Count);
 
             foreach (var value in values)
             {
@@ -74,7 +76,7 @@ namespace CoolifyCli.Tests
         public static Dictionary<TEnum, int> GetEnumValueIntMap<TEnum>() where TEnum : struct, Enum
         {
             var values = EnumExtensions.GetAllValues<TEnum>();
-            var map = new Dictionary<TEnum, int>();
+            var map = new Dictionary<TEnum, int>(values.Count);
 
             foreach (var value in values)
             {
@@ -92,7 +94,7 @@ namespace CoolifyCli.Tests
         public static Dictionary<TEnum, long> GetEnumValueLongMap<TEnum>() where TEnum : struct, Enum
         {
             var values = EnumExtensions.GetAllValues<TEnum>();
-            var map = new Dictionary<TEnum, long>();
+            var map = new Dictionary<TEnum, long>(values.Count);
 
             foreach (var value in values)
             {
@@ -125,6 +127,8 @@ namespace CoolifyCli.Tests
         /// <returns>True if the enum values are in the expected order; otherwise false.</returns>
         public static bool AreEnumValuesInOrder<TEnum>(this IEnumerable<TEnum> expectedOrder) where TEnum : struct, Enum
         {
+            ArgumentNullException.ThrowIfNull(expectedOrder);
+
             var actualOrder = EnumExtensions.GetAllValues<TEnum>();
             var actualValues = actualOrder.Select(v => v.ToInt()).ToList();
             var expectedValues = expectedOrder.Select(v => v.ToInt()).ToList();
@@ -153,7 +157,7 @@ namespace CoolifyCli.Tests
         public static Dictionary<TEnum, string> GetEnumCliFormatMap<TEnum>() where TEnum : struct, Enum
         {
             var values = EnumExtensions.GetAllValues<TEnum>();
-            var map = new Dictionary<TEnum, string>();
+            var map = new Dictionary<TEnum, string>(values.Count);
 
             foreach (var value in values)
             {
