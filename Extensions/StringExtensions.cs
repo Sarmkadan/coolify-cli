@@ -18,16 +18,16 @@ public static class StringExtensions
     /// <param name="input">The string to convert.</param>
     /// <returns>The PascalCase formatted string, or the original string if it's null, empty, or whitespace.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
-    public static string ToPascalCase(this string input)
+    public static string ToPascalCase(this string? input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
         if (string.IsNullOrWhiteSpace(input))
             return input;
 
-        return string.Concat(input.Split(' ', '-', '_')
+        return string.Concat(input.Split([' ', '-', '_'])
             .Select(word => word.Length > 0
-                ? char.ToUpperInvariant(word[0]) + word.Substring(1).ToLowerInvariant()
+                ? char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant()
                 : string.Empty));
     }
 
@@ -37,7 +37,7 @@ public static class StringExtensions
     /// <param name="input">The string to convert.</param>
     /// <returns>The camelCase formatted string, or the original string if it's null, empty, or whitespace.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
-    public static string ToCamelCase(this string input)
+    public static string ToCamelCase(this string? input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -45,7 +45,7 @@ public static class StringExtensions
             return input;
 
         var pascalCase = input.ToPascalCase();
-        return char.ToLowerInvariant(pascalCase[0]) + pascalCase.Substring(1);
+        return char.ToLowerInvariant(pascalCase[0]) + pascalCase[1..];
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public static class StringExtensions
     /// <param name="input">The string to convert.</param>
     /// <returns>The snake_case formatted string, or the original string if it's null, empty, or whitespace.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
-    public static string ToSnakeCase(this string input)
+    public static string ToSnakeCase(this string? input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -71,7 +71,7 @@ public static class StringExtensions
     /// <param name="input">The string to convert.</param>
     /// <returns>The kebab-case formatted string, or the original string if it's null, empty, or whitespace.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
-    public static string ToKebabCase(this string input)
+    public static string ToKebabCase(this string? input)
     {
         ArgumentNullException.ThrowIfNull(input);
         return input.ToSnakeCase().Replace('_', '-');
@@ -84,11 +84,9 @@ public static class StringExtensions
     /// <param name="maxLength">The maximum length of the resulting string.</param>
     /// <param name="addEllipsis">Whether to append ellipsis when truncating.</param>
     /// <returns>The truncated string, or the original string if it's null, empty, or shorter than maxLength.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxLength"/> is negative.</exception>
-    public static string Truncate(this string input, int maxLength, bool addEllipsis = true)
+    public static string Truncate(this string? input, int maxLength, bool addEllipsis = true)
     {
-        ArgumentNullException.ThrowIfNull(input);
         ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
 
         if (string.IsNullOrEmpty(input) || input.Length <= maxLength)
@@ -104,10 +102,9 @@ public static class StringExtensions
     /// <param name="input">The string to repeat.</param>
     /// <param name="times">The number of times to repeat the string.</param>
     /// <returns>A new string containing the input repeated the specified number of times, or empty string if times is zero or negative.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
-    public static string Repeat(this string input, int times)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="times"/> is negative.</exception>
+    public static string Repeat(this string? input, int times)
     {
-        ArgumentNullException.ThrowIfNull(input);
         ArgumentOutOfRangeException.ThrowIfNegative(times);
 
         return times == 0 ? string.Empty : string.Concat(Enumerable.Repeat(input, times));
@@ -137,13 +134,15 @@ public static class StringExtensions
     /// <summary>
     /// Checks if a string is a valid URL format.
     /// </summary>
+    /// <param name="input">The URL to validate.</param>
+    /// <returns>True if the string is a valid URL format; otherwise, false.</returns>
     public static bool IsValidUrl(this string input)
     {
         if (string.IsNullOrWhiteSpace(input))
             return false;
 
         return Uri.TryCreate(input, UriKind.Absolute, out var uri) &&
-               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
     /// <summary>
@@ -165,11 +164,9 @@ public static class StringExtensions
     /// <param name="input">The string containing sensitive information to mask.</param>
     /// <param name="showChars">The number of characters to show at the beginning and end.</param>
     /// <returns>The masked string, or the original string if it's null, empty, or too short to mask.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="showChars"/> is negative.</exception>
-    public static string MaskSensitive(this string input, int showChars = 4)
+    public static string MaskSensitive(this string? input, int showChars = 4)
     {
-        ArgumentNullException.ThrowIfNull(input);
         ArgumentOutOfRangeException.ThrowIfNegative(showChars);
 
         if (string.IsNullOrEmpty(input) || input.Length <= showChars * 2)
@@ -187,7 +184,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="input">The string to URL encode.</param>
     /// <returns>The URL-encoded string, or null if the input is null.</returns>
-    public static string? ToQueryParameter(this string input)
+    public static string? ToQueryParameter(this string? input)
     {
         return input == null ? null : WebUtility.UrlEncode(input);
     }
@@ -197,7 +194,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="input">The URL-encoded string to decode.</param>
     /// <returns>The decoded string, or null if the input is null.</returns>
-    public static string? FromQueryParameter(this string input)
+    public static string? FromQueryParameter(this string? input)
     {
         return input == null ? null : WebUtility.UrlDecode(input);
     }
@@ -205,10 +202,13 @@ public static class StringExtensions
     /// <summary>
     /// Splits a string by a delimiter and returns non-empty trimmed parts.
     /// </summary>
+    /// <param name="input">The string to split.</param>
+    /// <param name="delimiters">The delimiter characters.</param>
+    /// <returns>An array of non-empty, trimmed strings.</returns>
     public static string[] SplitTrimmed(this string input, params char[] delimiters)
     {
         if (string.IsNullOrWhiteSpace(input))
-            return new string[0];
+            return [];
 
         return input
             .Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
@@ -220,9 +220,14 @@ public static class StringExtensions
     /// Converts a delimited string to a camelCase identifier.
     /// Used for converting CLI arguments to property names.
     /// </summary>
-    public static string ToIdentifier(this string input)
+    /// <param name="input">The delimited string to convert.</param>
+    /// <returns>The camelCase identifier.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
+    public static string ToIdentifier(this string? input)
     {
-        return input.ToLower()
+        ArgumentNullException.ThrowIfNull(input);
+
+        return input.ToLowerInvariant()
             .Replace(" ", "-")
             .Replace("_", "-")
             .ToCamelCase();
@@ -250,9 +255,8 @@ public static class StringExtensions
     /// <param name="width">The target width of the resulting string.</param>
     /// <param name="padChar">The character to use for padding.</param>
     /// <returns>The padded string, or the original string if it's already at or exceeds the target width.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="width"/> is negative.</exception>
-    public static string PadTo(this string input, int width, char padChar = ' ')
+    public static string PadTo(this string? input, int width, char padChar = ' ')
     {
         ArgumentNullException.ThrowIfNull(input);
         ArgumentOutOfRangeException.ThrowIfNegative(width);
