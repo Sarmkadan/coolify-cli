@@ -15,14 +15,11 @@ public static class CollectionExtensionsTestsExtensions
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="source">The source collection.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
     /// <returns>A new list containing all items from the source collection.</returns>
     public static List<T> ToMaterializedList<T>(this IEnumerable<T> source)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
+        ArgumentNullException.ThrowIfNull(source);
         return new List<T>(source);
     }
 
@@ -32,49 +29,40 @@ public static class CollectionExtensionsTestsExtensions
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="source">The source collection.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
     /// <returns>A new array containing all items from the source collection.</returns>
     public static T[] ToMaterializedArray<T>(this IEnumerable<T> source)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
+        ArgumentNullException.ThrowIfNull(source);
         return source.ToArray();
     }
 
     /// <summary>
-    /// Returns the count of items in the collection, or 0 if the collection is null or empty.
+    /// Returns the count of items in the collection, or 0 if the collection is null.
     /// Useful for defensive programming in test scenarios.
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="source">The source collection.</param>
-    /// <returns>The count of items, or 0 if null or empty.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
+    /// <returns>The count of items in the collection, or 0 if null.</returns>
     public static int SafeCount<T>(this IEnumerable<T>? source)
     {
-        return source?.Count() ?? 0;
+        ArgumentNullException.ThrowIfNull(source);
+        return source.Count();
     }
 
     /// <summary>
-    /// Returns the first element of the collection, or a default value if the collection is null, empty, or has no elements.
+    /// Returns the first element of the collection, or a default value if the collection is null or empty.
     /// Useful for testing edge cases with empty collections.
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="source">The source collection.</param>
     /// <param name="defaultValue">The default value to return if no element is found.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
     /// <returns>The first element or the default value.</returns>
     public static T FirstOrDefaultWithDefault<T>(this IEnumerable<T> source, T defaultValue)
     {
-        if (source == null)
-        {
-            return defaultValue;
-        }
-
-        foreach (var item in source)
-        {
-            return item;
-        }
-
-        return defaultValue;
+        ArgumentNullException.ThrowIfNull(source);
+        return source.FirstOrDefault(candidate => true, defaultValue);
     }
 }
