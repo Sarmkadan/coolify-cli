@@ -17,12 +17,21 @@ public static class IacServiceExtensions
     /// <param name="appService">Application lifecycle service.</param>
     /// <param name="dbService">Database management service.</param>
     /// <param name="logger">Structured diagnostic logger.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="appService"/>, <paramref name="dbService"/>, or <paramref name="logger"/> is <see langword="null"/>.
+    /// </exception>
     /// <returns>A configured <see cref="InfrastructureTemplateEngine"/> instance.</returns>
     public static IInfrastructureTemplateEngine CreateTemplateEngine(
         ApplicationService appService,
         DatabaseService dbService,
-        ILogger logger) =>
-        new InfrastructureTemplateEngine(appService, dbService, logger);
+        ILogger logger)
+    {
+        ArgumentNullException.ThrowIfNull(appService);
+        ArgumentNullException.ThrowIfNull(dbService);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        return new InfrastructureTemplateEngine(appService, dbService, logger);
+    }
 
     /// <summary>
     /// Reads the YAML file at <paramref name="filePath"/>, expands all
@@ -34,9 +43,19 @@ public static class IacServiceExtensions
     /// placeholders can appear in any position — including keys, values, and anchors.
     /// </remarks>
     /// <param name="engine">The template engine to load into.</param>
-    /// <param name="filePath">Absolute or working-directory-relative path to the <c>.yaml</c> file.</param>
-    /// <param name="resolver">Resolver used to expand <c>${VAR}</c> tokens before parsing.</param>
+    /// <param name="filePath">
+    /// Absolute or working-directory-relative path to the <c>.yaml</c> file.
+    /// </param>
+    /// <param name="resolver">
+    /// Resolver used to expand <c>${VAR}</c> tokens before parsing.
+    /// </param>
     /// <param name="cancellationToken">Token to observe for cooperative cancellation.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="engine"/> or <paramref name="resolver"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown if <paramref name="filePath"/> is <see langword="null"/>, empty, or consists only of whitespace.
+    /// </exception>
     /// <returns>
     /// A successful <see cref="ApiResponse{T}"/> containing the parsed template, or an error
     /// response when the file is missing, variables are unresolved, or the YAML is malformed.
@@ -49,19 +68,24 @@ public static class IacServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(engine);
         ArgumentNullException.ThrowIfNull(resolver);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
         var resolvedPath = Path.GetFullPath(filePath);
         if (!File.Exists(resolvedPath))
+        {
             return ApiResponse<InfrastructureTemplate>.ErrorResponse(
                 $"Template file not found: {resolvedPath}", 404);
+        }
 
         var raw = await File.ReadAllTextAsync(resolvedPath, cancellationToken);
         var (expanded, unresolved) = resolver.Expand(raw);
 
         if (unresolved.Count > 0)
+        {
             return ApiResponse<InfrastructureTemplate>.ErrorResponse(
                 $"Unresolved template variable(s): " +
                 $"{string.Join(", ", unresolved.Select(v => "${" + v + "}"))}", 400);
+        }
 
         // Write the expanded content to a temp file so the existing LoadTemplateAsync
         // pipeline (which operates on file paths) can parse it without modification.
@@ -75,7 +99,9 @@ public static class IacServiceExtensions
         finally
         {
             if (File.Exists(tempPath))
+            {
                 File.Delete(tempPath);
+            }
         }
     }
 }
