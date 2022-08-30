@@ -10,7 +10,7 @@ namespace CoolifyCli.Models
     public static class LogEntryJsonExtensions
     {
         // Cached options: camelCase naming policy, ignore null values.
-        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _options = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -22,9 +22,10 @@ namespace CoolifyCli.Models
         /// <param name="value">The log entry to serialize.</param>
         /// <param name="indented">If true, the output JSON will be indented.</param>
         /// <returns>A JSON representation of the log entry.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
         public static string ToJson(this LogEntry value, bool indented = false)
         {
-            if (value is null) throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
 
             // Create a temporary options instance that copies the base options and sets WriteIndented.
             var options = new JsonSerializerOptions(_options)
@@ -39,7 +40,8 @@ namespace CoolifyCli.Models
         /// Deserializes a JSON string into a <see cref="LogEntry"/>.
         /// </summary>
         /// <param name="json">The JSON string representing a log entry.</param>
-        /// <returns>The deserialized <see cref="LogEntry"/> instance, or null if the JSON is empty.</returns>
+        /// <returns>The deserialized <see cref="LogEntry"/> instance, or null if the JSON is empty or whitespace.</returns>
+        /// <exception cref="JsonException">Thrown when the JSON is malformed and cannot be deserialized.</exception>
         public static LogEntry? FromJson(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
@@ -54,8 +56,11 @@ namespace CoolifyCli.Models
         /// <param name="json">The JSON string representing a log entry.</param>
         /// <param name="value">When this method returns, contains the deserialized <see cref="LogEntry"/> if the operation succeeded; otherwise, null.</param>
         /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
         public static bool TryFromJson(string json, out LogEntry? value)
         {
+            ArgumentNullException.ThrowIfNull(json);
+
             try
             {
                 value = FromJson(json);
