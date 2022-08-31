@@ -13,13 +13,11 @@ public static class DeploymentDiffEntryExtensions
     /// Critical changes include repository URL, environment ID, port changes, or sensitive environment variables.
     /// </summary>
     /// <param name="entry">The deployment diff entry to check.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
     /// <returns>True if this is a critical change; otherwise, false.</returns>
     public static bool IsCriticalChange(this DeploymentDiffEntry entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         return entry.Property switch
         {
@@ -37,13 +35,11 @@ public static class DeploymentDiffEntryExtensions
     /// </summary>
     /// <param name="entry">The deployment diff entry.</param>
     /// <param name="includeCategory">Whether to include the category in the output.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
     /// <returns>A formatted string representation of the change.</returns>
     public static string FormatChange(this DeploymentDiffEntry entry, bool includeCategory = true)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         var categoryPrefix = includeCategory && !string.IsNullOrEmpty(entry.Category) && entry.Category != "General"
             ? $"[{entry.Category}] "
@@ -58,13 +54,11 @@ public static class DeploymentDiffEntryExtensions
     /// Determines whether this entry represents a change to a sensitive value.
     /// </summary>
     /// <param name="entry">The deployment diff entry to check.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
     /// <returns>True if this entry contains sensitive data; otherwise, false.</returns>
     public static bool IsSensitiveChange(this DeploymentDiffEntry entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         return entry.Property.StartsWith("env:", StringComparison.Ordinal) &&
                (entry.Property.Contains("PASSWORD", StringComparison.OrdinalIgnoreCase) ||
@@ -77,13 +71,11 @@ public static class DeploymentDiffEntryExtensions
     /// Creates a deep copy of this deployment diff entry.
     /// </summary>
     /// <param name="entry">The deployment diff entry to copy.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
     /// <returns>A new <see cref="DeploymentDiffEntry"/> instance with the same values.</returns>
     public static DeploymentDiffEntry DeepCopy(this DeploymentDiffEntry entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         return new DeploymentDiffEntry
         {
@@ -98,13 +90,11 @@ public static class DeploymentDiffEntryExtensions
     /// Determines whether this entry represents a change in a resource-related property.
     /// </summary>
     /// <param name="entry">The deployment diff entry to check.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
     /// <returns>True if this is a resource-related change; otherwise, false.</returns>
     public static bool IsResourceChange(this DeploymentDiffEntry entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         return entry.Category.Equals("Resources", StringComparison.OrdinalIgnoreCase);
     }
