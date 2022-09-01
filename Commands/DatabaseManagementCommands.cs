@@ -114,7 +114,7 @@ public class DatabaseManagementCommands : CommandBase
                     WriteWarning("This will restore the database from backup. All current data may be lost.");
                     Console.Write("Continue? (yes/no): ");
                     var response = Console.ReadLine();
-                    if (response?.ToLower() != "yes")
+                    if (response?.ToLowerInvariant() != "yes")
                     {
                         Console.WriteLine("Restore cancelled");
                         return;

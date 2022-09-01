@@ -1,6 +1,7 @@
 #nullable enable
 namespace CoolifyCli.Utilities;
 
+using System.Globalization;
 using CoolifyCli.Models;
 
 /// <summary>
@@ -85,7 +86,7 @@ public static class CliHelpers
     public static bool PromptConfirmation(string prompt)
     {
         Console.Write($"{prompt} (y/n): ");
-        var response = Console.ReadLine()?.ToLower();
+        var response = Console.ReadLine()?.ToLowerInvariant();
         return response == "y" || response == "yes";
     }
 
@@ -148,7 +149,7 @@ public static class CliHelpers
             len = len / 1024;
         }
 
-        return $"{len:0.##} {sizes[order]}";
+        return string.Create(CultureInfo.InvariantCulture, $"{len:0.##} {sizes[order]}");
     }
 
     /// <summary>
@@ -159,10 +160,10 @@ public static class CliHelpers
     public static string FormatTimeSpan(TimeSpan timespan)
     {
         if (timespan.TotalSeconds < 60)
-            return $"{timespan.TotalSeconds:F0}s";
+            return string.Create(CultureInfo.InvariantCulture, $"{timespan.TotalSeconds:F0}s");
 
         if (timespan.TotalMinutes < 60)
-            return $"{timespan.TotalMinutes:F0}m {timespan.Seconds}s";
+            return string.Create(CultureInfo.InvariantCulture, $"{(int)timespan.TotalMinutes}m {timespan.Seconds}s");
 
         if (timespan.TotalHours < 24)
             return $"{timespan.Hours}h {timespan.Minutes}m";
@@ -206,15 +207,40 @@ public static class CliHelpers
     }
 
     /// <summary>
-    /// Returns colored text for console output.
+    /// Returns text wrapped in ANSI SGR escape sequences so it renders in the requested
+    /// color on ANSI-capable terminals. When the output stream is redirected (piped to a
+    /// file or another process), the text is returned unmodified so logs stay clean.
     /// </summary>
     /// <param name="text">Text to color.</param>
     /// <param name="color">Console color.</param>
     /// <returns>Colored text that can be printed to console.</returns>
     private static string GetColoredText(string text, ConsoleColor color)
     {
-        // Note: This returns the text as-is; actual coloring is done at output time
-        return text;
+        if (Console.IsOutputRedirected)
+            return text;
+
+        var code = color switch
+        {
+            ConsoleColor.Black => 30,
+            ConsoleColor.DarkRed => 31,
+            ConsoleColor.DarkGreen => 32,
+            ConsoleColor.DarkYellow => 33,
+            ConsoleColor.DarkBlue => 34,
+            ConsoleColor.DarkMagenta => 35,
+            ConsoleColor.DarkCyan => 36,
+            ConsoleColor.Gray => 37,
+            ConsoleColor.DarkGray => 90,
+            ConsoleColor.Red => 91,
+            ConsoleColor.Green => 92,
+            ConsoleColor.Yellow => 93,
+            ConsoleColor.Blue => 94,
+            ConsoleColor.Magenta => 95,
+            ConsoleColor.Cyan => 96,
+            ConsoleColor.White => 97,
+            _ => 39
+        };
+
+        return $"\u001b[{code}m{text}\u001b[0m";
     }
 
     /// <summary>
@@ -226,6 +252,8 @@ public static class CliHelpers
     {
         if (headers is null || headers.Length == 0)
             return;
+
+        rows ??= [];
 
         // Calculate column widths
         int[] columnWidths = new int[headers.Length];
@@ -270,14 +298,20 @@ public static class CliHelpers
     /// <summary>
     /// Creates a progress bar display.
     /// </summary>
-    /// <param name="percentage">Progress percentage (0-100).</param>
+    /// <param name="percentage">Progress percentage; values outside 0-100 are clamped.</param>
     /// <param name="width">Width of the progress bar.</param>
     /// <returns>Progress bar string.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="width"/> is zero or negative.</exception>
     public static string GetProgressBar(int percentage, int width = 20)
     {
-        var filled = (int)((percentage / 100.0) * width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+
+        var clamped = Math.Clamp(percentage, 0, 100);
+        var filled = (int)((clamped / 100.0) * width);
         var empty = width - filled;
 
-        return $"[{new string('█', filled)}{new string('░', empty)}] {percentage}%";
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"[{new string('█', filled)}{new string('░', empty)}] {clamped}%");
     }
 }
