@@ -22,12 +22,16 @@ public static class InfrastructureTemplateEngineExtensions
     /// A tuple containing the validation result and the original template.
     /// If validation fails, the template is still returned for inspection.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="template"/> is <see langword="null"/>.</exception>
     public static async Task<(ApiResponse<TemplateValidationResult> validation, InfrastructureTemplate template)>
-        ValidateWithTemplateAsync(
-            this InfrastructureTemplateEngine engine,
-            InfrastructureTemplate template,
-            CancellationToken cancellationToken = default)
+    ValidateWithTemplateAsync(
+        this InfrastructureTemplateEngine engine,
+        InfrastructureTemplate template,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         var validation = await engine.ValidateTemplateAsync(template, cancellationToken);
         return (validation, template);
     }
@@ -43,12 +47,16 @@ public static class InfrastructureTemplateEngineExtensions
     /// A tuple containing the diff result and the original template.
     /// If diff computation fails, the template is still returned for inspection.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="template"/> is <see langword="null"/>.</exception>
     public static async Task<(ApiResponse<TemplateDiffResult> diff, InfrastructureTemplate template)>
-        ComputeDiffWithTemplateAsync(
-            this InfrastructureTemplateEngine engine,
-            InfrastructureTemplate template,
-            CancellationToken cancellationToken = default)
+    ComputeDiffWithTemplateAsync(
+        this InfrastructureTemplateEngine engine,
+        InfrastructureTemplate template,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         var diff = await engine.ComputeDiffAsync(template, cancellationToken);
         return (diff, template);
     }
@@ -65,13 +73,17 @@ public static class InfrastructureTemplateEngineExtensions
     /// A tuple containing the apply result and the original template.
     /// If apply fails, the template is still returned for inspection.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="template"/> is <see langword="null"/>.</exception>
     public static async Task<(ApiResponse<TemplateApplyResult> apply, InfrastructureTemplate template)>
-        ApplyWithTemplateAsync(
-            this InfrastructureTemplateEngine engine,
-            InfrastructureTemplate template,
-            IacTemplateOptions? options = null,
-            CancellationToken cancellationToken = default)
+    ApplyWithTemplateAsync(
+        this InfrastructureTemplateEngine engine,
+        InfrastructureTemplate template,
+        IacTemplateOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         var apply = await engine.ApplyTemplateAsync(template, options, cancellationToken);
         return (apply, template);
     }
@@ -88,6 +100,7 @@ public static class InfrastructureTemplateEngineExtensions
     /// A tuple containing validation result, diff result, apply result, and the original template.
     /// If any operation fails, subsequent operations are skipped but the template is still returned.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="template"/> is <see langword="null"/>.</exception>
     public static async Task<
         (
             ApiResponse<TemplateValidationResult> validation,
@@ -101,24 +114,31 @@ public static class InfrastructureTemplateEngineExtensions
         IacTemplateOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         // Validate
         var validation = await engine.ValidateTemplateAsync(template, cancellationToken);
         if (!validation.Success)
         {
-            return (validation,
-                   ApiResponse<TemplateDiffResult>.ErrorResponse("Skipped due to validation failure", 422),
-                   ApiResponse<TemplateApplyResult>.ErrorResponse("Skipped due to validation failure", 422),
-                   template);
+            return (
+                validation,
+                ApiResponse<TemplateDiffResult>.ErrorResponse("Skipped due to validation failure", 422),
+                ApiResponse<TemplateApplyResult>.ErrorResponse("Skipped due to validation failure", 422),
+                template
+            );
         }
 
         // Compute diff
         var diffResult = await engine.ComputeDiffAsync(template, cancellationToken);
         if (!diffResult.Success)
         {
-            return (validation,
-                   diffResult,
-                   ApiResponse<TemplateApplyResult>.ErrorResponse("Skipped due to diff computation failure", 500),
-                   template);
+            return (
+                validation,
+                diffResult,
+                ApiResponse<TemplateApplyResult>.ErrorResponse("Skipped due to diff computation failure", 500),
+                template
+            );
         }
 
         // Apply
@@ -136,11 +156,14 @@ public static class InfrastructureTemplateEngineExtensions
     /// <returns>
     /// A tuple containing the export result and the YAML string representation.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
     public static async Task<(ApiResponse<InfrastructureTemplate> export, string yaml)>
-        ExportToYamlAsync(
-            this InfrastructureTemplateEngine engine,
-            CancellationToken cancellationToken = default)
+    ExportToYamlAsync(
+        this InfrastructureTemplateEngine engine,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+
         var export = await engine.ExportCurrentStateAsync(cancellationToken);
         if (!export.Success)
         {
@@ -160,11 +183,15 @@ public static class InfrastructureTemplateEngineExtensions
     /// <returns>
     /// True if the template has changes compared to live environment; otherwise false.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="template"/> is <see langword="null"/>.</exception>
     public static async Task<bool> HasChangesAsync(
         this InfrastructureTemplateEngine engine,
         InfrastructureTemplate template,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         var diffResult = await engine.ComputeDiffAsync(template, cancellationToken);
         return diffResult.Success && diffResult.Data?.HasChanges == true;
     }
@@ -175,11 +202,13 @@ public static class InfrastructureTemplateEngineExtensions
     /// </summary>
     /// <param name="engine">The template engine instance.</param>
     /// <param name="template">The template to summarize.</param>
-    /// <returns>
-    /// A formatted string containing the resource summary.
-    /// </returns>
+    /// <returns>A formatted string containing the resource summary.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="template"/> is <see langword="null"/>.</exception>
     public static string GetResourceSummary(this InfrastructureTemplateEngine engine, InfrastructureTemplate template)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         var appCount = template.Applications.Count;
         var dbCount = template.Databases.Count;
         var total = appCount + dbCount;
@@ -197,22 +226,25 @@ public static class InfrastructureTemplateEngineExtensions
     /// <param name="engine">The template engine instance.</param>
     /// <param name="template">The template to validate.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="template"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">Thrown if validation fails.</exception>
     public static async Task ValidateOrThrowAsync(
         this InfrastructureTemplateEngine engine,
         InfrastructureTemplate template,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(template);
+
         var validation = await engine.ValidateTemplateAsync(template, cancellationToken);
         if (!validation.Success)
         {
-            throw new InvalidOperationException(
-                $"Template validation failed: {validation.Message}");
+            throw new InvalidOperationException($"Template validation failed: {validation.Message}");
         }
 
-        if (validation.Data is { IsValid: false })
+        if (validation.Data is { IsValid: false } v)
         {
-            var errors = string.Join("; ", validation.Data.Errors);
+            var errors = string.Join("; ", v.Errors);
             throw new InvalidOperationException(
                 $"Template '{template.Metadata?.Name ?? "unnamed"}' has validation errors: {errors}");
         }
