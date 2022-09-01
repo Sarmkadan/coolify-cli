@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace CoolifyCli.Caching;
 
@@ -12,7 +13,6 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
 {
     private readonly ConcurrentDictionary<string, CacheEntry> _cache = new();
     private readonly Timer? _cleanupTimer;
-    private readonly object _lockObject = new();
 
     public MemoryCacheProvider(TimeSpan? cleanupInterval = null)
     {
@@ -74,7 +74,8 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
             Value = value,
             CreatedAt = DateTime.UtcNow,
             LastAccessedAt = DateTime.UtcNow,
-            ExpiresAt = expiration.HasValue ? DateTime.UtcNow.Add(expiration.Value) : null
+            ExpiresAt = expiration.HasValue ? DateTime.UtcNow.Add(expiration.Value) : null,
+            SizeBytes = EstimateSizeBytes(value)
         };
 
         _cache[key] = entry;
@@ -101,10 +102,9 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public bool Exists(string key)
     {
-        if (!_cache.ContainsKey(key))
+        if (!_cache.TryGetValue(key, out var entry))
             return false;
 
-        var entry = _cache[key];
         if (entry.IsExpired())
         {
             Remove(key);
@@ -122,15 +122,12 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
 
     /// <summary>
     /// Estimates total size in bytes of cached objects.
+    /// Sizes are captured when entries are stored: strings are measured by their UTF-16
+    /// payload, byte arrays by their length, and other values by their JSON-serialized
+    /// length. Values that cannot be serialized contribute zero, so the result is a
+    /// lower-bound approximation rather than an exact managed-heap measurement.
     /// </summary>
-    public long SizeBytes
-    {
-        get
-        {
-            return 0; // Proper calculation of managed object size is complex and not accurately done with Marshal.SizeOf.
-                     // Returning 0 for now to avoid incorrect measurements and potential exceptions.
-        }
-    }
+    public long SizeBytes => _cache.Values.Sum(e => e.SizeBytes);
 
     /// <summary>
     /// Gets or adds a value to the cache, using factory if not found.
@@ -182,6 +179,33 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
     }
 
     /// <summary>
+    /// Estimates the in-memory footprint of a cached value in bytes.
+    /// </summary>
+    private static long EstimateSizeBytes(object? value)
+    {
+        if (value is null)
+            return 0;
+
+        try
+        {
+            return value switch
+            {
+                string s => sizeof(char) * (long)s.Length,
+                byte[] b => b.LongLength,
+                _ => JsonSerializer.SerializeToUtf8Bytes(value, value.GetType()).LongLength
+            };
+        }
+        catch (NotSupportedException)
+        {
+            return 0;
+        }
+        catch (JsonException)
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>
     /// Removes all expired entries from the cache.
     /// Called periodically by cleanup timer.
     /// </summary>
@@ -215,6 +239,7 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
         public DateTime CreatedAt { get; set; }
         public DateTime LastAccessedAt { get; set; }
         public DateTime? ExpiresAt { get; set; }
+        public long SizeBytes { get; init; }
 
         /// <summary>
         /// Checks if this entry has expired.
