@@ -13,14 +13,19 @@ public static class TemplateVariableResolverExtensions
     /// expanded result. If any variables cannot be resolved, throws an exception with details
     /// of the unresolved variables.
     /// </summary>
-    /// <param name="resolver">The template variable resolver.</param>
+    /// <param name="resolver">The template variable resolver. Must not be <see langword="null"/>.</param>
     /// <param name="rawYaml">The raw YAML content containing template variables.</param>
     /// <returns>The expanded YAML content.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="resolver"/> is <see langword="null"/>.
+    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when any template variables cannot be resolved.
     /// </exception>
     public static string ExpandOrThrow(this TemplateVariableResolver resolver, string rawYaml)
     {
+        ArgumentNullException.ThrowIfNull(resolver);
+
         var (expanded, unresolved) = resolver.Expand(rawYaml);
 
         if (unresolved.Count > 0)
@@ -37,15 +42,20 @@ public static class TemplateVariableResolverExtensions
     /// Attempts to expand template variables in the provided YAML content, returning a tuple
     /// indicating whether the expansion was successful and the expanded result.
     /// </summary>
-    /// <param name="resolver">The template variable resolver.</param>
+    /// <param name="resolver">The template variable resolver. Must not be <see langword="null"/>.</param>
     /// <param name="rawYaml">The raw YAML content containing template variables.</param>
     /// <returns>
-    /// A tuple of (success: bool, expandedYaml: string).
-    /// When success is true, expandedYaml contains the fully resolved content.
-    /// When success is false, expandedYaml contains the original content with unresolved variables.
+    /// A tuple of (Success: bool, ExpandedYaml: string).
+    /// When <see cref="ValueTuple{T1,T2}.Item1"/> is <see langword="true"/>, <see cref="ValueTuple{T1,T2}.Item2"/> contains the fully resolved content.
+    /// When <see cref="ValueTuple{T1,T2}.Item1"/> is <see langword="false"/>, <see cref="ValueTuple{T1,T2}.Item2"/> contains the original content with unresolved variables.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="resolver"/> is <see langword="null"/>.
+    /// </exception>
     public static (bool Success, string ExpandedYaml) TryExpand(this TemplateVariableResolver resolver, string rawYaml)
     {
+        ArgumentNullException.ThrowIfNull(resolver);
+
         var (expanded, unresolved) = resolver.Expand(rawYaml);
 
         return (unresolved.Count == 0, expanded);
@@ -54,12 +64,17 @@ public static class TemplateVariableResolverExtensions
     /// <summary>
     /// Loads multiple .env files into the resolver, accumulating all variables.
     /// </summary>
-    /// <param name="resolver">The template variable resolver.</param>
+    /// <param name="resolver">The template variable resolver. Must not be <see langword="null"/>.</param>
     /// <param name="dotEnvPaths">Collection of paths to .env files to load.</param>
     /// <returns>The total number of variables loaded across all files.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="resolver"/> is <see langword="null"/>.
+    /// </exception>
     public static int LoadDotEnvFiles(this TemplateVariableResolver resolver, IEnumerable<string> dotEnvPaths)
     {
-        if (dotEnvPaths == null)
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        if (dotEnvPaths is null)
             return 0;
 
         int totalLoaded = 0;
@@ -78,19 +93,23 @@ public static class TemplateVariableResolverExtensions
     /// Determines whether all template variables in the provided YAML content can be resolved
     /// using the current resolver's overrides and environment variables.
     /// </summary>
-    /// <param name="resolver">The template variable resolver.</param>
+    /// <param name="resolver">The template variable resolver. Must not be <see langword="null"/>.</param>
     /// <param name="rawYaml">The raw YAML content to check.</param>
     /// <returns>
-    /// True if all template variables can be resolved; otherwise, false.
+    /// <see langword="true"/> if all template variables can be resolved; otherwise, <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="resolver"/> is <see langword="null"/>.
+    /// </exception>
     public static bool CanResolveAll(this TemplateVariableResolver resolver, string rawYaml)
     {
+        ArgumentNullException.ThrowIfNull(resolver);
+
         var placeholders = TemplateVariableResolver.CollectPlaceholders(rawYaml);
 
         if (placeholders.Count == 0)
             return true;
 
-        // Use Expand to check which variables are unresolved
         var (_, unresolved) = resolver.Expand(rawYaml);
         return unresolved.Count == 0;
     }
