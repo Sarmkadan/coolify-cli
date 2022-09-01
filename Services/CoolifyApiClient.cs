@@ -16,6 +16,11 @@ namespace CoolifyCli.Services;
 /// </summary>
 public class CoolifyApiClient
 {
+    private static readonly JsonSerializerOptions DeserializeOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly string _baseUrl;
@@ -184,9 +189,7 @@ public class CoolifyApiClient
 
             if (response.IsSuccessStatusCode)
             {
-                var data = JsonSerializer.Deserialize<T>(
-                    contentAsString,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var data = JsonSerializer.Deserialize<T>(contentAsString, DeserializeOptions);
 
                 return ApiResponse<T>.SuccessResponse(data!);
             }
@@ -216,7 +219,7 @@ public class CoolifyApiClient
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.GetTimeoutSeconds));
-            var response = await _httpClient.GetAsync("/health", cts.Token);
+            using var response = await _httpClient.GetAsync("/health", cts.Token);
             return response.IsSuccessStatusCode;
         }
         catch (TaskCanceledException)
