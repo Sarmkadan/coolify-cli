@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace CoolifyCli.Extensions;
 
@@ -16,12 +17,8 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The date and time to convert to a relative string.</param>
     /// <returns>A human-readable string representing the relative time.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the date is outside the valid range for time calculations.</exception>
     public static string ToRelativeTime(this DateTime dateTime)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(dateTime, DateTime.MinValue.AddYears(-1));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(dateTime, DateTime.MaxValue.AddYears(-1));
-
         var timeSpan = DateTime.UtcNow - dateTime.ToUniversalTime();
 
         return timeSpan.TotalSeconds switch
@@ -69,15 +66,15 @@ public static class DateTimeExtensions
     public static string ToFormattedDuration(this TimeSpan timeSpan)
     {
         if (timeSpan.TotalMilliseconds < 1000)
-            return $"{timeSpan.TotalMilliseconds:F0}ms";
+            return string.Create(CultureInfo.InvariantCulture, $"{timeSpan.TotalMilliseconds:F0}ms");
 
         if (timeSpan.TotalSeconds < 60)
-            return $"{timeSpan.TotalSeconds:F2}s";
+            return string.Create(CultureInfo.InvariantCulture, $"{timeSpan.TotalSeconds:F2}s");
 
         if (timeSpan.TotalMinutes < 60)
-            return $"{timeSpan.TotalMinutes:F2}m";
+            return string.Create(CultureInfo.InvariantCulture, $"{timeSpan.TotalMinutes:F2}m");
 
-        return $"{timeSpan.TotalHours:F2}h";
+        return string.Create(CultureInfo.InvariantCulture, $"{timeSpan.TotalHours:F2}h");
     }
 
     /// <summary>
@@ -177,14 +174,8 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The date and time to format.</param>
     /// <returns>An ISO 8601 formatted date-time string.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the date is outside the valid range for ISO 8601 formatting.</exception>
-    public static string ToIso8601String(this DateTime dateTime)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(dateTime, DateTime.MinValue.AddYears(-1));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(dateTime, DateTime.MaxValue.AddYears(-1));
-
-        return dateTime.ToUniversalTime().ToString("O");
-    }
+    public static string ToIso8601String(this DateTime dateTime) =>
+        dateTime.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Gets the number of business days between two dates.
@@ -245,16 +236,6 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The date and time to convert.</param>
     /// <returns>The Unix timestamp in seconds.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the date is outside the valid range for Unix timestamp conversion.</exception>
-    public static long ToUnixTimestamp(this DateTime dateTime)
-    {
-        var utcDateTime = dateTime.ToUniversalTime();
-        var maxDate = DateTime.UnixEpoch.AddYears(1);
-        var minDate = DateTime.UnixEpoch.AddYears(-1);
-
-        ArgumentOutOfRangeException.ThrowIfLessThan(utcDateTime, minDate);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(utcDateTime, maxDate);
-
-        return (long)(utcDateTime - DateTime.UnixEpoch).TotalSeconds;
-    }
+    public static long ToUnixTimestamp(this DateTime dateTime) =>
+        (long)(dateTime.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds;
 }

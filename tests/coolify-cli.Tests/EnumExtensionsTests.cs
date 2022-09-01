@@ -97,7 +97,7 @@ public class EnumExtensionsTests
         var act = () => "".ParseEnum<DeploymentStatus>();
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("*cannot be null or empty*");
+            .WithMessage("*cannot be an empty string*");
     }
 
     // ---- TryParseEnum --------------------------------------------------------
