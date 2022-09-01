@@ -84,7 +84,7 @@ public class CollectionExtensionsTests
 
         var act = () => items.Batch(0).ToList();
 
-        act.Should().Throw<ArgumentException>().WithMessage("*greater than zero*");
+        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*greater than '0'*");
     }
 
     /// <summary>
