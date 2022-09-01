@@ -287,12 +287,12 @@ public class MonitoringCommands : CommandBase
                                 _ => ConsoleColor.Cyan
                             };
                             Console.ForegroundColor = color;
-                            Console.WriteLine($"[{alert.Severity.ToUpper()}] {alert.Type}: {alert.Message}");
+                            Console.WriteLine($"[{alert.Severity.ToUpperInvariant()}] {alert.Type}: {alert.Message}");
                             Console.ResetColor();
                         }
                         else
                         {
-                            Console.WriteLine($"[{alert.Severity.ToUpper()}] {alert.Type}: {alert.Message}");
+                            Console.WriteLine($"[{alert.Severity.ToUpperInvariant()}] {alert.Type}: {alert.Message}");
                         }
                     }
                 }

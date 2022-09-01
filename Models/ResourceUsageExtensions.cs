@@ -1,5 +1,7 @@
 #nullable enable
 
+using System.Globalization;
+
 namespace CoolifyCli.Models;
 
 /// <summary>
@@ -66,7 +68,7 @@ public static class ResourceUsageExtensions
             : 0;
 
         var alertSeverityText = alertSeverity?.ToString() ?? "None";
-        return $$"""
+        return string.Create(CultureInfo.InvariantCulture, $$"""
 Resource Usage Diagnostic - {{usage.ApplicationName}} (ID: {{usage.ApplicationId}})
 Captured: {{usage.CapturedAt:u}}
 Alert Severity: {{alertSeverityText}}
@@ -79,17 +81,17 @@ Metrics:
   Network:
     RX: {{FormatBytes(usage.NetworkRxBytes)}}
     TX: {{FormatBytes(usage.NetworkTxBytes)}}
-""";
+""");
     }
 
     private static string FormatBytes(long bytes)
     {
         return bytes switch
         {
-            >= 1_073_741_824 => $"{(double)bytes / 1_073_741_824:F2} GB",
-            >= 1_048_576 => $"{(double)bytes / 1_048_576:F2} MB",
-            >= 1_024 => $"{(double)bytes / 1_024:F2} KB",
-            _ => $"{{bytes}} B"
+            >= 1_073_741_824 => string.Create(CultureInfo.InvariantCulture, $"{(double)bytes / 1_073_741_824:F2} GB"),
+            >= 1_048_576 => string.Create(CultureInfo.InvariantCulture, $"{(double)bytes / 1_048_576:F2} MB"),
+            >= 1_024 => string.Create(CultureInfo.InvariantCulture, $"{(double)bytes / 1_024:F2} KB"),
+            _ => string.Create(CultureInfo.InvariantCulture, $"{bytes} B")
         };
     }
 }

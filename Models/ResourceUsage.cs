@@ -1,4 +1,6 @@
 #nullable enable
+using System.Globalization;
+
 namespace CoolifyCli.Models;
 
 /// <summary>
@@ -62,14 +64,16 @@ public class ResourceUsage
     /// Returns a short human-readable summary line suitable for tabular display.
     /// </summary>
     public string ToSummaryLine() =>
-        $"{ApplicationId,-6} {ApplicationName,-28} {CpuPercent,6:F1}%  {MemoryMb,8:F0} MB  {MemoryPercent,5:F1}%  {FormatBytes(NetworkRxBytes),10}  {FormatBytes(NetworkTxBytes),10}";
+        string.Create(
+            CultureInfo.InvariantCulture,
+            $"{ApplicationId,-6} {ApplicationName,-28} {CpuPercent,6:F1}%  {MemoryMb,8:F0} MB  {MemoryPercent,5:F1}%  {FormatBytes(NetworkRxBytes),10}  {FormatBytes(NetworkTxBytes),10}");
 
     private static string FormatBytes(long bytes) =>
         bytes switch
         {
-            >= 1_073_741_824 => $"{bytes / 1_073_741_824.0:F1} GB",
-            >= 1_048_576     => $"{bytes / 1_048_576.0:F1} MB",
-            >= 1_024         => $"{bytes / 1_024.0:F1} KB",
-            _                => $"{bytes} B"
+            >= 1_073_741_824 => string.Create(CultureInfo.InvariantCulture, $"{bytes / 1_073_741_824.0:F1} GB"),
+            >= 1_048_576     => string.Create(CultureInfo.InvariantCulture, $"{bytes / 1_048_576.0:F1} MB"),
+            >= 1_024         => string.Create(CultureInfo.InvariantCulture, $"{bytes / 1_024.0:F1} KB"),
+            _                => string.Create(CultureInfo.InvariantCulture, $"{bytes} B")
         };
 }
