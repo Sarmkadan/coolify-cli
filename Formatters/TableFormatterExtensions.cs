@@ -1,5 +1,8 @@
 #nullable enable
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -8,6 +11,10 @@ namespace CoolifyCli.Formatters;
 /// <summary>
 /// Extension methods for <see cref="TableFormatter"/> providing additional formatting capabilities.
 /// </summary>
+/// <remarks>
+/// All public methods validate their inputs and throw appropriate exceptions for null or invalid arguments.
+/// Methods use pattern matching and expression-bodied members where appropriate for idiomatic C#.
+/// </remarks>
 public static class TableFormatterExtensions
 {
     /// <summary>
@@ -18,8 +25,15 @@ public static class TableFormatterExtensions
     /// <param name="items">The collection of items to format</param>
     /// <param name="columns">The property names to include as columns</param>
     /// <returns>A formatted table string</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="columns"/> is <see langword="null"/></exception>
     public static string FormatCollection<T>(this TableFormatter formatter, IEnumerable<T> items, IEnumerable<string> columns)
     {
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(columns);
+
         var itemsList = items.ToList();
         if (itemsList.Count == 0)
             return "No data to display.";
@@ -31,9 +45,7 @@ public static class TableFormatterExtensions
             return "No valid columns specified.";
 
         var headers = selectedProperties.Select(p => p.Name).ToList();
-
-        var rows = new List<List<string>>();
-        rows.Add(headers); // Header row
+        var rows = new List<List<string>> { headers };
 
         foreach (var item in itemsList)
         {
@@ -52,20 +64,24 @@ public static class TableFormatterExtensions
     /// <param name="items">The collection of items to format</param>
     /// <param name="customHeaders">Custom header names for each column</param>
     /// <returns>A formatted table string</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/></exception>
     public static string FormatCollection<T>(this TableFormatter formatter, IEnumerable<T> items, params string[] customHeaders)
     {
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(customHeaders);
+
         var itemsList = items.ToList();
         if (itemsList.Count == 0)
             return "No data to display.";
 
-        if (customHeaders == null || customHeaders.Length == 0)
+        if (customHeaders.Length == 0)
             return formatter.FormatCollection(items);
 
         var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
         var headers = customHeaders.ToList();
-
-        var rows = new List<List<string>>();
-        rows.Add(headers); // Header row
+        var rows = new List<List<string>> { headers };
 
         foreach (var item in itemsList)
         {
@@ -90,9 +106,14 @@ public static class TableFormatterExtensions
     /// <param name="data">The dictionary to format</param>
     /// <param name="formatValue">Optional custom formatting function for values</param>
     /// <returns>A formatted table string</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="data"/> is <see langword="null"/></exception>
     public static string FormatDictionary(this TableFormatter formatter, Dictionary<string, object?> data, Func<object?, string>? formatValue = null)
     {
-        if (data is null || data.Count == 0)
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(data);
+
+        if (data.Count == 0)
             return "No data to display.";
 
         var rows = new List<List<string>>
@@ -116,8 +137,15 @@ public static class TableFormatterExtensions
     /// <param name="items">The collection of items to format</param>
     /// <param name="header">The header for the single column</param>
     /// <returns>A formatted single-column table string</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="header"/> is <see langword="null"/></exception>
     public static string FormatSingleColumn<T>(this TableFormatter formatter, IEnumerable<T> items, string header)
     {
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(header);
+
         var itemsList = items.ToList();
         if (itemsList.Count == 0)
             return "No data to display.";
@@ -140,6 +168,10 @@ public static class TableFormatterExtensions
     /// </summary>
     private static string FormatTable(this TableFormatter formatter, List<string> headers, List<List<string>> rows)
     {
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(rows);
+
         // Use reflection to access the private FormatTable method
         var method = typeof(TableFormatter).GetMethod(
             "FormatTable",
@@ -193,6 +225,10 @@ public static class TableFormatterExtensions
     /// </summary>
     private static Dictionary<int, int> CalculateColumnWidths(this TableFormatter formatter, List<List<string>> rows, List<string> headers)
     {
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(rows);
+        ArgumentNullException.ThrowIfNull(headers);
+
         // Use reflection to access the private CalculateColumnWidths method
         var method = typeof(TableFormatter).GetMethod(
             "CalculateColumnWidths",
@@ -232,13 +268,17 @@ public static class TableFormatterExtensions
     /// </summary>
     private static string FormatValue(this TableFormatter formatter, object? value)
     {
+        ArgumentNullException.ThrowIfNull(formatter);
+
         if (value is null)
             return "-";
 
-        var str = value is DateTime dt
-            ? dt.ToString("yyyy-MM-dd HH:mm:ss")
-            : value.ToString() ?? string.Empty;
-
-        return str.Length > 50 ? str.Substring(0, 47) + "..." : str;
+        return value switch
+        {
+            DateTime dt => dt.ToString("yyyy-MM-dd HH:mm:ss"),
+            _ => (value.ToString() ?? string.Empty).Length > 50
+                ? value.ToString()!.Substring(0, 47) + "..."
+                : value.ToString()!
+        };
     }
 }
