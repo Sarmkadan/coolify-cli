@@ -16,10 +16,28 @@ public class CsvFormatter : IOutputFormatter
 
     public CsvFormatter(char delimiter = ',', bool includeHeader = true, List<string>? selectedFields = null)
     {
+        ArgumentOutOfRangeException.ThrowIfEqual(delimiter, '\0');
+        ArgumentOutOfRangeException.ThrowIfEqual(char.IsWhiteSpace(delimiter), true);
+
         _delimiter = delimiter;
         _includeHeader = includeHeader;
-        _selectedFields = selectedFields;
+        _selectedFields = selectedFields?.Count > 0 ? selectedFields : null;
     }
+
+    /// <summary>
+    /// Gets the delimiter character used by this formatter.
+    /// </summary>
+    public char Delimiter => _delimiter;
+
+    /// <summary>
+    /// Gets a value indicating whether to include header row in output.
+    /// </summary>
+    public bool IncludeHeader => _includeHeader;
+
+    /// <summary>
+    /// Gets the list of selected fields, or null if all fields should be included.
+    /// </summary>
+    public IReadOnlyList<string>? SelectedFields => _selectedFields;
 
     /// <summary>
     /// Formats a single object as a CSV line.
