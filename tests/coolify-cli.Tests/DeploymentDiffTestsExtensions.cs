@@ -9,9 +9,9 @@ public static class DeploymentDiffTestsExtensions
 	/// <summary>
 	/// Determines whether the <see cref="DeploymentDiffTests"/> class contains compute-related test methods.
 	/// </summary>
-	/// <param name="tests">The test instance to check.</param>
+	/// <param name="tests">The test instance to check. Must not be <see langword="null"/>.</param>
 	/// <returns><see langword="true"/> if compute tests are present; otherwise, <see langword="false"/>.</returns>
-	/// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is <see langword="null"/>.</exception>
 	public static bool HasComputeTests(this DeploymentDiffTests tests)
 	{
 		ArgumentNullException.ThrowIfNull(tests);
@@ -25,9 +25,9 @@ public static class DeploymentDiffTestsExtensions
 	/// <summary>
 	/// Determines whether the <see cref="DeploymentDiffTests"/> class contains DeploymentDiffEntry test methods.
 	/// </summary>
-	/// <param name="tests">The test instance to check.</param>
+	/// <param name="tests">The test instance to check. Must not be <see langword="null"/>.</param>
 	/// <returns><see langword="true"/> if DeploymentDiffEntry tests are present; otherwise, <see langword="false"/>.</returns>
-	/// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is <see langword="null"/>.</exception>
 	public static bool HasDeploymentDiffEntryTests(this DeploymentDiffTests tests)
 	{
 		ArgumentNullException.ThrowIfNull(tests);
@@ -42,8 +42,8 @@ public static class DeploymentDiffTestsExtensions
 	/// <summary>
 	/// Executes all compute-related test methods on the provided test instance.
 	/// </summary>
-	/// <param name="tests">The test instance to execute.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
+	/// <param name="tests">The test instance to execute. Must not be <see langword="null"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is <see langword="null"/>.</exception>
 	public static void RunAllComputeTests(this DeploymentDiffTests tests)
 	{
 		ArgumentNullException.ThrowIfNull(tests);
@@ -60,8 +60,8 @@ public static class DeploymentDiffTestsExtensions
 	/// <summary>
 	/// Executes all DeploymentDiffEntry test methods on the provided test instance.
 	/// </summary>
-	/// <param name="tests">The test instance to execute.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
+	/// <param name="tests">The test instance to execute. Must not be <see langword="null"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is <see langword="null"/>.</exception>
 	public static void RunAllDeploymentDiffEntryTests(this DeploymentDiffTests tests)
 	{
 		ArgumentNullException.ThrowIfNull(tests);
