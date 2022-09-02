@@ -1,6 +1,5 @@
 #nullable enable
-using System.Reflection;
-using System.Text;
+using System.Globalization;
 
 namespace CoolifyCli.Formatters;
 
@@ -18,19 +17,18 @@ public static class CsvFormatterExtensions
     /// <param name="items">The collection of items to format</param>
     /// <param name="fields">The fields to include in the output</param>
     /// <returns>CSV formatted string with only the specified fields</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> or <paramref name="items"/> or <paramref name="fields"/> is null</exception>
+    /// <exception cref="ArgumentException"><paramref name="fields"/> is empty</exception>
     public static string FormatCollection<T>(this CsvFormatter formatter, IEnumerable<T> items, List<string> fields)
     {
-        if (formatter is null)
-            throw new ArgumentNullException(nameof(formatter));
-
-        if (items is null)
-            throw new ArgumentNullException(nameof(items));
-
-        if (fields is null || fields.Count == 0)
-            throw new ArgumentNullException(nameof(fields));
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(fields);
+        if (fields.Count == 0)
+            throw new ArgumentException("Fields collection cannot be empty", nameof(fields));
 
         // Create a new formatter with the specified fields
-        var tempFormatter = new CsvFormatter(formatter.GetDelimiter(), formatter.GetIncludeHeader(), fields);
+        var tempFormatter = new CsvFormatter(formatter.Delimiter, formatter.IncludeHeader, new List<string>(fields));
         return tempFormatter.FormatCollection(items);
     }
 
@@ -43,16 +41,17 @@ public static class CsvFormatterExtensions
     /// <param name="items">The collection of items to format</param>
     /// <param name="delimiter">The delimiter character to use</param>
     /// <returns>CSV formatted string using the specified delimiter</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> or <paramref name="items"/> is null</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delimiter"/> is whitespace or control character</exception>
     public static string FormatCollection<T>(this CsvFormatter formatter, IEnumerable<T> items, char delimiter)
     {
-        if (formatter is null)
-            throw new ArgumentNullException(nameof(formatter));
-
-        if (items is null)
-            throw new ArgumentNullException(nameof(items));
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentOutOfRangeException.ThrowIfEqual(delimiter, '\0');
+        ArgumentOutOfRangeException.ThrowIfEqual(char.IsWhiteSpace(delimiter), true);
 
         // Create a temporary formatter with the requested delimiter
-        var tempFormatter = new CsvFormatter(delimiter, formatter.GetIncludeHeader(), formatter.GetSelectedFields());
+        var tempFormatter = new CsvFormatter(delimiter, formatter.IncludeHeader, formatter.SelectedFields != null ? new List<string>(formatter.SelectedFields) : null);
         return tempFormatter.FormatCollection(items);
     }
 
@@ -63,16 +62,14 @@ public static class CsvFormatterExtensions
     /// <param name="formatter">The CSV formatter instance</param>
     /// <param name="items">The collection of items to format</param>
     /// <returns>CSV formatted string without header row</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> or <paramref name="items"/> is null</exception>
     public static string FormatCollectionWithoutHeader<T>(this CsvFormatter formatter, IEnumerable<T> items)
     {
-        if (formatter is null)
-            throw new ArgumentNullException(nameof(formatter));
-
-        if (items is null)
-            throw new ArgumentNullException(nameof(items));
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(items);
 
         // Create a temporary formatter without header
-        var tempFormatter = new CsvFormatter(formatter.GetDelimiter(), false, formatter.GetSelectedFields());
+        var tempFormatter = new CsvFormatter(formatter.Delimiter, false, formatter.SelectedFields != null ? new List<string>(formatter.SelectedFields) : null);
         return tempFormatter.FormatCollection(items);
     }
 
@@ -84,13 +81,12 @@ public static class CsvFormatterExtensions
     /// <param name="formatter">The CSV formatter instance</param>
     /// <param name="csvContent">The CSV content to parse</param>
     /// <returns>List of strongly-typed objects</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> is null</exception>
+    /// <exception cref="ArgumentException"><paramref name="csvContent"/> is empty or whitespace</exception>
     public static List<T> ParseCsv<T>(this CsvFormatter formatter, string csvContent) where T : new()
     {
-        if (formatter is null)
-            throw new ArgumentNullException(nameof(formatter));
-
-        if (string.IsNullOrWhiteSpace(csvContent))
-            return new List<T>();
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentException.ThrowIfNullOrWhiteSpace(csvContent);
 
         var parsedData = formatter.ParseCsv(csvContent);
         var result = new List<T>();
@@ -98,7 +94,7 @@ public static class CsvFormatterExtensions
         if (parsedData.Count == 0)
             return result;
 
-        var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        var properties = typeof(T).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
             .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in parsedData)
@@ -110,13 +106,29 @@ public static class CsvFormatterExtensions
                 {
                     try
                     {
-                        var convertedValue = Convert.ChangeType(value, property.PropertyType);
+                        object? convertedValue = null;
+                        try
+                        {
+                            convertedValue = ConvertToType(value, property.PropertyType);
+                        }
+                        catch (FormatException) when (property.PropertyType == typeof(string))
+                        {
+                            // Keep as string if conversion fails
+                            convertedValue = value;
+                        }
+                        catch (OverflowException) when (property.PropertyType == typeof(string))
+                        {
+                            // Keep as string if conversion fails
+                            convertedValue = value;
+                        }
+
                         property.SetValue(instance, convertedValue);
                     }
-                    catch
+                    catch (Exception ex) when (ex is not FormatException and not OverflowException)
                     {
-                        // If conversion fails, try to parse as string
-                        property.SetValue(instance, value);
+                        // Re-throw unexpected exceptions
+                        throw new InvalidOperationException(
+                            $"Failed to set property '{property.Name}' of type {typeof(T).Name}", ex);
                     }
                 }
             }
@@ -134,46 +146,80 @@ public static class CsvFormatterExtensions
     /// <param name="data">The object to format</param>
     /// <param name="fields">The fields to include in the output</param>
     /// <returns>CSV formatted string with only the specified fields</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="formatter"/> or <paramref name="data"/> or <paramref name="fields"/> is null</exception>
+    /// <exception cref="ArgumentException"><paramref name="fields"/> is empty</exception>
     public static string Format(this CsvFormatter formatter, object data, List<string> fields)
     {
-        if (formatter is null)
-            throw new ArgumentNullException(nameof(formatter));
-
-        if (data is null)
-            throw new ArgumentNullException(nameof(data));
-
-        if (fields is null || fields.Count == 0)
-            throw new ArgumentNullException(nameof(fields));
+        ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(fields);
+        if (fields.Count == 0)
+            throw new ArgumentException("Fields collection cannot be empty", nameof(fields));
 
         // Create a new formatter with the specified fields
-        var tempFormatter = new CsvFormatter(formatter.GetDelimiter(), formatter.GetIncludeHeader(), fields);
+        var tempFormatter = new CsvFormatter(formatter.Delimiter, formatter.IncludeHeader, new List<string>(fields));
         return tempFormatter.Format(data);
     }
 
     /// <summary>
-    /// Gets the currently selected fields from the formatter.
+    /// Converts a string value to the specified target type using culture-invariant formatting.
     /// </summary>
-    private static List<string>? GetSelectedFields(this CsvFormatter formatter)
+    /// <param name="value">The string value to convert</param>
+    /// <param name="targetType">The target type to convert to</param>
+    /// <returns>The converted value</returns>
+    private static object? ConvertToType(string value, Type targetType)
     {
-        var fieldInfo = typeof(CsvFormatter).GetField("_selectedFields", BindingFlags.NonPublic | BindingFlags.Instance);
-        return fieldInfo?.GetValue(formatter) as List<string>;
-    }
+        if (string.IsNullOrEmpty(value) || value == "")
+            return null;
 
-    /// <summary>
-    /// Gets the include header setting from the formatter.
-    /// </summary>
-    private static bool GetIncludeHeader(this CsvFormatter formatter)
-    {
-        var headerInfo = typeof(CsvFormatter).GetField("_includeHeader", BindingFlags.NonPublic | BindingFlags.Instance);
-        return (bool)(headerInfo?.GetValue(formatter) ?? true);
-    }
+        if (targetType == typeof(string))
+            return value;
 
-    /// <summary>
-    /// Gets the delimiter from the formatter.
-    /// </summary>
-    private static char GetDelimiter(this CsvFormatter formatter)
-    {
-        var delimiterInfo = typeof(CsvFormatter).GetField("_delimiter", BindingFlags.NonPublic | BindingFlags.Instance);
-        return (char)(delimiterInfo?.GetValue(formatter) ?? ',');
+        if (targetType == typeof(int))
+            return int.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(long))
+            return long.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(short))
+            return short.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(byte))
+            return byte.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(uint))
+            return uint.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(ulong))
+            return ulong.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(ushort))
+            return ushort.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(float))
+            return float.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(double))
+            return double.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(decimal))
+            return decimal.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(bool))
+            return bool.Parse(value);
+
+        if (targetType == typeof(DateTime))
+            return DateTime.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(DateTimeOffset))
+            return DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
+
+        if (targetType == typeof(Guid))
+            return Guid.Parse(value);
+
+        if (targetType.IsEnum)
+            return Enum.Parse(targetType, value, ignoreCase: true);
+
+        return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 }
