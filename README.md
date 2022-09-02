@@ -72,6 +72,26 @@ docker-compose up -d
 | `COOLIFY_VERBOSE` | `false` | Enable verbose logging |
 | `COOLIFY_TIMEOUT` | `30` | Request timeout in seconds |
 
+## StringExtensionsTestsExtensions
+
+The `StringExtensionsTestsExtensions` class provides helper methods for testing string extension methods in the CLI. It includes assertions for validating common string operations like PascalCase conversion, truncation, sensitive data masking, and split/trim logic.
+
+Example usage in a test:
+```csharp
+public class StringExtensionsTests
+{
+    [Fact]
+    public void TestStringExtensions()
+    {
+        var testInstance = StringExtensionsTestsExtensions.CreateTestInstance();
+        StringExtensionsTestsExtensions.AssertToPascalCase(testInstance, "ExpectedPascalCase");
+        StringExtensionsTestsExtensions.AssertTruncate(testInstance, 10, "Truncated...");
+        StringExtensionsTestsExtensions.AssertMaskSensitive(testInstance, "****masked****");
+        StringExtensionsTestsExtensions.AssertSplitTrimmed(testInstance, new[] { "Split", "Trimmed" });
+    }
+}
+```
+
 ## License
 
 MIT - Copyright (c) 2026 Vladyslav Zaiets
