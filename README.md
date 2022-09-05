@@ -92,6 +92,57 @@ public class StringExtensionsTests
 }
 ```
 
+## EnumExtensionsTestsExtensions
+
+The `EnumExtensionsTestsExtensions` class provides extension methods for testing enum-related extension methods in the CLI. It offers utilities for parsing enums, validating display strings, checking enum value mappings, and verifying CLI format consistency.
+
+Example usage in a test:
+```csharp
+public class TestEnumExtensions
+{
+[Fact]
+public void TestEnumParsing()
+{
+// Parse enum from string
+var status = "Active".ParseTestEnum<ApplicationStatus>();
+status.Should().Be(ApplicationStatus.Active);
+
+// Try parse enum from string (returns null on failure)
+var invalidStatus = "InvalidStatus".TryParseTestEnum<ApplicationStatus>();
+invalidStatus.Should().BeNull();
+
+// Get display string map for all enum values
+var displayMap = EnumExtensionsTestsExtensions.GetEnumValueDisplayMap<ApplicationStatus>();
+displayMap.Should().ContainKey(ApplicationStatus.Active).WhoseValue.Should().NotBeEmpty();
+
+// Verify all display strings are non-empty
+var allNonEmpty = EnumExtensionsTestsExtensions.AllDisplayStringsNonEmpty<ApplicationStatus>();
+allNonEmpty.Should().BeTrue();
+
+// Get integer value map
+var intMap = EnumExtensionsTestsExtensions.GetEnumValueIntMap<ApplicationStatus>();
+intMap.Should().ContainKey(ApplicationStatus.Active).WhoseValue.Should().BeGreaterThan(0);
+
+// Get test cases for all enum values
+var testCases = EnumExtensionsTestsExtensions.GetEnumTestCases<ApplicationStatus>();
+testCases.Should().HaveCountGreaterThan(0);
+
+// Verify enum values are in expected order
+var expectedOrder = new[] { ApplicationStatus.Pending, ApplicationStatus.Active, ApplicationStatus.Stopped };
+var isInOrder = expectedOrder.AreEnumValuesInOrder();
+isInOrder.Should().BeTrue();
+
+// Get CLI format map
+var cliFormatMap = EnumExtensionsTestsExtensions.GetEnumCliFormatMap<ApplicationStatus>();
+cliFormatMap.Should().ContainKey(ApplicationStatus.Active);
+
+// Verify all CLI formats are unique
+var allUnique = EnumExtensionsTestsExtensions.AllCliFormatsUnique<ApplicationStatus>();
+allUnique.Should().BeTrue();
+}
+}
+```
+
 ## License
 
 MIT - Copyright (c) 2026 Vladyslav Zaiets
