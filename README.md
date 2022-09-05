@@ -28,6 +28,27 @@ var apiResponse = new ApiResponse<MyDto> { Errors = new[] { "Error 1", "Error 2"
 var firstError = apiResponse.GetFirstErrorOrNull();
 ```
 
+## DeploymentDiffEntryExtensions
+
+The `DeploymentDiffEntryExtensions` class offers a collection of extension methods for `DeploymentDiffEntry` objects, helping you quickly determine the significance of a deployment change. It includes helpers to check if a change is critical, sensitive, or resource‑related, to format the change description, and to create a deep copy of the entry.
+
+### Usage Example
+
+```csharp
+var diffEntry = new DeploymentDiffEntry
+{
+    // Populate properties as needed
+};
+
+bool isCritical   = diffEntry.IsCriticalChange();
+bool isSensitive  = diffEntry.IsSensitiveChange();
+bool isResource   = diffEntry.IsResourceChange();
+
+string formatted  = diffEntry.FormatChange();
+
+DeploymentDiffEntry copy = diffEntry.DeepCopy();
+```
+
 ## License
 
 MIT - Copyright (c) 2026 Vladyslav Zaiets
