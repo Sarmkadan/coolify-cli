@@ -1,5 +1,22 @@
 // ... (rest of the file content remains the same)
 
+## CoolifyApiClientOptions
+
+The `CoolifyApiClientOptions` class provides a set of configuration options for the Coolify API client. It allows you to customize the timeout settings for different HTTP methods.
+
+### Usage Example
+
+```csharp
+var options = CoolifyApiClientOptions.FromConfiguration;
+options.GetTimeoutSeconds = 30;
+options.PostTimeoutSeconds = 60;
+options.PutTimeoutSeconds = 30;
+options.DeleteTimeoutSeconds = 15;
+
+// Use the configured options to create a client
+var client = new CoolifyApiClient(options);
+```
+
 ## ApiResponseExtensions
 
 The `ApiResponseExtensions` class provides a set of extension methods for working with API responses. These methods enable you to easily map responses, combine multiple responses, and extract error information.
@@ -52,3 +69,4 @@ DeploymentDiffEntry copy = diffEntry.DeepCopy();
 ## License
 
 MIT - Copyright (c) 2026 Vladyslav Zaiets
+```
