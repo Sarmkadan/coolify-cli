@@ -1,0 +1,1 @@
+You can also use the `HasChangesAsync` method to check if a template has changes:
