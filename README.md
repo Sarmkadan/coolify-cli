@@ -18,3 +18,6 @@ The `MonitoringValidationException` class represents an exception that occurs wh
 
 ### Example usage:
 
+## InfrastructureTemplateEngineExtensions
+
+The `InfrastructureTemplateEngineExtensions` class provides extension methods for working with infrastructure templates. It allows you to validate templates, check for changes, and get resource summaries. For example, you can use the `ValidateOrThrowAsync` method to validate a template and throw an exception if it is invalid:
