@@ -21,3 +21,9 @@ The `MonitoringValidationException` class represents an exception that occurs wh
 ## InfrastructureTemplateEngineExtensions
 
 The `InfrastructureTemplateEngineExtensions` class provides extension methods for working with infrastructure templates. It allows you to validate templates, check for changes, and get resource summaries. For example, you can use the `ValidateOrThrowAsync` method to validate a template and throw an exception if it is invalid:
+
+## CsvFormatterExtensions
+
+The `CsvFormatterExtensions` class provides methods to convert collections to and from CSV-formatted strings. It supports formatting with or without headers, and parsing CSV data into strongly-typed lists.
+
+### Example usage:
