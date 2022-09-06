@@ -12,3 +12,9 @@ The `CoolifyConfiguration` class provides configuration options for the Coolify 
 
 ### Example usage:
 
+## MonitoringValidationException
+
+The `MonitoringValidationException` class represents an exception that occurs when validation of monitoring-related resources fails. It provides a way to handle validation errors in a centralized manner.
+
+### Example usage:
+

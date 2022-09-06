@@ -1,0 +1,3 @@
+
+Note that `MonitoringCommandsExtensions.ValidateResourceId` is a static method and does not actually throw a `MonitoringValidationException`. A more realistic example would involve creating a command with standard options and then attempting to validate a resource ID:
+
