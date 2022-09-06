@@ -1,1 +1,10 @@
-// home/redrocket/task-factory/workdir/coolify-cli/README.md
+# Coolify CLI
+
+Coolify CLI is a command-line interface for working with infrastructure as code (IaC) templates.
+
+## IacTemplateOptions
+
+The `IacTemplateOptions` class provides configuration options for working with infrastructure as code (IaC) templates. It allows you to customize the behavior of the template engine, such as enabling dry run mode, auto-approving changes, and skipping validation.
+
+### Example usage:
+
