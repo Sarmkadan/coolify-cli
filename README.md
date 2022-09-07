@@ -1,88 +1,20 @@
-# Coolify CLI
+// existing content ...
 
-Coolify CLI is a command-line interface for working with infrastructure as code (IaC) templates.
+// ...
 
-## IacTemplateOptions
+## ValidationHelperTests
 
-The `IacTemplateOptions` class provides configuration options for working with infrastructure as code (IaC) templates. It allows you to customize the behavior of the template engine, such as enabling dry run mode, auto-approving changes, and skipping validation.
+The `ValidationHelperTests` class provides a set of unit tests for the `ValidationHelper` utility class. 
+These tests verify the correctness of various validation methods, such as ID, email, port, and semantic version validation.
 
-## CoolifyConfiguration
-
-The `CoolifyConfiguration` class provides configuration options for the Coolify API client. It allows you to customize the behavior of the client, such as setting the API URL, API key, and request timeout.
-
-### Example usage:
-
-## MonitoringValidationException
-
-The `MonitoringValidationException` class represents an exception that occurs when validation of monitoring-related resources fails. It provides a way to handle validation errors in a centralized manner.
-
-### Example usage:
-
-## CoolifyException
-
-The `CoolifyException` class serves as the base exception for all Coolify CLI-specific errors. It provides a structured way to handle and categorize exceptions through the `ErrorCode` property and allows attaching contextual data via the `ContextData` dictionary. This base class can be extended to create more specific exception types for different error scenarios.
-
-### Example usage:
+Here's an example of how to use some of the tested methods:
 
 ```csharp
-try
-{
-    // Some operation that might throw
-}
-catch (CoolifyException ex)
-{
-    // Add additional context data to the exception
-    ex.AddContextData("requestId", Guid.NewGuid().ToString());
-    ex.AddContextData("userId", "user-123");
-    
-    // Re-throw with additional context
-    throw;
-}
-```
-
-## TemplateBenchmarks
-
-The `TemplateBenchmarks` class provides methods for setting up and tearing down a benchmarking environment. It includes methods for logging at different levels and expanding a template.
-
-
-Example usage:
-
-```csharp
-var benchmarks = new TemplateBenchmarks();
-benchmarks.Setup();
-var (template, files) = benchmarks.ExpandTemplate("template-name", new List<string> { "file1.txt", "file2.txt" });
-benchmarks.Debug("Debug message");
-benchmarks.Info("Info message");
-benchmarks.Warn("Warning message");
-benchmarks.Error("Error message");
-benchmarks.Fatal("Fatal message");
-```
-
-## InfrastructureTemplateEngineExtensions
-
-The `InfrastructureTemplateEngineExtensions` class provides extension methods for working with infrastructure templates. It allows you to validate templates, check for changes, and get resource summaries. For example, you can use the `ValidateOrThrowAsync` method to validate a template and throw an exception if it is invalid:
-
-## CsvFormatterExtensions
-
-The `CsvFormatterExtensions` class provides methods to convert collections to and from CSV-formatted strings. It supports formatting with or without headers, and parsing CSV data into strongly-typed lists.
-
-### Example usage:
-## EnumExtensionsTests
-
-The `EnumExtensionsTests` class provides a set of tests for the `EnumExtensions` class. It tests various methods such as `GetDescription`, `ToDisplayString`, `ParseEnum`, `TryParseEnum`, `GetAllValues`, `GetValueDescriptionMap`, `ToCliFormat`, `ToInt`, `ToLong`, `EqualsIgnoreCase`, and `GetDisplayStrings`. 
-
-Here is an example of how to use some of these methods:
-```csharp
-var status = DeploymentStatus.InProgress;
-var description = status.GetDescription();
-var displayString = status.ToDisplayString();
-var parsedStatus = "Deployed".ParseEnum<DeploymentStatus>();
-var allValues = EnumExtensions.GetAllValues<DeploymentStatus>();
-var valueDescriptionMap = EnumExtensions.GetValueDescriptionMap<DatabaseType>();
-var cliFormat = status.ToCliFormat();
-var intValue = status.ToInt();
-var longValue = status.ToLong();
-var equalsIgnoreCase = status.EqualsIgnoreCase("IN_PROGRESS");
-var displayStrings = EnumExtensions.GetDisplayStrings<SeverityLevel>();
-```
+var isValidId = ValidationHelper.IsValidId(123); // true
+var isValidEmail = ValidationHelper.IsValidEmail("test@example.com"); // true
+var isValidPort = ValidationHelper.IsValidPort("8080"); // true
+var isValidSemanticVersion = ValidationHelper.IsValidSemanticVersion("1.2.3"); // true
+var isValidCommitHash = ValidationHelper.IsValidCommitHash("a3f1b8c2d4e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3"); // true
+var isValidDatabaseName = ValidationHelper.IsValidDatabaseName("my_database"); // true
+var isValidResourceName = ValidationHelper.IsValidResourceName("my-resource"); // true
 ```
