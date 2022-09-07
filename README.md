@@ -40,6 +40,24 @@ catch (CoolifyException ex)
 }
 ```
 
+## TemplateBenchmarks
+
+The `TemplateBenchmarks` class provides methods for setting up and tearing down a benchmarking environment. It includes methods for logging at different levels and expanding a template.
+
+
+Example usage:
+
+```csharp
+var benchmarks = new TemplateBenchmarks();
+benchmarks.Setup();
+var (template, files) = benchmarks.ExpandTemplate("template-name", new List<string> { "file1.txt", "file2.txt" });
+benchmarks.Debug("Debug message");
+benchmarks.Info("Info message");
+benchmarks.Warn("Warning message");
+benchmarks.Error("Error message");
+benchmarks.Fatal("Fatal message");
+```
+
 ## InfrastructureTemplateEngineExtensions
 
 The `InfrastructureTemplateEngineExtensions` class provides extension methods for working with infrastructure templates. It allows you to validate templates, check for changes, and get resource summaries. For example, you can use the `ValidateOrThrowAsync` method to validate a template and throw an exception if it is invalid:
