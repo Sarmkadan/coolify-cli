@@ -18,6 +18,28 @@ The `MonitoringValidationException` class represents an exception that occurs wh
 
 ### Example usage:
 
+## CoolifyException
+
+The `CoolifyException` class serves as the base exception for all Coolify CLI-specific errors. It provides a structured way to handle and categorize exceptions through the `ErrorCode` property and allows attaching contextual data via the `ContextData` dictionary. This base class can be extended to create more specific exception types for different error scenarios.
+
+### Example usage:
+
+```csharp
+try
+{
+    // Some operation that might throw
+}
+catch (CoolifyException ex)
+{
+    // Add additional context data to the exception
+    ex.AddContextData("requestId", Guid.NewGuid().ToString());
+    ex.AddContextData("userId", "user-123");
+    
+    // Re-throw with additional context
+    throw;
+}
+```
+
 ## InfrastructureTemplateEngineExtensions
 
 The `InfrastructureTemplateEngineExtensions` class provides extension methods for working with infrastructure templates. It allows you to validate templates, check for changes, and get resource summaries. For example, you can use the `ValidateOrThrowAsync` method to validate a template and throw an exception if it is invalid:
