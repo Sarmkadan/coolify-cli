@@ -67,3 +67,22 @@ The `InfrastructureTemplateEngineExtensions` class provides extension methods fo
 The `CsvFormatterExtensions` class provides methods to convert collections to and from CSV-formatted strings. It supports formatting with or without headers, and parsing CSV data into strongly-typed lists.
 
 ### Example usage:
+## EnumExtensionsTests
+
+The `EnumExtensionsTests` class provides a set of tests for the `EnumExtensions` class. It tests various methods such as `GetDescription`, `ToDisplayString`, `ParseEnum`, `TryParseEnum`, `GetAllValues`, `GetValueDescriptionMap`, `ToCliFormat`, `ToInt`, `ToLong`, `EqualsIgnoreCase`, and `GetDisplayStrings`. 
+
+Here is an example of how to use some of these methods:
+```csharp
+var status = DeploymentStatus.InProgress;
+var description = status.GetDescription();
+var displayString = status.ToDisplayString();
+var parsedStatus = "Deployed".ParseEnum<DeploymentStatus>();
+var allValues = EnumExtensions.GetAllValues<DeploymentStatus>();
+var valueDescriptionMap = EnumExtensions.GetValueDescriptionMap<DatabaseType>();
+var cliFormat = status.ToCliFormat();
+var intValue = status.ToInt();
+var longValue = status.ToLong();
+var equalsIgnoreCase = status.EqualsIgnoreCase("IN_PROGRESS");
+var displayStrings = EnumExtensions.GetDisplayStrings<SeverityLevel>();
+```
+```
