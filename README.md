@@ -201,3 +201,80 @@ var monthEnd = DateTime.UtcNow.EndOfMonth();
 // Calculate business days between two dates
 var businessDays = DateTime.UtcNow.StartOfWeek().BusinessDaysBetween(DateTime.UtcNow.EndOfWeek());
 ```
+
+## CollectionExtensionsTests
+
+The `CollectionExtensionsTests` class provides unit tests for collection extension methods in the `CoolifyCli.Extensions` namespace. It tests various utility methods for working with collections including batching operations, filtering, transformation, and dictionary manipulation to ensure these extension methods work correctly across different scenarios.
+
+Here's an example of how to use some of the tested methods:
+
+```csharp
+// Test if a collection is null or empty
+var emptyList = new List<string>();
+emptyList.IsNullOrEmpty().Should().BeTrue();
+
+var populatedList = new[] { "item1", "item2", "item3" };
+populatedList.IsNullOrEmpty().Should().BeFalse();
+
+// Split a collection into batches of 2 items each
+var numbers = Enumerable.Range(1, 6).ToList();
+var batches = numbers.Batch(2).ToList();
+batches.Should().HaveCount(3);
+batches[0].Should().BeEquivalentTo(new[] { 1, 2 });
+batches[1].Should().BeEquivalentTo(new[] { 3, 4 });
+batches[2].Should().BeEquivalentTo(new[] { 5, 6 });
+
+// Filter out null values from a collection
+var itemsWithNulls = new string?[] { "a", null, "b", null, "c" };
+var nonNullItems = itemsWithNulls.WhereNotNull().ToList();
+nonNullItems.Should().BeEquivalentTo(new[] { "a", "b", "c" });
+
+// Split a collection into two based on a predicate
+var (evens, odds) = Enumerable.Range(1, 6).Split(n => n % 2 == 0);
+evens.Should().BeEquivalentTo(new[] { 2, 4, 6 });
+odds.Should().BeEquivalentTo(new[] { 1, 3, 5 });
+
+// Flatten nested collections
+var nested = new List<List<int>>
+{
+    new() { 1, 2 },
+    new() { 3 },
+    new() { 4, 5, 6 }
+};
+var flattened = nested.Flatten().ToList();
+flattened.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6 });
+
+// Find items with max/min values based on a key selector
+var words = new[] { "cat", "elephant", "dog" };
+var longest = words.MaxBy(w => w.Length);
+longest.Should().Be("elephant");
+
+var shortest = words.MinBy(w => w.Length);
+shortest.Should().Be("cat");
+
+// Merge two dictionaries, with second dictionary values overwriting first
+var first = new Dictionary<string, int> { { "a", 1 }, { "b", 2 } };
+var second = new Dictionary<string, int> { { "b", 99 }, { "c", 3 } };
+var merged = first.Merge(second);
+merged["a"].Should().Be(1);
+merged["b"].Should().Be(99);
+merged["c"].Should().Be(3);
+
+// Convert a dictionary to a query string
+var queryParams = new Dictionary<string, string>
+{
+    { "env", "prod" },
+    { "region", "us-east-1" }
+};
+var queryString = queryParams.ToQueryString();
+queryString.Should().Contain("env=prod");
+queryString.Should().Contain("region=us-east-1");
+
+// Group consecutive items based on a condition
+var numbersForGrouping = new[] { 1, 2, 3, 10, 11, 20 };
+var groups = numbersForGrouping.GroupConsecutive((a, b) => b - a <= 1).ToList();
+groups.Should().HaveCount(3);
+groups[0].Should().BeEquivalentTo(new[] { 1, 2, 3 });
+groups[1].Should().BeEquivalentTo(new[] { 10, 11 });
+groups[2].Should().BeEquivalentTo(new[] { 20 });
+```
