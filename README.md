@@ -92,3 +92,70 @@ branchChange.ProposedValue.Should().Be("release/v2");
 diff.ApplicationId.Should().Be(1);
 diff.ApplicationName.Should().Be("my-service");
 ```
+
+## DeploymentTests
+
+The `DeploymentTests` class provides unit tests that verify the behavior of the `ApplicationDeployment` class, focusing on validation, deployment state management, failure tracking, and caching functionality. These tests ensure that deployment configurations are properly validated, state transitions work correctly, failure states are tracked accurately, and cached deployments are retrieved and updated as expected.
+
+Here's an example of how to use the deployment tests to verify common scenarios:
+
+```csharp
+// Create a deployment configuration
+var deployment = new ApplicationDeployment
+{
+Name = "my-service",
+Repository = "https://github.com/user/repo",
+EnvironmentId = "env-prod",
+BuildCommand = "npm run build",
+Ports = new List<string> { "3000" }
+};
+
+// Test 1: Validate that a complete deployment configuration passes validation
+var errors = deployment.Validate().ToList();
+errors.Should().BeEmpty(); // No validation errors for complete configuration
+
+// Test 2: Mark a deployment as deployed after previous failures
+// This resets the failure state and sets the deployment timestamp
+deployment.MarkAsFailed("build timeout");
+deployment.MarkAsFailed("health check failed");
+deployment.MarkAsDeployed();
+
+// Verify state was reset
+deployment.Status.Should().Be(DeploymentStatus.Deployed);
+deployment.FailureCount.Should().Be(0);
+deployment.LastErrorMessage.Should().BeNull();
+deployment.LastDeployedAt.Should().NotBeNull();
+
+// Test 3: Track failure accumulation
+// Each failure increases the failure count and updates the error message
+deployment.MarkAsFailed("timeout on step 1");
+deployment.MarkAsFailed("timeout on step 2");
+
+// Verify failure tracking
+deployment.FailureCount.Should().Be(2);
+deployment.LastErrorMessage.Should().Be("timeout on step 2");
+deployment.Status.Should().Be(DeploymentStatus.Failed);
+
+// Test 4: Check when attention is required
+// When failure count reaches a threshold, the deployment requires attention
+deployment.MarkAsFailed("error");
+deployment.RequiresAttention().Should().BeTrue();
+
+// Test 5: Verify cache provider behavior
+// When a deployment is not in cache, the factory method is called to create it
+var mockCache = new Mock<ICacheProvider>();
+mockCache
+.Setup(c => c.GetOrAdd<ApplicationDeployment>(
+"deployment:42",
+It.IsAny<Func<ApplicationDeployment>>(),
+It.IsAny<TimeSpan?>()))
+.Returns<string, Func<ApplicationDeployment>, TimeSpan?>((_, factory, __) => factory());
+
+var cachedDeployment = mockCache.Object.GetOrAdd<ApplicationDeployment>(
+"deployment:42",
+() => new ApplicationDeployment { Id = 42, Name = "cached-service" });
+
+// Verify the cached deployment
+cachedDeployment.Id.Should().Be(42);
+cachedDeployment.Name.Should().Be("cached-service");
+```
