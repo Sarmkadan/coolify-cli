@@ -202,6 +202,37 @@ var monthEnd = DateTime.UtcNow.EndOfMonth();
 var businessDays = DateTime.UtcNow.StartOfWeek().BusinessDaysBetween(DateTime.UtcNow.EndOfWeek());
 ```
 
+## StringExtensionsTests
+
+The `StringExtensionsTests` class provides unit tests for string extension methods in the `CoolifyCli.Extensions` namespace. It tests text transformation utilities including Pascal case conversion, string truncation with ellipsis, sensitive data masking, and whitespace handling to ensure these common string operations work correctly across different input scenarios.
+
+Here's an example of how to use some of the tested methods:
+
+```csharp
+// Convert a hyphen-delimited string to PascalCase
+var deploymentName = "deploy-my-service".ToPascalCase();
+deploymentName.Should().Be("DeployMyService");
+
+// Truncate a long string with ellipsis when exceeding max length
+var longText = "This is a very long deployment description that needs to be shortened";
+var truncated = longText.Truncate(20);
+truncated.Should().Be("This is a very lon...");
+
+// Truncate preserves the original when within max length
+var shortText = "Hi";
+var preserved = shortText.Truncate(10);
+preserved.Should().Be("Hi");
+
+// Mask sensitive data, showing only edge characters
+var apiKey = "sk_live_1234567890abcdef";
+var maskedKey = apiKey.MaskSensitive(showChars: 4);
+maskedKey.Should().Be("sk_l_************def");
+
+// Split and trim whitespace-padded strings
+var services = " api , web , worker ".SplitTrimmed(',');
+services.Should().Equal("api", "web", "worker");
+```
+
 ## CollectionExtensionsTests
 
 The `CollectionExtensionsTests` class provides unit tests for collection extension methods in the `CoolifyCli.Extensions` namespace. It tests various utility methods for working with collections including batching operations, filtering, transformation, and dictionary manipulation to ensure these extension methods work correctly across different scenarios.
