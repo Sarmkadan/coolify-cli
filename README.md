@@ -159,3 +159,45 @@ var cachedDeployment = mockCache.Object.GetOrAdd<ApplicationDeployment>(
 cachedDeployment.Id.Should().Be(42);
 cachedDeployment.Name.Should().Be("cached-service");
 ```
+
+## DateTimeExtensionsTests
+
+The `DateTimeExtensionsTests` class provides unit tests for the DateTime extension methods in the `CoolifyCli.Extensions` namespace. It tests relative time formatting, duration formatting, date manipulation, and business day calculations to ensure these utility methods work correctly across different time ranges and scenarios.
+
+Here's an example of how to use some of the tested methods:
+
+```csharp
+// Format a recent timestamp as relative time
+var justNow = DateTime.UtcNow.AddMilliseconds(-500).ToRelativeTime();
+justNow.Should().Be("just now");
+
+// Format a timestamp from 30 seconds ago
+var thirtySecondsAgo = DateTime.UtcNow.AddSeconds(-30).ToRelativeTime();
+thirtySecondsAgo.Should().Be("30 seconds ago");
+
+// Format a timestamp from 3 hours ago
+var threeHoursAgo = DateTime.UtcNow.AddHours(-3).ToRelativeTime();
+threeHoursAgo.Should().Be("3 hours ago");
+
+// Format a duration with hours, minutes, and seconds
+var duration = new TimeSpan(2, 30, 15).ToReadableDuration();
+duration.Should().Be("2h 30m 15s");
+
+// Get the start of the current day
+dateTime.StartOfDay().Should().Be(new DateTime(2024, 6, 15, 0, 0, 0));
+
+// Get the end of the current day
+dateTime.EndOfDay().Should().Be(new DateTime(2024, 6, 15, 23, 59, 59, 999));
+
+// Get the start of the current week (Monday)
+var monday = DateTime.UtcNow.StartOfWeek(DayOfWeek.Monday);
+
+// Get the start of the current month
+var monthStart = DateTime.UtcNow.StartOfMonth();
+
+// Get the end of the current month
+var monthEnd = DateTime.UtcNow.EndOfMonth();
+
+// Calculate business days between two dates
+var businessDays = DateTime.UtcNow.StartOfWeek().BusinessDaysBetween(DateTime.UtcNow.EndOfWeek());
+```
