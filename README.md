@@ -160,6 +160,57 @@ cachedDeployment.Id.Should().Be(42);
 cachedDeployment.Name.Should().Be("cached-service");
 ```
 
+## TuiStateTests
+
+The `TuiStateTests` class provides unit tests for the `TuiState` class, which manages the state of a terminal user interface for navigating and selecting applications. These tests verify navigation behavior (moving up and down), boundary conditions, selection retrieval, and scroll management to ensure the TUI state transitions correctly across different scenarios.
+
+Here's an example of how to use the tested methods to manage application selection in a terminal UI:
+
+```csharp
+// Create a TUI state with some applications
+var state = new TuiState
+{
+    Applications = new List<ApplicationDeployment>
+    {
+        new() { Id = 1, Name = "web-app" },
+        new() { Id = 2, Name = "api-service" },
+        new() { Id = 3, Name = "worker-process" },
+        new() { Id = 4, Name = "database" },
+        new() { Id = 5, Name = "cache-layer" }
+    },
+    SelectedIndex = 0,
+    ScrollOffset = 0
+};
+
+// Navigate down through the list
+state.MoveDown(state.Applications.Count);
+state.SelectedIndex.Should().Be(1); // Moves to second item
+
+state.MoveDown(state.Applications.Count);
+state.SelectedIndex.Should().Be(2); // Moves to third item
+
+// Navigate up
+state.MoveUp();
+state.SelectedIndex.Should().Be(1); // Moves back to second item
+
+// Get the currently selected application
+var selectedApp = state.GetSelectedApp();
+selectedApp.Should().NotBeNull();
+selectedApp!.Name.Should().Be("api-service");
+
+// Reset selection to initial state
+state.ResetSelection();
+state.SelectedIndex.Should().Be(0);
+state.ScrollOffset.Should().Be(0);
+
+// Get visible apps for rendering (with a window size of 3)
+var visibleApps = state.GetVisibleApps(3);
+visibleApps.Should().HaveCount(3);
+visibleApps[0].Name.Should().Be("web-app");
+visibleApps[1].Name.Should().Be("api-service");
+visibleApps[2].Name.Should().Be("worker-process");
+```
+
 ## DateTimeExtensionsTests
 
 The `DateTimeExtensionsTests` class provides unit tests for the DateTime extension methods in the `CoolifyCli.Extensions` namespace. It tests relative time formatting, duration formatting, date manipulation, and business day calculations to ensure these utility methods work correctly across different time ranges and scenarios.
