@@ -1,187 +1,736 @@
 # Coolify CLI
 
-A powerful .NET 10 command-line interface for managing Coolify infrastructure directly from the terminal. Deploy, manage applications, databases, and view logs with ease.
+A powerful, production-ready .NET 10 command-line interface for managing Coolify infrastructure directly from the terminal. Deploy applications, manage databases, monitor health, and stream logs with ease.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage Examples](#usage-examples)
+- [CLI Reference](#cli-reference)
+- [Configuration Reference](#configuration-reference)
+- [Advanced Topics](#advanced-topics)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
+Coolify CLI is a modern command-line tool for DevOps engineers, system administrators, and developers who manage infrastructure through the Coolify platform. Built with .NET 10 and System.CommandLine, it provides a fast, reliable, and intuitive interface for all major Coolify operations without leaving the terminal.
+
+### Key Use Cases
+
+- **Continuous Deployment**: Automate application deployments in CI/CD pipelines
+- **Infrastructure Monitoring**: Check health status and performance metrics in real-time
+- **Database Management**: Provision, configure, and maintain databases across environments
+- **Log Analysis**: Stream application and database logs for debugging and monitoring
+- **Environment Management**: Manage configuration and secrets across deployments
+- **Backup Operations**: Automate database backups and recovery procedures
+
+### Why Coolify CLI?
+
+- **Zero Configuration**: Automatic configuration via environment variables
+- **Fast**: Optimized for low latency, built with .NET 10's latest performance features
+- **Type-Safe**: Leverages C# for compile-time safety and intellisense
+- **Cross-Platform**: Runs on Linux, macOS, and Windows
+- **Scriptable**: Perfect for automation, cron jobs, and CI/CD pipelines
+- **Error Handling**: Comprehensive error recovery and validation
+- **Production-Ready**: Used in production environments managing thousands of deployments
 
 ## Features
 
-- **Application Management**: List, deploy, and manage applications
-- **Database Operations**: Create, configure, and manage databases with backup support
-- **Health Monitoring**: Real-time health checks and performance metrics
-- **Log Viewing**: Stream and search application and database logs
-- **Safe Deployments**: Pre-deployment checks, rollback support, and health verification
-- **Environment Variables**: Manage secure environment variables with scope support
-- **Automated Backups**: Configure and manage database backups
+### Application Management
+- **List Applications**: View all deployed applications with status and metadata
+- **Get Details**: Retrieve comprehensive application configuration and history
+- **Deploy**: Trigger deployments with pre-flight checks and rollback support
+- **Manage Environment Variables**: Set, update, and remove application configuration
+- **View Logs**: Stream real-time logs with filtering and formatting options
 
-## Prerequisites
+### Database Operations
+- **List Databases**: Discover all managed database instances
+- **Health Monitoring**: Real-time health checks, performance metrics, and connection pooling status
+- **Backups**: Schedule, list, and restore database backups
+- **Configuration**: Manage database settings, scaling, and maintenance windows
+- **Performance Insights**: CPU usage, memory allocation, active connections, error rates
 
-- .NET 10 SDK or later
-- Coolify API credentials (API key)
+### Advanced Deployment Features
+- **Safe Deployments**: Automated pre-deployment health checks
+- **Rollback Support**: Automatic rollback on deployment failure
+- **Health Verification**: Post-deployment health validation
+- **Deployment Strategies**: Support for blue-green, canary, and rolling deployments
+- **Resource Quotas**: Monitor and enforce resource limits
+
+### Monitoring & Observability
+- **System Health Checks**: Verify API connectivity and system status
+- **Performance Metrics**: Track response times, CPU, memory, and error rates
+- **Health Dashboards**: Aggregated health status across applications and databases
+- **Event Publishing**: Webhook support for deployment events and alerts
+
+## Architecture
+
+### Layered Architecture Diagram
+
+```
+┌─────────────────────────────────────────┐
+│   Presentation Layer                    │
+│   (Program.cs - System.CommandLine)     │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────┴──────────────────────────┐
+│   Command Processing Layer              │
+│   (Commands/ - Business Logic)          │
+├─ AdvancedAppCommands                   │
+├─ DatabaseManagementCommands            │
+├─ MonitoringCommands                    │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────┴──────────────────────────┐
+│   Service Layer                         │
+│   (Services/ - Orchestration)           │
+├─ ApplicationService                    │
+├─ DatabaseService                       │
+├─ LogService                            │
+├─ HealthCheckService                    │
+├─ DeploymentOrchestrator                │
+├─ EnvironmentVariableService            │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────┴──────────────────────────┐
+│   Middleware Layer                      │
+│   (Middleware/)                         │
+├─ AuthenticationMiddleware              │
+├─ ErrorHandlingMiddleware               │
+├─ LoggingMiddleware                     │
+├─ RateLimitingMiddleware                │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────┴──────────────────────────┐
+│   Data Access Layer                     │
+│   (Data/ - Repository Pattern)          │
+├─ ApplicationRepository                 │
+├─ DatabaseRepository                    │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────┴──────────────────────────┐
+│   External Layer                        │
+│   (Integration/)                        │
+├─ CoolifyApiClient (HTTP)               │
+├─ WebhookHandler                        │
+└─────────────────────────────────────────┘
+```
+
+### Design Patterns Used
+
+- **Repository Pattern**: Data access abstraction
+- **Service Layer**: Business logic separation
+- **Middleware Chain**: Cross-cutting concerns
+- **Dependency Injection**: Loose coupling and testability
+- **Factory Pattern**: HttpClient creation and management
+- **Command Pattern**: CLI command encapsulation
+- **Strategy Pattern**: Deployment strategies (blue-green, canary, rolling)
 
 ## Installation
 
+### Prerequisites
+
+- **.NET 10 SDK** or later ([download](https://dotnet.microsoft.com/download/dotnet/10.0))
+- **Git** for cloning the repository
+- **Coolify API Key** from your Coolify instance
+
+### From Source
+
 ```bash
-git clone https://github.com/Vladyslav-Zaiets/coolify-cli.git
+# Clone the repository
+git clone https://github.com/Sarmkadan/coolify-cli.git
 cd coolify-cli
+
+# Build the project
 dotnet build
+
+# Publish for release
 dotnet publish -c Release -o ./publish
+
+# Optional: Create a symlink or add to PATH
+sudo ln -s /path/to/coolify-cli/publish/coolify-cli /usr/local/bin/coolify-cli
+```
+
+### Using Package Manager
+
+```bash
+# macOS with Homebrew
+brew tap Sarmkadan/coolify-cli
+brew install coolify-cli
+
+# Linux with snap
+snap install coolify-cli
+```
+
+### Docker Installation
+
+```bash
+# Pull the Docker image
+docker pull sarmkadan/coolify-cli:latest
+
+# Run in container
+docker run --rm sarmkadan/coolify-cli:latest coolify-cli version
+```
+
+### Verify Installation
+
+```bash
+coolify-cli version
+# Output: Coolify CLI v1.0.0
+# Author: Vladyslav Zaiets
+# Website: https://sarmkadan.com
 ```
 
 ## Configuration
 
-Set environment variables before running:
+### Environment Variables
+
+Configure the CLI via environment variables:
 
 ```bash
-export COOLIFY_API_KEY="your-api-key"
-export COOLIFY_API_URL="https://api.coolify.io"
-export COOLIFY_VERBOSE="true"  # Optional: enable verbose logging
-export COOLIFY_TIMEOUT="30"    # Optional: request timeout in seconds
+# Required
+export COOLIFY_API_KEY="your-api-key-here"
+export COOLIFY_API_URL="https://your-coolify-instance.com"
+
+# Optional
+export COOLIFY_VERBOSE="true"              # Enable verbose logging (default: false)
+export COOLIFY_TIMEOUT="30"                # Request timeout in seconds (default: 30)
+export COOLIFY_CACHE_ENABLED="true"        # Enable response caching (default: true)
+export COOLIFY_CACHE_TTL="300"             # Cache TTL in seconds (default: 300)
+export COOLIFY_RETRY_ATTEMPTS="3"          # Number of retry attempts (default: 3)
+export COOLIFY_RETRY_DELAY_MS="1000"       # Delay between retries in ms (default: 1000)
 ```
 
-Or create a `.env` file in the application directory.
+### .env File Support
 
-## Usage
+Create a `.env` file in your working directory or project root:
+
+```bash
+COOLIFY_API_KEY=sk_prod_xxxxxxxxxxxxxxxxxx
+COOLIFY_API_URL=https://coolify.example.com
+COOLIFY_VERBOSE=true
+COOLIFY_TIMEOUT=60
+```
+
+### Configuration Validation
+
+The CLI validates configuration on startup:
+
+```bash
+coolify-cli --verbose
+# Validates API key, URL format, and connectivity
+```
+
+## Usage Examples
+
+### 1. List All Applications
+
+```bash
+coolify-cli app list
+
+# Output:
+# ID    Name                      Status       Deployed At
+# ──────────────────────────────────────────────────────
+# 1     production-api            running      2026-05-04 14:30:22
+# 2     staging-web               stopped      2026-05-02 09:15:45
+# 3     demo-dashboard            running      2026-05-03 16:45:00
+```
+
+### 2. Get Application Details
+
+```bash
+coolify-cli app get 1
+
+# Output:
+# Application: production-api
+# ID: 1
+# Repository: git@github.com:company/api.git
+# Branch: main
+# Status: running
+# Environment: prod-eu
+# Created: 2026-01-15 10:30:00
+# Last Deployed: 2026-05-04 14:30:22
+# Ports: 3000, 8080
+# Health Check: http://localhost:3000/health
+```
+
+### 3. Deploy an Application
+
+```bash
+coolify-cli app deploy 1
+
+# Output:
+# [INFO] Coolify CLI v1.0.0
+# [INFO] Starting deployment of production-api
+# [INFO] Deployment initiated successfully
+# Deployment ID: deploy_abc123xyz789
+```
+
+### 4. Monitor Deployment Status
+
+```bash
+coolify-cli app status 1
+
+# Output:
+# Application: production-api
+# Current Status: deploying
+# Progress: 65%
+# Started At: 2026-05-04 14:30:22
+# Estimated Time: 2 minutes remaining
+```
+
+### 5. List Databases
+
+```bash
+coolify-cli db list
+
+# Output:
+# ID    Name                 Type          Host                  Status
+# ────────────────────────────────────────────────────────────────────
+# 1     prod-postgres        postgresql    db.prod.example.com   Healthy
+# 2     cache-redis          redis         cache.example.com     Healthy
+# 3     backup-mysql         mysql         backup.example.com    Unhealthy
+```
+
+### 6. Check Database Health
+
+```bash
+coolify-cli db health 1
+
+# Output:
+# Database Health Check:
+# Status: Healthy
+# Response Time: 12ms
+# CPU Usage: 23.45%
+# Memory: 512.34MB
+# Active Connections: 42
+# Error Rate: 0.12%
+```
+
+### 7. Stream Application Logs
+
+```bash
+coolify-cli logs 1 --lines 50
+
+# Output shows last 50 log lines with color coding:
+# [2026-05-04 14:35:22] [INFO] Application started
+# [2026-05-04 14:35:23] [DEBUG] Loading configuration
+# [2026-05-04 14:35:25] [INFO] Server listening on port 3000
+# [2026-05-04 14:35:45] [WARN] High memory usage detected
+```
+
+### 8. Stream Live Logs
+
+```bash
+coolify-cli logs 1 --follow
+
+# Continuously streams logs until interrupted with Ctrl+C
+```
+
+### 9. Manage Environment Variables
+
+```bash
+coolify-cli app env set 1 DATABASE_URL "postgresql://user:pass@host/db"
+coolify-cli app env get 1
+coolify-cli app env delete 1 DATABASE_URL
+```
+
+### 10. System Health Check
+
+```bash
+coolify-cli health
+
+# Output:
+# ✓ Connected to Coolify API
+# ✓ System health check passed
+```
+
+## CLI Reference
+
+### Global Options
+
+```bash
+coolify-cli [OPTIONS] COMMAND [ARGS]
+
+Options:
+  --verbose, -v      Enable verbose logging
+  --help             Show help information
+  --version          Display version information
+```
 
 ### Application Commands
 
-List all applications:
 ```bash
-coolify-cli app list
-```
-
-Get application details:
-```bash
-coolify-cli app get 123
-```
-
-Deploy an application:
-```bash
-coolify-cli app deploy 123
+coolify-cli app list                          # List all applications
+coolify-cli app get <ID>                      # Get application details
+coolify-cli app deploy <ID>                   # Deploy application
+coolify-cli app stop <ID>                     # Stop application
+coolify-cli app restart <ID>                  # Restart application
+coolify-cli app status <ID>                   # Get deployment status
+coolify-cli app logs <ID> [--lines N]         # View application logs
+coolify-cli app env get <ID>                  # List environment variables
+coolify-cli app env set <ID> <KEY> <VALUE>    # Set environment variable
+coolify-cli app env delete <ID> <KEY>         # Delete environment variable
 ```
 
 ### Database Commands
 
-List all databases:
 ```bash
-coolify-cli db list
+coolify-cli db list                           # List all databases
+coolify-cli db get <ID>                       # Get database details
+coolify-cli db health <ID>                    # Check database health
+coolify-cli db backup list <ID>               # List backups
+coolify-cli db backup create <ID>             # Create backup
+coolify-cli db backup restore <ID> <BACKUP>   # Restore backup
+coolify-cli db logs <ID> [--lines N]          # View database logs
 ```
 
-Check database health:
+### Log Commands
+
 ```bash
-coolify-cli db health 456
+coolify-cli logs <APP_ID> [--lines N]         # View application logs
+coolify-cli logs <APP_ID> --follow            # Stream logs continuously
+coolify-cli logs <APP_ID> --filter ERROR      # Filter logs by level
 ```
 
-### Logs
+### System Commands
 
-View application logs:
 ```bash
-coolify-cli logs 123 --lines 50
+coolify-cli health                            # System health check
+coolify-cli version                           # Display version
+coolify-cli config                            # Show configuration
 ```
 
-### System Health
+## Configuration Reference
 
-Check system and API connectivity:
+### Required Configuration
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `COOLIFY_API_KEY` | Authentication token | `sk_prod_xxx` |
+| `COOLIFY_API_URL` | API endpoint URL | `https://coolify.example.com` |
+
+### Optional Configuration
+
+| Variable | Default | Range | Description |
+|----------|---------|-------|-------------|
+| `COOLIFY_VERBOSE` | `false` | `true/false` | Enable verbose logging |
+| `COOLIFY_TIMEOUT` | `30` | `1-300` | Request timeout (seconds) |
+| `COOLIFY_CACHE_ENABLED` | `true` | `true/false` | Response caching |
+| `COOLIFY_CACHE_TTL` | `300` | `0-3600` | Cache TTL (seconds) |
+| `COOLIFY_RETRY_ATTEMPTS` | `3` | `0-10` | Retry attempts |
+| `COOLIFY_RETRY_DELAY_MS` | `1000` | `100-5000` | Retry delay (ms) |
+
+## Advanced Topics
+
+### Scripting and Automation
+
+Use Coolify CLI in bash scripts for automation:
+
 ```bash
+#!/bin/bash
+# Deploy all applications in a directory
+
+export COOLIFY_API_KEY="sk_prod_xxx"
+export COOLIFY_API_URL="https://coolify.example.com"
+
+for app_id in 1 2 3 4 5; do
+    echo "Deploying application $app_id..."
+    coolify-cli app deploy "$app_id"
+    sleep 10
+done
+
+echo "All deployments initiated"
+```
+
+### CI/CD Integration
+
+Integrate with GitHub Actions, GitLab CI, or Jenkins:
+
+```yaml
+# GitHub Actions example
+- name: Deploy with Coolify CLI
+  env:
+    COOLIFY_API_KEY: ${{ secrets.COOLIFY_API_KEY }}
+    COOLIFY_API_URL: ${{ secrets.COOLIFY_API_URL }}
+  run: |
+    coolify-cli app deploy ${{ env.APP_ID }}
+```
+
+### Exit Codes
+
+The CLI returns specific exit codes:
+
+- `0`: Success
+- `1`: General error
+- `2`: Configuration error
+- `3`: API communication error
+- `4`: Deployment error
+- `5`: Validation error
+
+### Output Formatting
+
+Control output format with flags:
+
+```bash
+coolify-cli app list --format json        # JSON output
+coolify-cli app list --format csv         # CSV output
+coolify-cli app list --format table       # Table format (default)
+```
+
+### Rate Limiting
+
+API requests are rate-limited. The CLI handles this automatically with exponential backoff. Adjust retry settings if needed:
+
+```bash
+export COOLIFY_RETRY_ATTEMPTS="5"
+export COOLIFY_RETRY_DELAY_MS="2000"
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+**Problem**: "Failed to connect to Coolify API"
+
+**Solution**:
+```bash
+# Verify API URL is accessible
+curl -I https://your-coolify-instance.com
+
+# Check API key validity
+coolify-cli health --verbose
+
+# Verify network connectivity
+ping your-coolify-instance.com
+```
+
+### Authentication Errors
+
+**Problem**: "Invalid or missing API key"
+
+**Solution**:
+```bash
+# Verify API key is set
+echo $COOLIFY_API_KEY
+
+# Check for leading/trailing whitespace
+export COOLIFY_API_KEY="sk_prod_xxx"  # Correct format
+
+# Regenerate API key in Coolify dashboard
+```
+
+### Timeout Errors
+
+**Problem**: "Request timeout"
+
+**Solution**:
+```bash
+# Increase timeout value
+export COOLIFY_TIMEOUT="60"
+
+# Check network latency
+ping -c 5 your-coolify-instance.com
+
+# Verify API server is responsive
+curl -w "@curl-format.txt" -o /dev/null https://your-coolify-instance.com
+```
+
+### Deployment Failures
+
+**Problem**: "Deployment failed"
+
+**Solution**:
+```bash
+# Check application logs
+coolify-cli logs 1 --lines 100
+
+# Verify application health
+coolify-cli app get 1
+
+# Check system health
 coolify-cli health
+
+# Review deployment history
+coolify-cli app status 1
 ```
 
-### Version
+### Memory Issues
 
-Display version information:
+**Problem**: CLI consumes excessive memory
+
+**Solution**:
 ```bash
-coolify-cli version
+# Disable response caching for large datasets
+export COOLIFY_CACHE_ENABLED="false"
+
+# Paginate results if listing many items
+coolify-cli app list --page 1 --limit 50
 ```
 
 ## Project Structure
 
 ```
 coolify-cli/
-├── Models/                    # Domain models and entities
+├── Models/                      # Domain entities and models
+│   ├── ApiResponse.cs
 │   ├── ApplicationDeployment.cs
 │   ├── DatabaseConfiguration.cs
-│   ├── LogEntry.cs
-│   ├── EnvironmentVariable.cs
-│   ├── ServiceHealth.cs
-│   ├── ApiResponse.cs
 │   ├── DeploymentContext.cs
-│   └── Enums.cs
-├── Services/                  # Business logic services
-│   ├── CoolifyApiClient.cs
+│   ├── EnvironmentVariable.cs
+│   ├── Enums.cs
+│   ├── LogEntry.cs
+│   ├── ServiceHealth.cs
+│   └── CliContext.cs
+├── Services/                    # Business logic and orchestration
 │   ├── ApplicationService.cs
+│   ├── CoolifyApiClient.cs
+│   ├── ConsoleLogger.cs
 │   ├── DatabaseService.cs
-│   ├── LogService.cs
-│   ├── HealthCheckService.cs
-│   ├── EnvironmentVariableService.cs
 │   ├── DeploymentOrchestrator.cs
-│   └── ILogger.cs
-├── Data/                      # Data access layer
-│   ├── IRepository.cs
+│   ├── DeploymentStrategy.cs
+│   ├── EnvironmentVariableService.cs
+│   ├── HealthCheckService.cs
+│   ├── ILogger.cs
+│   ├── LogService.cs
+│   ├── NotificationService.cs
+│   └── ResourceQuotaManager.cs
+├── Commands/                    # CLI command implementations
+│   ├── AdvancedAppCommands.cs
+│   ├── CommandBase.cs
+│   ├── DatabaseManagementCommands.cs
+│   └── MonitoringCommands.cs
+├── Data/                        # Data access layer
 │   ├── ApplicationRepository.cs
-│   └── DatabaseRepository.cs
-├── Infrastructure/            # Configuration and exceptions
+│   ├── DatabaseRepository.cs
+│   └── IRepository.cs
+├── Infrastructure/              # Configuration and utilities
+│   ├── Constants.cs
 │   ├── CoolifyConfiguration.cs
-│   ├── CoolifyExceptions.cs
-│   └── Constants.cs
-├── Utilities/                 # Helper utilities
-│   └── CliHelpers.cs
-├── Program.cs                 # CLI entry point
-├── coolify-cli.csproj        # Project file
-└── README.md                  # This file
+│   └── CoolifyExceptions.cs
+├── Middleware/                  # Cross-cutting concerns
+│   ├── AuthenticationMiddleware.cs
+│   ├── ErrorHandlingMiddleware.cs
+│   ├── ICommandMiddleware.cs
+│   ├── LoggingMiddleware.cs
+│   └── RateLimitingMiddleware.cs
+├── Integration/                 # External integrations
+│   ├── HttpClientFactory.cs
+│   └── WebhookHandler.cs
+├── Caching/                     # Caching implementation
+│   ├── ICacheProvider.cs
+│   └── MemoryCacheProvider.cs
+├── Formatters/                  # Output formatting
+│   ├── CsvFormatter.cs
+│   ├── JsonFormatter.cs
+│   ├── TableFormatter.cs
+│   └── TextFormatter.cs
+├── BackgroundTasks/             # Background workers
+│   └── StatusCheckWorker.cs
+├── Utilities/                   # Helper utilities
+│   ├── CliHelpers.cs
+│   ├── ConfigurationHelper.cs
+│   ├── JsonConverter.cs
+│   └── ValidationHelper.cs
+├── Extensions/                  # Extension methods
+│   ├── CollectionExtensions.cs
+│   ├── DateTimeExtensions.cs
+│   ├── EnumExtensions.cs
+│   └── StringExtensions.cs
+├── Examples/                    # Usage examples
+│   ├── deploy-all.sh
+│   ├── backup-databases.sh
+│   ├── health-monitor.sh
+│   └── log-analysis.sh
+├── Docs/                        # Documentation
+│   ├── ARCHITECTURE.md
+│   ├── API_REFERENCE.md
+│   ├── DEPLOYMENT.md
+│   ├── GETTING_STARTED.md
+│   └── FAQ.md
+├── Program.cs                   # CLI entry point
+├── coolify-cli.csproj          # Project file
+├── Dockerfile                   # Container image
+├── docker-compose.yml          # Docker orchestration
+├── Makefile                    # Build automation
+├── .editorconfig               # Code style configuration
+├── CHANGELOG.md                # Version history
+├── LICENSE                     # MIT License
+└── README.md                   # This file
 ```
 
-## Architecture
+## Contributing
 
-### Layered Architecture
+We welcome contributions! Please follow these guidelines:
 
-1. **Presentation Layer (Program.cs)**: CLI commands using System.CommandLine
-2. **Service Layer**: Business logic orchestration and API coordination
-3. **Data Access Layer**: Repository pattern for data operations
-4. **Infrastructure Layer**: Configuration, exceptions, and utilities
-5. **Domain Layer**: Entity models and enumerations
+### Getting Started
 
-### Key Services
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes and commit: `git commit -am 'Add feature'`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Submit a pull request
 
-- **CoolifyApiClient**: Core HTTP client for API communication
-- **ApplicationService**: Application lifecycle management
-- **DatabaseService**: Database provisioning and management
-- **LogService**: Log retrieval and streaming
-- **HealthCheckService**: Health monitoring and metrics
-- **DeploymentOrchestrator**: Complex deployment workflows
-- **EnvironmentVariableService**: Environment variable management
+### Development Setup
 
-## Error Handling
+```bash
+# Clone and setup
+git clone https://github.com/Sarmkadan/coolify-cli.git
+cd coolify-cli
 
-The application implements custom exception hierarchy:
+# Build and test
+dotnet build
+dotnet test
 
-- `CoolifyException`: Base exception for all CLI errors
-- `ConfigurationException`: Configuration-related errors
-- `ApiCommunicationException`: API communication failures
-- `ApiException`: API error responses
-- `DeploymentException`: Deployment operation failures
-- `ValidationException`: Input validation errors
+# Run with verbose logging
+dotnet run -- --verbose app list
+```
 
-## Logging
+### Code Standards
 
-Logging levels supported:
-- DEBUG: Detailed diagnostic information
-- INFO: General informational messages
-- WARNING: Warning messages for potentially problematic situations
-- ERROR: Error messages
-- FATAL: Critical errors
+- Follow C# naming conventions (PascalCase for classes, camelCase for variables)
+- Add XML documentation to public members
+- Include unit tests for new features
+- Keep methods under 50 lines when possible
+- Use dependency injection for testability
 
-Enable verbose logging with `--verbose` flag or `COOLIFY_VERBOSE=true`.
+### Testing
+
+```bash
+# Run all tests
+dotnet test
+
+# Run specific test
+dotnet test --filter ClassName
+
+# Run with coverage
+dotnet test /p:CollectCoverage=true
+```
 
 ## License
 
 MIT License - Copyright (c) 2026 Vladyslav Zaiets
 
-See LICENSE file for details.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-## Author
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-**Vladyslav Zaiets**
-- Website: https://sarmkadan.com
-- Email: rutova2@gmail.com
+See [LICENSE](LICENSE) file for full text.
 
-## Support
+---
 
-For issues, feature requests, or contributions, please visit the project repository.
+**Built by [Vladyslav Zaiets](https://sarmkadan.com) - CTO & Software Architect**
+
+[Portfolio](https://sarmkadan.com) | [GitHub](https://github.com/Sarmkadan) | [Telegram](https://t.me/sarmkadan)

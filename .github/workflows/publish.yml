@@ -1,0 +1,190 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: true
+        prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+
+  build-and-publish:
+    name: Build and Publish
+    runs-on: ${{ matrix.os }}
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: ubuntu-latest
+            rid: linux-arm64
+          - os: macos-latest
+            rid: osx-x64
+          - os: macos-latest
+            rid: osx-arm64
+          - os: windows-latest
+            rid: win-x64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run tests
+      run: dotnet test --no-build --configuration Release --verbosity minimal
+
+    - name: Publish
+      run: |
+        dotnet publish \
+          --configuration Release \
+          --runtime ${{ matrix.rid }} \
+          --self-contained \
+          --output ./publish \
+          -p:PublishSingleFile=true \
+          -p:PublishTrimmed=true
+
+    - name: Create artifact (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd ./publish
+        tar czf ../coolify-cli-${{ matrix.rid }}.tar.gz .
+        sha256sum ../coolify-cli-${{ matrix.rid }}.tar.gz > ../coolify-cli-${{ matrix.rid }}.tar.gz.sha256
+
+    - name: Create artifact (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        cd ./publish
+        Compress-Archive -Path * -DestinationPath ../coolify-cli-${{ matrix.rid }}.zip
+        $hash = (Get-FileHash ../coolify-cli-${{ matrix.rid }}.zip -Algorithm SHA256).Hash
+        "$hash coolify-cli-${{ matrix.rid }}.zip" | Out-File ../coolify-cli-${{ matrix.rid }}.zip.sha256
+
+    - name: Upload asset (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./coolify-cli-${{ matrix.rid }}.tar.gz
+        asset_name: coolify-cli-${{ matrix.rid }}.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload checksum (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./coolify-cli-${{ matrix.rid }}.tar.gz.sha256
+        asset_name: coolify-cli-${{ matrix.rid }}.tar.gz.sha256
+        asset_content_type: text/plain
+
+    - name: Upload asset (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./coolify-cli-${{ matrix.rid }}.zip
+        asset_name: coolify-cli-${{ matrix.rid }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload checksum (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./coolify-cli-${{ matrix.rid }}.zip.sha256
+        asset_name: coolify-cli-${{ matrix.rid }}.zip.sha256
+        asset_content_type: text/plain
+
+  publish-docker:
+    name: Publish Docker Image
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: |
+          sarmkadan/coolify-cli:latest
+          sarmkadan/coolify-cli:${{ github.ref_name }}
+
+  publish-nuget:
+    name: Publish to NuGet
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Pack
+      run: dotnet pack --no-build --configuration Release --output nupkg
+
+    - name: Push to NuGet
+      run: dotnet nuget push "nupkg/*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+
+  notify:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [build-and-publish, publish-docker, publish-nuget]
+    if: always()
+    steps:
+    - name: Send notification
+      run: |
+        echo "✓ Release ${{ github.ref_name }} published successfully"
+        echo "Downloads: https://github.com/Sarmkadan/coolify-cli/releases/tag/${{ github.ref_name }}"
