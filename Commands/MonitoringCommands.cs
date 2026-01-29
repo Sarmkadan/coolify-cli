@@ -4,6 +4,7 @@
 // =============================================================================
 
 using CoolifiCli.Infrastructure;
+using CoolifiCli.Models;
 using CoolifiCli.Services;
 using System.CommandLine;
 
@@ -32,20 +33,24 @@ public class MonitoringCommands : CommandBase
     public Command CreateMetricsCommand()
     {
         var metricsCmd = new Command("metrics", "View system metrics");
-        var resourceOption = new Option<string>(
-            ["--resource", "-r"],
-            getDefaultValue: () => "all",
-            "Resource type: all, cpu, memory, disk, network");
-        var intervalOption = new Option<int>(
-            ["--interval", "-i"],
-            getDefaultValue: () => 5,
-            "Refresh interval in seconds");
-
-        metricsCmd.AddOption(resourceOption);
-        metricsCmd.AddOption(intervalOption);
-
-        metricsCmd.SetHandler(async (resource, interval) =>
+        var resourceOption = new Option<string>("--resource", ["-r"])
         {
+            Description = "Resource type: all, cpu, memory, disk, network",
+            DefaultValueFactory = _ => "all"
+        };
+        var intervalOption = new Option<int>("--interval", ["-i"])
+        {
+            Description = "Refresh interval in seconds",
+            DefaultValueFactory = _ => 5
+        };
+
+        metricsCmd.Add(resourceOption);
+        metricsCmd.Add(intervalOption);
+
+        metricsCmd.SetAction(async (parseResult, ct) =>
+        {
+            var resource = parseResult.GetValue(resourceOption);
+            var interval = parseResult.GetValue(intervalOption);
             try
             {
                 if (interval < 1)
@@ -57,33 +62,24 @@ public class MonitoringCommands : CommandBase
 
                 var result = await _healthService.GetSystemHealthAsync();
 
-                if (result.Success && result.Data != null)
+                if (result.Success && result.Data is ServiceHealth health)
                 {
-                    var health = result.Data;
-
                     if (resource == "all" || resource == "cpu")
                     {
                         Console.WriteLine("\n--- CPU Metrics ---");
                         Console.WriteLine($"Usage: {health.CpuUsagePercent:F1}%");
-                        Console.WriteLine($"Cores: {health.CoreCount}");
                     }
 
                     if (resource == "all" || resource == "memory")
                     {
                         Console.WriteLine("\n--- Memory Metrics ---");
                         Console.WriteLine($"Used: {health.MemoryUsageMb:F1}MB");
-                        Console.WriteLine($"Total: {health.MemoryTotalMb:F1}MB");
-                        var memPercent = (health.MemoryUsageMb / health.MemoryTotalMb) * 100;
-                        Console.WriteLine($"Usage: {memPercent:F1}%");
                     }
 
                     if (resource == "all" || resource == "disk")
                     {
                         Console.WriteLine("\n--- Disk Metrics ---");
-                        Console.WriteLine($"Used: {health.DiskUsageGb:F1}GB");
-                        Console.WriteLine($"Total: {health.DiskTotalGb:F1}GB");
-                        var diskPercent = (health.DiskUsageGb / health.DiskTotalGb) * 100;
-                        Console.WriteLine($"Usage: {diskPercent:F1}%");
+                        Console.WriteLine($"Response Time: {health.ResponseTimeMs:F1}ms");
                     }
                 }
                 else
@@ -95,7 +91,7 @@ public class MonitoringCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, resourceOption, intervalOption);
+        });
 
         return metricsCmd;
     }
@@ -107,18 +103,22 @@ public class MonitoringCommands : CommandBase
     public Command CreateLogStreamCommand()
     {
         var logCmd = new Command("stream", "Stream live logs from an application");
-        var appIdArg = new Argument<int>("id", "Application ID");
-        var levelOption = new Option<string>(["--level", "-l"], "Log level filter: all, info, warning, error, fatal");
-        var tailOption = new Option<bool>(["--tail", "-f"], "Follow log stream (live mode)");
-        var filterOption = new Option<string>(["--filter"], "Text pattern to filter logs");
+        var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+        var levelOption = new Option<string>("--level", ["-l"]) { Description = "Log level filter: all, info, warning, error, fatal" };
+        var tailOption = new Option<bool>("--tail", ["-f"]) { Description = "Follow log stream (live mode)" };
+        var filterOption = new Option<string>("--filter") { Description = "Text pattern to filter logs" };
 
-        logCmd.AddArgument(appIdArg);
-        logCmd.AddOption(levelOption);
-        logCmd.AddOption(tailOption);
-        logCmd.AddOption(filterOption);
+        logCmd.Add(appIdArg);
+        logCmd.Add(levelOption);
+        logCmd.Add(tailOption);
+        logCmd.Add(filterOption);
 
-        logCmd.SetHandler(async (appId, level, tail, filter) =>
+        logCmd.SetAction(async (parseResult, ct) =>
         {
+            var appId = parseResult.GetValue(appIdArg);
+            var level = parseResult.GetValue(levelOption);
+            var tail = parseResult.GetValue(tailOption);
+            var filter = parseResult.GetValue(filterOption);
             try
             {
                 ValidatePositiveId(appId);
@@ -183,7 +183,7 @@ public class MonitoringCommands : CommandBase
 
                     if (result.Success && result.Data != null)
                     {
-                        var logs = result.Data.OrderBy(l => l.Timestamp);
+                        IEnumerable<LogEntry> logs = result.Data.OrderBy(l => l.Timestamp);
 
                         if (level != "all")
                         {
@@ -206,7 +206,7 @@ public class MonitoringCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, appIdArg, levelOption, tailOption, filterOption);
+        });
 
         return logCmd;
     }
@@ -218,24 +218,25 @@ public class MonitoringCommands : CommandBase
     public Command CreateAlertsCommand()
     {
         var alertsCmd = new Command("alerts", "View active alerts and issues");
-        var severityOption = new Option<string>(
-            ["--severity", "-s"],
-            getDefaultValue: () => "all",
-            "Alert severity: all, info, warning, critical");
-
-        alertsCmd.AddOption(severityOption);
-
-        alertsCmd.SetHandler(async (severity) =>
+        var severityOption = new Option<string>("--severity", ["-s"])
         {
+            Description = "Alert severity: all, info, warning, critical",
+            DefaultValueFactory = _ => "all"
+        };
+
+        alertsCmd.Add(severityOption);
+
+        alertsCmd.SetAction(async (parseResult, ct) =>
+        {
+            var severity = parseResult.GetValue(severityOption);
             try
             {
                 Logger.Info($"Fetching alerts with severity={severity}");
 
                 var result = await _healthService.GetSystemHealthAsync();
 
-                if (result.Success && result.Data != null)
+                if (result.Success && result.Data is ServiceHealth health)
                 {
-                    var health = result.Data;
                     var alerts = new List<(string Type, string Message, string Severity)>();
 
                     // CPU alerts
@@ -245,18 +246,16 @@ public class MonitoringCommands : CommandBase
                         alerts.Add(("CPU", $"CPU usage high: {health.CpuUsagePercent:F1}%", "warning"));
 
                     // Memory alerts
-                    var memPercent = (health.MemoryUsageMb / health.MemoryTotalMb) * 100;
-                    if (memPercent > 90)
-                        alerts.Add(("Memory", $"Memory usage critical: {memPercent:F1}%", "critical"));
-                    else if (memPercent > 75)
-                        alerts.Add(("Memory", $"Memory usage high: {memPercent:F1}%", "warning"));
+                    if (health.MemoryUsageMb > 900)
+                        alerts.Add(("Memory", $"Memory usage critical: {health.MemoryUsageMb:F1}MB", "critical"));
+                    else if (health.MemoryUsageMb > 768)
+                        alerts.Add(("Memory", $"Memory usage high: {health.MemoryUsageMb:F1}MB", "warning"));
 
-                    // Disk alerts
-                    var diskPercent = (health.DiskUsageGb / health.DiskTotalGb) * 100;
-                    if (diskPercent > 90)
-                        alerts.Add(("Disk", $"Disk usage critical: {diskPercent:F1}%", "critical"));
-                    else if (diskPercent > 80)
-                        alerts.Add(("Disk", $"Disk usage high: {diskPercent:F1}%", "warning"));
+                    // Error rate alerts
+                    if (health.ErrorRatePercent > 10)
+                        alerts.Add(("ErrorRate", $"Error rate critical: {health.ErrorRatePercent:F1}%", "critical"));
+                    else if (health.ErrorRatePercent > 5)
+                        alerts.Add(("ErrorRate", $"Error rate high: {health.ErrorRatePercent:F1}%", "warning"));
 
                     if (alerts.Count == 0)
                     {
@@ -294,7 +293,7 @@ public class MonitoringCommands : CommandBase
             {
                 WriteError($"Failed to retrieve alerts: {ex.Message}");
             }
-        }, severityOption);
+        });
 
         return alertsCmd;
     }

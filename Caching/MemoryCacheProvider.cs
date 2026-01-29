@@ -150,7 +150,7 @@ public class MemoryCacheProvider : ICacheProvider
     /// </summary>
     public T GetOrAdd<T>(string key, Func<T> factory, TimeSpan? expiration = null)
     {
-        if (TryGet(key, out var cached))
+        if (TryGet<T>(key, out var cached))
         {
             return cached!;
         }
@@ -165,7 +165,7 @@ public class MemoryCacheProvider : ICacheProvider
     /// </summary>
     public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null)
     {
-        if (TryGet(key, out var cached))
+        if (TryGet<T>(key, out var cached))
         {
             return cached!;
         }
