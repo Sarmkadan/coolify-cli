@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+#nullable enable
+
 namespace CoolifiCli.Services;
 
 using CoolifiCli.Models;
@@ -169,8 +171,11 @@ public class CoolifyApiClient
             var response = await _httpClient.GetAsync("/health");
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            // Log the exception for debugging purposes
+            // In a real implementation, you might want to use a logger here
+            System.Diagnostics.Debug.WriteLine($"Connection test failed: {ex.Message}");
             return false;
         }
     }
