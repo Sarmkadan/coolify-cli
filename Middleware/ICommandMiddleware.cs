@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -40,7 +41,7 @@ public class CommandContext
     /// <summary>
     /// Gets or sets the command arguments.
     /// </summary>
-    public string[] Arguments { get; set; } = Array.Empty<string>();
+    public string[] Arguments { get; set; } = new string[0];
 
     /// <summary>
     /// Gets or sets the timestamp when command execution started.
