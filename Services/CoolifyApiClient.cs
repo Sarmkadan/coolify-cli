@@ -2,13 +2,14 @@
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
-
-#nullable enable
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
+using CoolifiCli.Models;
 
 namespace CoolifiCli.Services;
-
-using CoolifiCli.Models;
-using System.Net.Http.Json;
 
 /// <summary>
 /// Core HTTP client for Coolify API communication.
@@ -139,9 +140,9 @@ public class CoolifyApiClient
 
             if (response.IsSuccessStatusCode)
             {
-                var data = System.Text.Json.JsonSerializer.Deserialize<T>(
+                var data = JsonSerializer.Deserialize<T>(
                     contentAsString,
-                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 return ApiResponse<T>.SuccessResponse(data);
             }
