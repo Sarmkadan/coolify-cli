@@ -135,7 +135,7 @@ public static class EnumExtensions
     /// </summary>
     public static string ToCliFormat(this Enum value)
     {
-        return value.ToString().ToKebabCase();
+        return KebabCaseHelper.ToKebabCase(value.ToString());
     }
 
     /// <summary>

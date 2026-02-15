@@ -174,7 +174,7 @@ public class ApplicationService
     /// <returns>Deletion status.</returns>
     public async Task<ApiResponse<object>> DeleteApplicationAsync(int applicationId)
     {
-        _logger.Warning($"Deleting application {applicationId}");
+        _logger.Warn($"Deleting application {applicationId}");
         var response = await _apiClient.DeleteAsync<object>($"/api/v1/applications/{applicationId}");
 
         if (response.Success)

@@ -129,8 +129,10 @@ public static class CollectionExtensions
     public static T? MaxBy<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
         where TKey : IComparable<TKey>
     {
-        return source.FirstOrDefault((a, b) =>
-            keySelector(a).CompareTo(keySelector(b)) >= 0, null);
+        var list = source.ToList();
+        if (list.Count == 0) return default;
+        return list.Aggregate((a, b) =>
+            keySelector(a).CompareTo(keySelector(b)) >= 0 ? a : b);
     }
 
     /// <summary>
@@ -139,8 +141,10 @@ public static class CollectionExtensions
     public static T? MinBy<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
         where TKey : IComparable<TKey>
     {
-        return source.FirstOrDefault((a, b) =>
-            keySelector(a).CompareTo(keySelector(b)) <= 0, null);
+        var list = source.ToList();
+        if (list.Count == 0) return default;
+        return list.Aggregate((a, b) =>
+            keySelector(a).CompareTo(keySelector(b)) <= 0 ? a : b);
     }
 
     /// <summary>

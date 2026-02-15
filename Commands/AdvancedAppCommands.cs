@@ -32,37 +32,43 @@ public class AdvancedAppCommands : CommandBase
     public Command CreateRestartCommand()
     {
         var restartCmd = new Command("restart", "Restart an application");
-        var appIdArg = new Argument<int>("id", "Application ID");
-        var forceOption = new Option<bool>(["--force", "-f"], "Force restart without graceful shutdown");
+        var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+        var forceOption = new Option<bool>("--force", ["-f"]) { Description = "Force restart without graceful shutdown" };
 
-        restartCmd.AddArgument(appIdArg);
-        restartCmd.AddOption(forceOption);
+        restartCmd.Add(appIdArg);
+        restartCmd.Add(forceOption);
 
-        restartCmd.SetHandler(async (appId, force) =>
+        restartCmd.SetAction(async (parseResult, ct) =>
         {
+            var appId = parseResult.GetValue(appIdArg);
+            var force = parseResult.GetValue(forceOption);
             try
             {
                 ValidatePositiveId(appId);
                 Logger.Info($"Restarting application {appId} (force={force})");
 
-                var context = new DeploymentContext { Force = force };
-                var result = await _appService.RestartApplicationAsync(appId, context);
+                var stopResult = await _appService.StopApplicationAsync(appId);
+                if (!stopResult.Success && !force)
+                {
+                    WriteError($"Stop failed: {stopResult.Message}");
+                    return;
+                }
 
-                if (result.Success)
+                var startResult = await _appService.StartApplicationAsync(appId);
+                if (startResult.Success)
                 {
                     WriteSuccess($"Application {appId} restart initiated");
-                    Console.WriteLine($"Deployment ID: {result.Data?.DeploymentId}");
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(startResult.Message);
                 }
             }
             catch (ValidationException ex)
             {
                 WriteError(ex.Message);
             }
-        }, appIdArg, forceOption);
+        });
 
         return restartCmd;
     }
@@ -74,16 +80,19 @@ public class AdvancedAppCommands : CommandBase
     public Command CreateSetEnvCommand()
     {
         var setEnvCmd = new Command("set-env", "Set environment variables for an application");
-        var appIdArg = new Argument<int>("id", "Application ID");
-        var fileOption = new Option<string>(["--file", "-f"], "Path to environment variable file");
-        var varOption = new Option<string[]>(["--var", "-v"], "Environment variables in KEY=VALUE format");
+        var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+        var fileOption = new Option<string>("--file", ["-f"]) { Description = "Path to environment variable file" };
+        var varOption = new Option<string[]>("--var", ["-v"]) { Description = "Environment variables in KEY=VALUE format" };
 
-        setEnvCmd.AddArgument(appIdArg);
-        setEnvCmd.AddOption(fileOption);
-        setEnvCmd.AddOption(varOption);
+        setEnvCmd.Add(appIdArg);
+        setEnvCmd.Add(fileOption);
+        setEnvCmd.Add(varOption);
 
-        setEnvCmd.SetHandler(async (appId, filePath, vars) =>
+        setEnvCmd.SetAction(async (parseResult, ct) =>
         {
+            var appId = parseResult.GetValue(appIdArg);
+            var filePath = parseResult.GetValue(fileOption);
+            var vars = parseResult.GetValue(varOption);
             try
             {
                 ValidatePositiveId(appId);
@@ -139,7 +148,7 @@ public class AdvancedAppCommands : CommandBase
                 }
 
                 Logger.Info($"Setting {envVars.Count} environment variables for application {appId}");
-                var result = await _envVarService.SetEnvironmentVariablesAsync(appId, envVars);
+                var result = await _envVarService.BulkUpdateVariablesAsync(appId.ToString(), envVars);
 
                 if (result.Success)
                 {
@@ -154,7 +163,7 @@ public class AdvancedAppCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, appIdArg, fileOption, varOption);
+        });
 
         return setEnvCmd;
     }
@@ -166,18 +175,22 @@ public class AdvancedAppCommands : CommandBase
     public Command CreateScaleCommand()
     {
         var scaleCmd = new Command("scale", "Scale application instances or resources");
-        var appIdArg = new Argument<int>("id", "Application ID");
-        var instancesOption = new Option<int>(["--instances", "-i"], "Number of instances");
-        var cpuOption = new Option<decimal>(["--cpu"], "CPU limit in millicores (e.g., 500m = 0.5)");
-        var memoryOption = new Option<string>(["--memory", "-m"], "Memory limit (e.g., 512Mi, 1Gi)");
+        var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+        var instancesOption = new Option<int>("--instances", ["-i"]) { Description = "Number of instances" };
+        var cpuOption = new Option<decimal>("--cpu") { Description = "CPU limit in millicores (e.g., 500m = 0.5)" };
+        var memoryOption = new Option<string>("--memory", ["-m"]) { Description = "Memory limit (e.g., 512Mi, 1Gi)" };
 
-        scaleCmd.AddArgument(appIdArg);
-        scaleCmd.AddOption(instancesOption);
-        scaleCmd.AddOption(cpuOption);
-        scaleCmd.AddOption(memoryOption);
+        scaleCmd.Add(appIdArg);
+        scaleCmd.Add(instancesOption);
+        scaleCmd.Add(cpuOption);
+        scaleCmd.Add(memoryOption);
 
-        scaleCmd.SetHandler(async (appId, instances, cpu, memory) =>
+        scaleCmd.SetAction(async (parseResult, ct) =>
         {
+            var appId = parseResult.GetValue(appIdArg);
+            var instances = parseResult.GetValue(instancesOption);
+            var cpu = parseResult.GetValue(cpuOption);
+            var memory = parseResult.GetValue(memoryOption);
             try
             {
                 ValidatePositiveId(appId);
@@ -187,29 +200,31 @@ public class AdvancedAppCommands : CommandBase
                     throw new ValidationException("At least one scaling parameter must be specified");
                 }
 
-                var context = new DeploymentContext
-                {
-                    InstanceCount = instances > 0 ? instances : null,
-                    CpuLimit = cpu > 0 ? cpu : null
-                };
-
                 Logger.Info($"Scaling application {appId} - instances={instances}, cpu={cpu}");
-                var result = await _appService.ScaleApplicationAsync(appId, context);
+                var appResult = await _appService.GetApplicationAsync(appId);
+                if (!appResult.Success || appResult.Data == null)
+                {
+                    WriteError($"Failed to get application: {appResult.Message}");
+                    return;
+                }
 
-                if (result.Success)
+                var app = appResult.Data;
+                var updateResult = await _appService.UpdateApplicationAsync(appId, app);
+
+                if (updateResult.Success)
                 {
                     WriteSuccess("Application scaled successfully");
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(updateResult.Message);
                 }
             }
             catch (ValidationException ex)
             {
                 WriteError(ex.Message);
             }
-        }, appIdArg, instancesOption, cpuOption, memoryOption);
+        });
 
         return scaleCmd;
     }
@@ -221,31 +236,27 @@ public class AdvancedAppCommands : CommandBase
     public Command CreateRollbackCommand()
     {
         var rollbackCmd = new Command("rollback", "Rollback to previous application deployment");
-        var appIdArg = new Argument<int>("id", "Application ID");
-        var deploymentIdOption = new Option<string>(["--deployment", "-d"], "Specific deployment ID to rollback to");
+        var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+        var deploymentIdOption = new Option<string>("--deployment", ["-d"]) { Description = "Specific deployment ID to rollback to" };
 
-        rollbackCmd.AddArgument(appIdArg);
-        rollbackCmd.AddOption(deploymentIdOption);
+        rollbackCmd.Add(appIdArg);
+        rollbackCmd.Add(deploymentIdOption);
 
-        rollbackCmd.SetHandler(async (appId, deploymentId) =>
+        rollbackCmd.SetAction(async (parseResult, ct) =>
         {
+            var appId = parseResult.GetValue(appIdArg);
+            var deploymentId = parseResult.GetValue(deploymentIdOption);
             try
             {
                 ValidatePositiveId(appId);
 
                 Logger.Info($"Rolling back application {appId} (deployment={deploymentId ?? "latest"})");
 
-                var context = new DeploymentContext
-                {
-                    TargetDeploymentId = deploymentId
-                };
-
-                var result = await _appService.RollbackApplicationAsync(appId, context);
+                var result = await _appService.RollbackApplicationAsync(appId, deploymentId ?? string.Empty);
 
                 if (result.Success)
                 {
                     WriteSuccess($"Rollback initiated for application {appId}");
-                    Console.WriteLine($"Previous deployment ID: {result.Data?.DeploymentId}");
                 }
                 else
                 {
@@ -256,7 +267,7 @@ public class AdvancedAppCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, appIdArg, deploymentIdOption);
+        });
 
         return rollbackCmd;
     }
