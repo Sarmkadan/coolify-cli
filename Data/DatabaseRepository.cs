@@ -4,18 +4,18 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Data;
+namespace CoolifyCli.Data;
 
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
 /// <summary>
 /// Repository for database configuration data access with specialized queries.
 /// </summary>
 public class DatabaseRepository : BaseRepository<DatabaseConfiguration>
 {
-    private readonly CoolifiCli.Services.CoolifyApiClient _apiClient;
+    private readonly CoolifyCli.Services.CoolifyApiClient _apiClient;
 
-    public DatabaseRepository(CoolifiCli.Services.CoolifyApiClient apiClient)
+    public DatabaseRepository(CoolifyCli.Services.CoolifyApiClient apiClient)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }

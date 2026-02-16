@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Models;
+namespace CoolifyCli.Models;
 
 /// <summary>
 /// Encapsulates the deployment context with application, environment, and configuration details.

@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Middleware;
+namespace CoolifyCli.Middleware;
 
 /// <summary>
 /// Interface for command execution middleware. Enables pipeline processing of commands

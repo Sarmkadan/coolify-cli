@@ -6,11 +6,11 @@
 
 using System;
 using System.Threading.Tasks;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 using Xunit;
 
-namespace CoolifiCli.Tests;
+namespace CoolifyCli.Tests;
 
 /// <summary>
 /// Unit tests for CoolifyApiClient to verify token refresh handling

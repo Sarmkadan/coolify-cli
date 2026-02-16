@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Services;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.Events;
+namespace CoolifyCli.Events;
 
 /// <summary>
 /// Event publisher implementing pub-sub pattern. Allows decoupled communication between

@@ -6,14 +6,14 @@
 
 using System.Collections.Concurrent;
 
-namespace CoolifiCli.Caching;
+namespace CoolifyCli.Caching;
 
 /// <summary>
 /// In-memory cache provider implementation using ConcurrentDictionary.
 /// Supports TTL-based expiration and automatic cleanup of expired entries.
 /// Thread-safe for concurrent access.
 /// </summary>
-public class MemoryCacheProvider : ICacheProvider
+public class MemoryCacheProvider : ICacheProvider, IDisposable
 {
     private readonly ConcurrentDictionary<string, CacheEntry> _cache = new();
     private readonly Timer? _cleanupTimer;
@@ -132,17 +132,8 @@ public class MemoryCacheProvider : ICacheProvider
     {
         get
         {
-            long total = 0;
-
-            foreach (var entry in _cache.Values)
-            {
-                if (entry.Value is not null)
-                {
-                    total += System.Runtime.InteropServices.Marshal.SizeOf(entry.Value);
-                }
-            }
-
-            return total;
+            return 0; // Proper calculation of managed object size is complex and not accurately done with Marshal.SizeOf.
+                     // Returning 0 for now to avoid incorrect measurements and potential exceptions.
         }
     }
 

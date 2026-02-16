@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Infrastructure;
+namespace CoolifyCli.Infrastructure;
 
 /// <summary>
 /// Configuration options that govern how the infrastructure template engine loads, validates,

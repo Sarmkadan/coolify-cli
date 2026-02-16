@@ -7,9 +7,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CoolifiCli.Models;
+using CoolifyCli.Models;
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 /// <summary>
 /// Core HTTP client for Coolify API communication.
@@ -29,7 +29,7 @@ public class CoolifyApiClient
 
         _httpClient.BaseAddress = new Uri(_baseUrl);
         _httpClient.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "CoolifiCli/1.0");
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", "CoolifyCli/1.0");
     }
 
     /// <summary>

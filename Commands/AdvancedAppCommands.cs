@@ -4,12 +4,12 @@
 // CTO & Software Architect
 // =============================================================================
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
-using CoolifiCli.Services;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
+using CoolifyCli.Services;
 using System.CommandLine;
 
-namespace CoolifiCli.Commands;
+namespace CoolifyCli.Commands;
 
 /// <summary>
 /// Advanced application management commands for deployment configuration, environment variables,

@@ -4,10 +4,10 @@
 // =============================================================================
 #nullable enable
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Services;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Services;
 
-namespace CoolifiCli.Middleware;
+namespace CoolifyCli.Middleware;
 
 /// <summary>
 /// Middleware for centralized error handling. Catches exceptions, categorizes them,

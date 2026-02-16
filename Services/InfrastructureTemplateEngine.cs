@@ -4,10 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
-using CoolifiCli.Infrastructure;
-using CoolifiCli.Models;
+using CoolifyCli.Infrastructure;
+using CoolifyCli.Models;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

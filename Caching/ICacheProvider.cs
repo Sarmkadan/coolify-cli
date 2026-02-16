@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Caching;
+namespace CoolifyCli.Caching;
 
 /// <summary>
 /// Interface for cache provider implementations.

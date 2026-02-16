@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Services;
+namespace CoolifyCli.Services;
 
 /// <summary>
 /// Manages resource quotas and limits for applications and databases.

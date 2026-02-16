@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Infrastructure;
+namespace CoolifyCli.Infrastructure;
 
 /// <summary>
 /// Configuration holder for Coolify API connection and CLI settings.

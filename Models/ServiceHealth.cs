@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Models;
+namespace CoolifyCli.Models;
 
 /// <summary>
 /// Represents the health status of an application or service.

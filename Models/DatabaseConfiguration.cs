@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Models;
+namespace CoolifyCli.Models;
 
 /// <summary>
 /// Represents a database instance managed by Coolify.

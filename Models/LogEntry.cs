@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-namespace CoolifiCli.Models;
+namespace CoolifyCli.Models;
 
 /// <summary>
 /// Represents a single log entry from an application or system component.

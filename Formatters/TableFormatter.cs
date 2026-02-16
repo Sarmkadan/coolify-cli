@@ -7,7 +7,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace CoolifiCli.Formatters;
+namespace CoolifyCli.Formatters;
 
 /// <summary>
 /// Formats data as ASCII tables for console output. Provides automatic column sizing,
