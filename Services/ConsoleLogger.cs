@@ -67,7 +67,7 @@ public class ConsoleLogger : ILogger
 
         if (_verboseLogging)
         {
-            var lines = exception.StackTrace?.Split('\n') ?? Array.Empty<string>();
+            var lines = exception.StackTrace?.Split('\n') ?? new string[0];
             foreach (var line in lines.Take(5))
             {
                 Debug($"  {line.Trim()}");
@@ -90,7 +90,7 @@ public class ConsoleLogger : ILogger
     {
         Fatal($"{message}: {exception.Message}");
 
-        if (_verboseLogging && exception.StackTrace != null)
+        if (_verboseLogging && exception.StackTrace is not null)
         {
             var lines = exception.StackTrace.Split('\n');
             foreach (var line in lines)

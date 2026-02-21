@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -65,14 +66,14 @@ public class DeploymentOrchestrator
             result.LogEvent("Checking current application health");
             var healthResult = await _healthService.CheckApplicationHealthAsync(applicationId);
 
-            if (healthResult.Success && healthResult.Data != null)
+            if (healthResult.Success && healthResult.Data is not null)
             {
                 result.PreDeploymentHealth = healthResult.Data;
                 result.LogEvent($"Current health status: {healthResult.Data.Status}");
             }
 
             // Step 3: Create backup snapshot (for databases)
-            if (linkedDatabaseIds != null && linkedDatabaseIds.Count > 0)
+            if (linkedDatabaseIds is not null && linkedDatabaseIds.Count > 0)
             {
                 result.LogEvent($"Creating backups for {linkedDatabaseIds.Count} linked databases");
                 await BackupDatabasesAsync(linkedDatabaseIds, result);
@@ -97,7 +98,7 @@ public class DeploymentOrchestrator
             await Task.Delay(5000); // Allow time for deployment to complete
 
             var postHealthResult = await _healthService.CheckApplicationHealthAsync(applicationId);
-            if (postHealthResult.Success && postHealthResult.Data != null)
+            if (postHealthResult.Success && postHealthResult.Data is not null)
             {
                 result.PostDeploymentHealth = postHealthResult.Data;
                 result.LogEvent($"Post-deployment health status: {postHealthResult.Data.Status}");
@@ -137,7 +138,7 @@ public class DeploymentOrchestrator
 
         // Check application exists and is valid
         var appResult = await _applicationService.GetApplicationAsync(applicationId);
-        if (!appResult.Success || appResult.Data == null)
+        if (!appResult.Success || appResult.Data is null)
         {
             errors.Add($"Application {applicationId} not found");
             return ApiResponse<object>.ErrorResponse(errors, 404);
@@ -147,7 +148,7 @@ public class DeploymentOrchestrator
         errors.AddRange(validationErrors);
 
         // Check linked databases
-        if (linkedDatabaseIds != null && linkedDatabaseIds.Count > 0)
+        if (linkedDatabaseIds is not null && linkedDatabaseIds.Count > 0)
         {
             foreach (var dbId in linkedDatabaseIds)
             {
@@ -157,7 +158,7 @@ public class DeploymentOrchestrator
 
                 // Check database health
                 var healthResult = await _databaseService.CheckDatabaseHealthAsync(dbId);
-                if (healthResult.Success && healthResult.Data != null && !healthResult.Data.IsHealthy())
+                if (healthResult.Success && healthResult.Data is not null && !healthResult.Data.IsHealthy())
                     errors.Add($"Database {dbId} is not healthy");
             }
         }

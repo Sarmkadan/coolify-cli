@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -87,7 +88,7 @@ public class DeploymentContext
     {
         var errors = new List<string>();
 
-        if (Application == null)
+        if (Application is null)
             errors.Add("Application is required.");
 
         var appErrors = Application?.Validate() ?? new List<string>();

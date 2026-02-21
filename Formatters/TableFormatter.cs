@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -29,7 +30,7 @@ public class TableFormatter : IOutputFormatter
     /// </summary>
     public string Format(object? data)
     {
-        if (data == null)
+        if (data is null)
             return string.Empty;
 
         var properties = data.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -71,7 +72,7 @@ public class TableFormatter : IOutputFormatter
     /// </summary>
     public string FormatDictionary(Dictionary<string, object?> data)
     {
-        if (data == null || data.Count == 0)
+        if (data is null || data.Count == 0)
             return "No data to display.";
 
         var rows = new List<List<string>>
@@ -285,7 +286,7 @@ public class TableFormatter : IOutputFormatter
     /// </summary>
     private string FormatValue(object? value)
     {
-        if (value == null)
+        if (value is null)
             return "-";
 
         var str = value is DateTime dt

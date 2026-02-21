@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -135,7 +136,7 @@ public class MemoryCacheProvider : ICacheProvider
 
             foreach (var entry in _cache.Values)
             {
-                if (entry.Value != null)
+                if (entry.Value is not null)
                 {
                     total += System.Runtime.InteropServices.Marshal.SizeOf(entry.Value);
                 }

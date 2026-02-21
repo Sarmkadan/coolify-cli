@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -33,7 +34,7 @@ public static class JsonConverter
     /// </summary>
     public static string ToJson<T>(T? obj, bool prettyPrint = false)
     {
-        if (obj == null)
+        if (obj is null)
             return "null";
 
         return JsonSerializer.Serialize(obj, prettyPrint ? PrettyOptions : DefaultOptions);
@@ -81,17 +82,17 @@ public static class JsonConverter
     /// </summary>
     public static T? Merge<T>(T? obj1, T? obj2) where T : class
     {
-        if (obj1 == null)
+        if (obj1 is null)
             return obj2;
 
-        if (obj2 == null)
+        if (obj2 is null)
             return obj1;
 
         var node1 = JsonNode.Parse(ToJson(obj1))?.AsObject();
         var node2 = JsonNode.Parse(ToJson(obj2))?.AsObject();
 
-        if (node1 == null) return obj2;
-        if (node2 == null) return obj1;
+        if (node1 is null) return obj2;
+        if (node2 is null) return obj1;
 
         foreach (var kvp in node2)
             node1[kvp.Key] = kvp.Value?.DeepClone();
@@ -137,7 +138,7 @@ public static class JsonConverter
         try
         {
             var jObject = JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
-            jObject[path] = value != null ? JsonSerializer.SerializeToNode(value, DefaultOptions) : null;
+            jObject[path] = value is not null ? JsonSerializer.SerializeToNode(value, DefaultOptions) : null;
             return jObject.ToJsonString();
         }
         catch (Exception ex)
@@ -206,7 +207,7 @@ public static class JsonConverter
     /// </summary>
     public static int GetJsonSize(object? obj)
     {
-        if (obj == null)
+        if (obj is null)
             return 4; // "null"
 
         var json = ToJson(obj);
@@ -218,7 +219,7 @@ public static class JsonConverter
     /// </summary>
     public static string DictionaryToJson(Dictionary<string, object?> dict, bool prettyPrint = false)
     {
-        if (dict == null || dict.Count == 0)
+        if (dict is null || dict.Count == 0)
             return "{}";
 
         return ToJson(dict, prettyPrint);
@@ -253,9 +254,9 @@ public static class JsonConverter
         try
         {
             var jObject = JsonNode.Parse(json)?.AsObject();
-            if (jObject == null) return json;
+            if (jObject is null) return json;
 
-            if (pathsToRemove != null)
+            if (pathsToRemove is not null)
             {
                 foreach (var path in pathsToRemove)
                     jObject.Remove(path);
@@ -298,7 +299,7 @@ public static class JsonConverter
             var obj1 = JsonNode.Parse(json1)?.AsObject();
             var obj2 = JsonNode.Parse(json2)?.AsObject();
 
-            if (obj1 == null || obj2 == null) return differences;
+            if (obj1 is null || obj2 is null) return differences;
 
             var allKeys = new HashSet<string>(
                 obj1.Select(p => p.Key).Concat(obj2.Select(p => p.Key)));

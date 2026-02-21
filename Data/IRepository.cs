@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -74,7 +75,7 @@ public abstract class BaseRepository<T> : IRepository<T> where T : class
             await LoadAsync();
 
         var entity = _cache.Values.FirstOrDefault(e => GetId(e) == id);
-        if (entity != null)
+        if (entity is not null)
         {
             _all.Remove(entity);
             _cache.Remove(id);

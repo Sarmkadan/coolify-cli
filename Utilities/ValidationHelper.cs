@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -182,7 +183,7 @@ public static class ValidationHelper
     /// </summary>
     public static bool IsNotEmpty<T>(IEnumerable<T>? collection)
     {
-        return collection != null && collection.Any();
+        return collection is not null && collection.Any();
     }
 
     /// <summary>
@@ -190,7 +191,7 @@ public static class ValidationHelper
     /// </summary>
     public static bool HasMinimumCount<T>(IEnumerable<T>? collection, int minimum)
     {
-        return collection != null && collection.Count() >= minimum;
+        return collection is not null && collection.Count() >= minimum;
     }
 
     /// <summary>
@@ -198,7 +199,7 @@ public static class ValidationHelper
     /// </summary>
     public static bool HasMaximumCount<T>(IEnumerable<T>? collection, int maximum)
     {
-        return collection == null || collection.Count() <= maximum;
+        return collection is null || collection.Count() <= maximum;
     }
 
     /// <summary>
