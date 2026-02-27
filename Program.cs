@@ -374,9 +374,228 @@ logsCommand.SetAction(async (parseResult, ct) =>
 var appCommand = new Command("app", "Manage applications") { appListCommand, appGetCommand, appDeployCommand };
 var dbCommand = new Command("db", "Manage databases") { dbListCommand, dbHealthCommand };
 
+// Environment variable commands
+var envCommand = new Command("env", "Manage application environment variables");
+var envAppIdArg = new Argument<int>("id") { Description = "Application ID" };
+
+var envListCommand = new Command("list", "List all environment variables for an application");
+var envListAppIdArg = new Argument<int>("id") { Description = "Application ID" };
+envListCommand.Add(envListAppIdArg);
+envListCommand.SetAction(async (parseResult, ct) =>
+{
+    var appId = parseResult.GetValue(envListAppIdArg);
+    try
+    {
+        var envService = new EnvironmentVariableService(apiClient, logger);
+        var result = await envService.GetApplicationVariablesAsync(appId.ToString());
+
+        if (result.Success && result.Data is not null)
+        {
+            if (result.Data.Count == 0)
+            {
+                Console.WriteLine("No environment variables found.");
+                return;
+            }
+            Console.WriteLine($"\n{"#",-4} {"KEY",-30} {"VALUE",-40}");
+            Console.WriteLine(new string('-', 74));
+            for (int i = 0; i < result.Data.Count; i++)
+            {
+                var v = result.Data[i];
+                Console.WriteLine($"{i + 1,-4} {v.Key,-30} {v.Value,-40}");
+            }
+        }
+        else
+        {
+            logger.Error($"Failed to list environment variables: {result.Message}");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.Error(ex, "Failed to list environment variables");
+    }
+});
+
+var envSetCommand = new Command("set", "Set an environment variable (or open interactive editor)");
+var envSetAppIdArg = new Argument<int>("id") { Description = "Application ID" };
+var envKeyArg = new Argument<string?>("key") { Description = "Variable key (omit when using --interactive)", Arity = ArgumentArity.ZeroOrOne };
+var envValueArg = new Argument<string?>("value") { Description = "Variable value (omit when using --interactive)", Arity = ArgumentArity.ZeroOrOne };
+var envInteractiveOption = new Option<bool>("--interactive", ["-i"]) { Description = "Open interactive editor to review and modify all environment variables" };
+envSetCommand.Add(envSetAppIdArg);
+envSetCommand.Add(envKeyArg);
+envSetCommand.Add(envValueArg);
+envSetCommand.Add(envInteractiveOption);
+envSetCommand.SetAction(async (parseResult, ct) =>
+{
+    var appId = parseResult.GetValue(envSetAppIdArg);
+    var key = parseResult.GetValue(envKeyArg);
+    var value = parseResult.GetValue(envValueArg);
+    var interactive = parseResult.GetValue(envInteractiveOption);
+    try
+    {
+        var envService = new EnvironmentVariableService(apiClient, logger);
+
+        if (interactive)
+        {
+            // Load current variables from API
+            logger.Info($"Loading environment variables for application {appId}...");
+            var existing = await envService.GetApplicationVariablesAsync(appId.ToString());
+            var vars = (existing.Success && existing.Data is not null)
+                ? existing.Data.ToDictionary(v => v.Key, v => v.Value)
+                : new Dictionary<string, string>();
+
+            Console.WriteLine($"\nInteractive environment variable editor for application {appId}");
+            Console.WriteLine("Current variables (loaded from API):\n");
+
+            if (vars.Count > 0)
+            {
+                Console.WriteLine($"  {"KEY",-30} {"VALUE",-40}");
+                Console.WriteLine("  " + new string('-', 70));
+                foreach (var kv in vars)
+                    Console.WriteLine($"  {kv.Key,-30} {kv.Value,-40}");
+            }
+            else
+            {
+                Console.WriteLine("  (no existing variables)");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Commands: set KEY=VALUE  |  delete KEY  |  list  |  done  |  quit");
+            Console.WriteLine();
+
+            var pending = new Dictionary<string, string>(vars);
+            var deleted = new HashSet<string>();
+
+            while (true)
+            {
+                Console.Write("> ");
+                var input = Console.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(input)) continue;
+
+                if (input.Equals("done", StringComparison.OrdinalIgnoreCase) ||
+                    input.Equals("save", StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+                else if (input.Equals("quit", StringComparison.OrdinalIgnoreCase) ||
+                         input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Aborted. No changes applied.");
+                    return;
+                }
+                else if (input.Equals("list", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"\n  {"KEY",-30} {"VALUE",-40}");
+                    Console.WriteLine("  " + new string('-', 70));
+                    foreach (var kv in pending)
+                        Console.WriteLine($"  {kv.Key,-30} {kv.Value,-40}");
+                    Console.WriteLine();
+                }
+                else if (input.StartsWith("delete ", StringComparison.OrdinalIgnoreCase))
+                {
+                    var delKey = input[7..].Trim();
+                    if (pending.Remove(delKey))
+                    {
+                        deleted.Add(delKey);
+                        Console.WriteLine($"  Marked '{delKey}' for deletion.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"  Key '{delKey}' not found.");
+                    }
+                }
+                else if (input.Contains('='))
+                {
+                    var parts = input.Split('=', 2);
+                    var k = parts[0].Trim();
+                    var v = parts[1].Trim();
+                    if (string.IsNullOrWhiteSpace(k))
+                    {
+                        Console.WriteLine("  Invalid: key cannot be empty.");
+                    }
+                    else
+                    {
+                        pending[k] = v;
+                        Console.WriteLine($"  Set {k}={v}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("  Unknown command. Use: set KEY=VALUE | delete KEY | list | done | quit");
+                }
+            }
+
+            // Compute diff
+            var toSet = pending
+                .Where(kv => !vars.TryGetValue(kv.Key, out var old) || old != kv.Value)
+                .Select(kv => new EnvironmentVariable { Key = kv.Key, Value = kv.Value })
+                .ToList();
+
+            if (toSet.Count == 0 && deleted.Count == 0)
+            {
+                Console.WriteLine("No changes detected.");
+                return;
+            }
+
+            Console.WriteLine($"\nChanges to apply: {toSet.Count} set, {deleted.Count} deleted.");
+            Console.Write("Apply changes? [y/N]: ");
+            var confirm = Console.ReadLine()?.Trim();
+            if (!confirm.Equals("y", StringComparison.OrdinalIgnoreCase) &&
+                !confirm.Equals("yes", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Aborted. No changes applied.");
+                return;
+            }
+
+            if (toSet.Count > 0)
+            {
+                var result = await envService.BulkUpdateVariablesAsync(appId.ToString(), toSet);
+                if (!result.Success)
+                {
+                    logger.Error($"Failed to apply changes: {result.Message}");
+                    Environment.ExitCode = 1;
+                    return;
+                }
+            }
+
+            Console.WriteLine($"✓ Applied {toSet.Count} change(s) successfully.");
+        }
+        else
+        {
+            // Non-interactive: set a single KEY VALUE
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                logger.Error("KEY is required. Use --interactive to open the editor, or provide KEY and VALUE arguments.");
+                Environment.ExitCode = 1;
+                return;
+            }
+
+            var variable = new EnvironmentVariable { Key = key, Value = value ?? string.Empty };
+            var result = await envService.CreateVariableAsync(appId.ToString(), variable);
+            if (result.Success)
+            {
+                Console.WriteLine($"✓ Set {key}");
+            }
+            else
+            {
+                logger.Error($"Failed to set variable: {result.Message}");
+                Environment.ExitCode = 1;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.Error(ex, "Failed to manage environment variables");
+        Environment.ExitCode = 1;
+    }
+});
+
+envCommand.Add(envListCommand);
+envCommand.Add(envSetCommand);
+
 rootCommand.Add(appCommand);
 rootCommand.Add(dbCommand);
 rootCommand.Add(logsCommand);
+rootCommand.Add(envCommand);
 
 // Health command
 var healthCommand = new Command("health", "Check system health");
