@@ -1,8 +1,8 @@
-#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
+#nullable enable
 
 using CoolifiCli.Infrastructure;
 using CoolifiCli.Services;
@@ -26,7 +26,7 @@ public class AuthenticationMiddleware : ICommandMiddleware
         "help",
         "--help",
         "-h",
-        "--version",
+        "version",
         "-v"
     };
 
@@ -48,7 +48,7 @@ public class AuthenticationMiddleware : ICommandMiddleware
         {
             if (!ValidateAuthentication())
             {
-                throw new UnauthorizedAccessException("API key is missing or invalid. Set COOLIFY_API_KEY environment variable.");
+                throw new UnauthorizedAccessException("API key is missing or invalid. Set COOLIFY_API_KEY environment variable. If using a refresh token, ensure it's properly configured and not expired.");
             }
 
             context.AuthenticatedUser = ExtractUserIdentifier();
