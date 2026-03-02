@@ -132,6 +132,9 @@ public class LogService
 
         while (!cancellationToken.IsCancellationRequested)
         {
+            var logsToYield = new List<LogEntry>();
+            bool shouldBreak = false;
+
             try
             {
                 var response = await GetApplicationLogsAsync(applicationId, 20);
@@ -143,24 +146,30 @@ public class LogService
                         .OrderBy(l => l.Timestamp)
                         .ToList();
 
-                    foreach (var logEntry in newLogs)
-                    {
-                        yield return logEntry;
-                        lastTimestamp = logEntry.Timestamp;
-                    }
+                    logsToYield.AddRange(newLogs);
+                    if (newLogs.Count > 0)
+                        lastTimestamp = newLogs[^1].Timestamp;
                 }
 
                 await Task.Delay(1000, cancellationToken);
             }
             catch (TaskCanceledException)
             {
-                break;
+                shouldBreak = true;
             }
             catch (Exception ex)
             {
                 _logger.Error($"Error streaming logs: {ex.Message}");
                 await Task.Delay(5000, cancellationToken);
             }
+
+            foreach (var logEntry in logsToYield)
+            {
+                yield return logEntry;
+            }
+
+            if (shouldBreak)
+                break;
         }
 
         _logger.Info($"Log stream ended for application {applicationId}");

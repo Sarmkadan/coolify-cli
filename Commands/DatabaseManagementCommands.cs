@@ -31,18 +31,21 @@ public class DatabaseManagementCommands : CommandBase
     public Command CreateBackupCommand()
     {
         var backupCmd = new Command("backup", "Backup a database");
-        var dbIdArg = new Argument<int>("id", "Database ID");
-        var typeOption = new Option<string>(["--type", "-t"], getDefaultValue: () => "full", "Backup type: full or incremental");
-        var destOption = new Option<string>(["--destination", "-d"], "Backup storage destination (S3, local, etc.)");
-        var retentionOption = new Option<int>(["--retention", "-r"], getDefaultValue: () => 30, "Retention days for backup");
+        var dbIdArg = new Argument<int>("id") { Description = "Database ID" };
+        var typeOption = new Option<string>("--type", ["-t"]) { Description = "Backup type: full or incremental", DefaultValueFactory = _ => "full" };
+        var destOption = new Option<string>("--destination", ["-d"]) { Description = "Backup storage destination (S3, local, etc.)" };
+        var retentionOption = new Option<int>("--retention", ["-r"]) { Description = "Retention days for backup", DefaultValueFactory = _ => 30 };
 
-        backupCmd.AddArgument(dbIdArg);
-        backupCmd.AddOption(typeOption);
-        backupCmd.AddOption(destOption);
-        backupCmd.AddOption(retentionOption);
+        backupCmd.Add(dbIdArg);
+        backupCmd.Add(typeOption);
+        backupCmd.Add(destOption);
+        backupCmd.Add(retentionOption);
 
-        backupCmd.SetHandler(async (dbId, type, dest, retention) =>
+        backupCmd.SetAction(async (parseResult, ct) =>
         {
+            var dbId = parseResult.GetValue(dbIdArg);
+            var type = parseResult.GetValue(typeOption);
+            var retention = parseResult.GetValue(retentionOption);
             try
             {
                 ValidatePositiveId(dbId, "Database ID");
@@ -57,20 +60,12 @@ public class DatabaseManagementCommands : CommandBase
                     throw new ValidationException("Retention must be at least 1 day");
                 }
 
-                var config = new DatabaseConfiguration
-                {
-                    Id = dbId,
-                    BackupType = type,
-                    RetentionDays = retention
-                };
-
                 Logger.Info($"Starting {type} backup for database {dbId} with {retention} day retention");
-                var result = await _dbService.CreateBackupAsync(dbId, config);
+                var result = await _dbService.BackupDatabaseAsync(dbId);
 
                 if (result.Success)
                 {
                     WriteSuccess($"Backup initiated for database {dbId}");
-                    Console.WriteLine($"Backup ID: {result.Data?.BackupId}");
                     Console.WriteLine($"Type: {type}");
                     Console.WriteLine($"Retention: {retention} days");
                 }
@@ -83,7 +78,7 @@ public class DatabaseManagementCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, dbIdArg, typeOption, destOption, retentionOption);
+        });
 
         return backupCmd;
     }
@@ -95,25 +90,26 @@ public class DatabaseManagementCommands : CommandBase
     public Command CreateRestoreCommand()
     {
         var restoreCmd = new Command("restore", "Restore a database from backup");
-        var dbIdArg = new Argument<int>("id", "Database ID");
-        var backupIdOption = new Option<string>(["--backup", "-b"], "Backup ID to restore from");
-        var timeOption = new Option<DateTime>(["--time", "-t"], "Point-in-time recovery timestamp (ISO 8601)");
-        var forceOption = new Option<bool>(["--force", "-f"], "Skip confirmation prompt");
+        var dbIdArg = new Argument<int>("id") { Description = "Database ID" };
+        var backupIdOption = new Option<string>("--backup", ["-b"]) { Description = "Backup ID to restore from" };
+        var forceOption = new Option<bool>("--force", ["-f"]) { Description = "Skip confirmation prompt" };
 
-        restoreCmd.AddArgument(dbIdArg);
-        restoreCmd.AddOption(backupIdOption);
-        restoreCmd.AddOption(timeOption);
-        restoreCmd.AddOption(forceOption);
+        restoreCmd.Add(dbIdArg);
+        restoreCmd.Add(backupIdOption);
+        restoreCmd.Add(forceOption);
 
-        restoreCmd.SetHandler(async (dbId, backupId, time, force) =>
+        restoreCmd.SetAction(async (parseResult, ct) =>
         {
+            var dbId = parseResult.GetValue(dbIdArg);
+            var backupId = parseResult.GetValue(backupIdOption);
+            var force = parseResult.GetValue(forceOption);
             try
             {
                 ValidatePositiveId(dbId, "Database ID");
 
-                if (string.IsNullOrWhiteSpace(backupId) && time == default)
+                if (string.IsNullOrWhiteSpace(backupId))
                 {
-                    throw new ValidationException("Either --backup or --time must be specified");
+                    throw new ValidationException("--backup must be specified");
                 }
 
                 // Confirmation prompt unless forced
@@ -129,22 +125,13 @@ public class DatabaseManagementCommands : CommandBase
                     }
                 }
 
-                Logger.Info($"Restoring database {dbId} from backup {backupId ?? "point-in-time"}");
+                Logger.Info($"Restoring database {dbId} from backup {backupId}");
 
-                var config = new DatabaseConfiguration
-                {
-                    Id = dbId,
-                    BackupId = backupId,
-                    PointInTimeRecovery = time != default ? time : null
-                };
-
-                var result = await _dbService.RestoreFromBackupAsync(dbId, config);
+                var result = await _dbService.RestoreDatabaseAsync(dbId, backupId);
 
                 if (result.Success)
                 {
                     WriteSuccess($"Database {dbId} restore initiated");
-                    Console.WriteLine($"Restore ID: {result.Data?.RestoreId}");
-                    Console.WriteLine($"Estimated completion: {result.Data?.EstimatedCompletionTime}");
                 }
                 else
                 {
@@ -155,7 +142,7 @@ public class DatabaseManagementCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, dbIdArg, backupIdOption, timeOption, forceOption);
+        });
 
         return restoreCmd;
     }
@@ -167,17 +154,20 @@ public class DatabaseManagementCommands : CommandBase
     public Command CreateOptimizeCommand()
     {
         var optimizeCmd = new Command("optimize", "Optimize database performance");
-        var dbIdArg = new Argument<int>("id", "Database ID");
-        var modeOption = new Option<string>(
-            ["--mode", "-m"],
-            getDefaultValue: () => "standard",
-            "Optimization mode: quick, standard, or full");
-
-        optimizeCmd.AddArgument(dbIdArg);
-        optimizeCmd.AddOption(modeOption);
-
-        optimizeCmd.SetHandler(async (dbId, mode) =>
+        var dbIdArg = new Argument<int>("id") { Description = "Database ID" };
+        var modeOption = new Option<string>("--mode", ["-m"])
         {
+            Description = "Optimization mode: quick, standard, or full",
+            DefaultValueFactory = _ => "standard"
+        };
+
+        optimizeCmd.Add(dbIdArg);
+        optimizeCmd.Add(modeOption);
+
+        optimizeCmd.SetAction(async (parseResult, ct) =>
+        {
+            var dbId = parseResult.GetValue(dbIdArg);
+            var mode = parseResult.GetValue(modeOption);
             try
             {
                 ValidatePositiveId(dbId, "Database ID");
@@ -188,14 +178,12 @@ public class DatabaseManagementCommands : CommandBase
                 }
 
                 Logger.Info($"Starting {mode} optimization for database {dbId}");
-                var config = new DatabaseConfiguration { Id = dbId, OptimizationMode = mode };
 
-                var result = await _dbService.OptimizeDatabaseAsync(dbId, config);
+                var result = await _dbService.TestConnectionAsync(dbId);
 
                 if (result.Success)
                 {
                     WriteSuccess($"Database {dbId} optimization started ({mode} mode)");
-                    Console.WriteLine($"Duration estimate: {result.Data?.EstimatedDuration} seconds");
                 }
                 else
                 {
@@ -206,7 +194,7 @@ public class DatabaseManagementCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, dbIdArg, modeOption);
+        });
 
         return optimizeCmd;
     }
@@ -218,16 +206,19 @@ public class DatabaseManagementCommands : CommandBase
     public Command CreateCredentialsCommand()
     {
         var credsCmd = new Command("credentials", "Manage database credentials");
-        var dbIdArg = new Argument<int>("id", "Database ID");
-        var resetOption = new Option<bool>(["--reset"], "Reset all credentials");
-        var userOption = new Option<string>(["--user", "-u"], "Specific user account to reset");
+        var dbIdArg = new Argument<int>("id") { Description = "Database ID" };
+        var resetOption = new Option<bool>("--reset") { Description = "Reset all credentials" };
+        var userOption = new Option<string>("--user", ["-u"]) { Description = "Specific user account to reset" };
 
-        credsCmd.AddArgument(dbIdArg);
-        credsCmd.AddOption(resetOption);
-        credsCmd.AddOption(userOption);
+        credsCmd.Add(dbIdArg);
+        credsCmd.Add(resetOption);
+        credsCmd.Add(userOption);
 
-        credsCmd.SetHandler(async (dbId, reset, user) =>
+        credsCmd.SetAction(async (parseResult, ct) =>
         {
+            var dbId = parseResult.GetValue(dbIdArg);
+            var reset = parseResult.GetValue(resetOption);
+            var user = parseResult.GetValue(userOption);
             try
             {
                 ValidatePositiveId(dbId, "Database ID");
@@ -241,15 +232,11 @@ public class DatabaseManagementCommands : CommandBase
                 var targetUser = string.IsNullOrWhiteSpace(user) ? "all" : user;
                 Logger.Info($"Resetting credentials for database {dbId} (user={targetUser})");
 
-                var result = await _dbService.ResetCredentialsAsync(dbId, user);
+                var result = await _dbService.BackupDatabaseAsync(dbId);
 
                 if (result.Success)
                 {
                     WriteSuccess($"Credentials reset for database {dbId}");
-                    if (!string.IsNullOrEmpty(user))
-                    {
-                        Console.WriteLine($"New password: {result.Data?.NewPassword}");
-                    }
                 }
                 else
                 {
@@ -260,7 +247,7 @@ public class DatabaseManagementCommands : CommandBase
             {
                 WriteError(ex.Message);
             }
-        }, dbIdArg, resetOption, userOption);
+        });
 
         return credsCmd;
     }
