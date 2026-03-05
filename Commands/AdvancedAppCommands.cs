@@ -62,7 +62,7 @@ public class AdvancedAppCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(startResult.Message);
+                    WriteError(startResult.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
@@ -157,7 +157,7 @@ public class AdvancedAppCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(result.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
@@ -218,7 +218,7 @@ public class AdvancedAppCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(updateResult.Message);
+                    WriteError(updateResult.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)
@@ -261,7 +261,7 @@ public class AdvancedAppCommands : CommandBase
                 }
                 else
                 {
-                    WriteError(result.Message);
+                    WriteError(result.Message ?? string.Empty);
                 }
             }
             catch (ValidationException ex)

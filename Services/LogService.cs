@@ -6,6 +6,7 @@
 
 namespace CoolifyCli.Services;
 
+using System.Runtime.CompilerServices;
 using CoolifyCli.Models;
 
 /// <summary>
@@ -123,7 +124,7 @@ public class LogService
     /// <param name="applicationId">The application ID.</param>
     /// <param name="cancellationToken">Cancellation token for stopping the stream.</param>
     /// <returns>Async enumerable of log entries as they arrive.</returns>
-    public async IAsyncEnumerable<LogEntry> StreamLogsAsync(string applicationId, System.Threading.CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<LogEntry> StreamLogsAsync(string applicationId, [EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(applicationId))
             yield break;

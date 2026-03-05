@@ -201,7 +201,7 @@ public static class CollectionExtensions
     }
 
     /// <summary>
-    /// Converts a dictionary to a query string format (key=value&key=value).
+    /// Converts a dictionary to a query string format (key=valuekey=value).
     /// </summary>
     public static string ToQueryString<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
         where TKey : notnull
