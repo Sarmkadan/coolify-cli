@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -44,7 +45,7 @@ appListCommand.SetAction(async (parseResult, ct) =>
         var appService = new ApplicationService(apiClient, logger);
         var result = await appService.GetAllApplicationsAsync();
 
-        if (result.Success && result.Data != null)
+        if (result.Success && result.Data is not null)
         {
             if (result.Data.Count == 0)
             {
@@ -83,7 +84,7 @@ appGetCommand.SetAction(async (parseResult, ct) =>
         var appService = new ApplicationService(apiClient, logger);
         var result = await appService.GetApplicationAsync(id);
 
-        if (result.Success && result.Data != null)
+        if (result.Success && result.Data is not null)
         {
             var app = result.Data;
             Console.WriteLine($"\nApplication: {app.Name}");
@@ -120,7 +121,7 @@ appDeployCommand.SetAction(async (parseResult, ct) =>
 
         // Get application details
         var appResult = await appService.GetApplicationAsync(id);
-        if (!appResult.Success || appResult.Data == null)
+        if (!appResult.Success || appResult.Data is null)
         {
             logger.Error($"Failed to get application: {appResult.Message}");
             return;
@@ -155,7 +156,7 @@ dbListCommand.SetAction(async (parseResult, ct) =>
         var dbService = new DatabaseService(apiClient, logger);
         var result = await dbService.GetAllDatabasesAsync();
 
-        if (result.Success && result.Data != null)
+        if (result.Success && result.Data is not null)
         {
             if (result.Data.Count == 0)
             {
@@ -194,7 +195,7 @@ dbHealthCommand.SetAction(async (parseResult, ct) =>
         var dbService = new DatabaseService(apiClient, logger);
         var result = await dbService.CheckDatabaseHealthAsync(id);
 
-        if (result.Success && result.Data != null)
+        if (result.Success && result.Data is not null)
         {
             var health = result.Data;
             Console.WriteLine($"\nDatabase Health Check:");
@@ -231,7 +232,7 @@ logsCommand.SetAction(async (parseResult, ct) =>
         var logService = new LogService(apiClient, logger);
         var result = await logService.GetApplicationLogsAsync(appId.ToString(), lines);
 
-        if (result.Success && result.Data != null)
+        if (result.Success && result.Data is not null)
         {
             Console.WriteLine($"\nLogs for application {appId} (showing {result.Data.Count} lines):\n");
             foreach (var log in result.Data.OrderBy(l => l.Timestamp))

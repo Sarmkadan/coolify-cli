@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -30,7 +31,7 @@ public class CsvFormatter : IOutputFormatter
     /// </summary>
     public string Format(object? data)
     {
-        if (data == null)
+        if (data is null)
             return string.Empty;
 
         var properties = GetProperties(data.GetType());
@@ -73,7 +74,7 @@ public class CsvFormatter : IOutputFormatter
     /// </summary>
     public string FormatDictionary(Dictionary<string, object?> data)
     {
-        if (data == null || data.Count == 0)
+        if (data is null || data.Count == 0)
             return string.Empty;
 
         var sb = new StringBuilder();
@@ -129,7 +130,7 @@ public class CsvFormatter : IOutputFormatter
     {
         var allProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-        if (_selectedFields == null || _selectedFields.Count == 0)
+        if (_selectedFields is null || _selectedFields.Count == 0)
             return allProperties;
 
         return allProperties
@@ -142,7 +143,7 @@ public class CsvFormatter : IOutputFormatter
     /// </summary>
     private string FormatValue(object? value)
     {
-        if (value == null)
+        if (value is null)
             return string.Empty;
 
         if (value is DateTime dt)

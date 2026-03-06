@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -27,7 +28,7 @@ public class DatabaseRepository : BaseRepository<DatabaseConfiguration>
         try
         {
             var response = await _apiClient.GetAsync<List<DatabaseConfiguration>>("/api/v1/databases");
-            if (response.Success && response.Data != null)
+            if (response.Success && response.Data is not null)
             {
                 _all.Clear();
                 _cache.Clear();
