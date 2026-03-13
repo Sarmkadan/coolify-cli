@@ -22,10 +22,14 @@
   <!-- Include only the source files under test, avoiding main project's broken dependencies -->
   <ItemGroup>
     <Compile Include="../../Extensions/StringExtensions.cs" />
+    <Compile Include="../../Extensions/CollectionExtensions.cs" />
+    <Compile Include="../../Extensions/DateTimeExtensions.cs" />
+    <Compile Include="../../Extensions/EnumExtensions.cs" />
     <Compile Include="../../Utilities/ValidationHelper.cs" />
     <Compile Include="../../Models/Enums.cs" />
     <Compile Include="../../Models/ApplicationDeployment.cs" />
     <Compile Include="../../Caching/ICacheProvider.cs" />
+    <Compile Include="../../Caching/MemoryCacheProvider.cs" />
   </ItemGroup>
 
 </Project>
