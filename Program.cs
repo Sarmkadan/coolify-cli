@@ -370,7 +370,6 @@ logsCommand.SetAction(async (parseResult, ct) =>
     }
 });
 
-
 // Build command hierarchy
 var advancedCmds = new AdvancedAppCommands(apiClient, logger, config);
 var diffCmds = new DeploymentDiffCommands(apiClient, logger, config);
@@ -644,10 +643,13 @@ healthCommand.SetAction(async (parseResult, ct) =>
 
 rootCommand.Add(healthCommand);
 
-
 // TUI command
 var tuiCmds = new TuiCommands(apiClient, logger, config);
 rootCommand.Add(tuiCmds.CreateTuiCommand());
+
+// Resource monitoring command
+var resourceMonitorCmds = new ResourceMonitorCommands(apiClient, logger, config);
+rootCommand.Add(resourceMonitorCmds.CreateResourcesCommand());
 
 // Infrastructure-as-code commands (iac apply | validate | diff | export | init)
 var iacCommand = InfrastructureCommands.CreateIacCommand(
