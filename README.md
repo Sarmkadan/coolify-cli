@@ -211,6 +211,48 @@ visibleApps[1].Name.Should().Be("api-service");
 visibleApps[2].Name.Should().Be("worker-process");
 ```
 
+## MemoryCacheProviderTests
+
+The `MemoryCacheProviderTests` class provides unit tests for the `MemoryCacheProvider` class, which handles in-memory caching with support for expiration, atomic operations, and factory-based value creation. These tests verify core CRUD operations, expiration handling, concurrency, and cache management to ensure that cached data is reliably stored, retrieved, and cleaned up as expected.
+
+Here's an example of how to use the tested methods to manage cached data:
+
+```csharp
+// Initialize the memory cache provider
+// Use a reasonable cleanup interval for the test
+using var cache = new MemoryCacheProvider(cleanupInterval: TimeSpan.FromMinutes(1));
+
+// Store a value
+cache.Set("key1", "value1");
+
+// Verify existence and retrieve
+if (cache.Exists("key1"))
+{
+    var value = cache.Get<string>("key1");
+    // value is "value1"
+}
+
+// Try to retrieve a value safely
+if (cache.TryGet("key1", out string? retrievedValue))
+{
+    // retrievedValue is "value1"
+}
+
+// Remove an entry
+cache.Remove("key1");
+
+// Clear all entries
+cache.Clear();
+
+// Efficiently get or add a value (invokes factory if key is missing)
+var result = cache.GetOrAdd("key2", () => "computedValue");
+// result is "computedValue"
+
+// Verify count
+var count = cache.Count;
+// count is 1
+```
+
 ## DateTimeExtensionsTests
 
 The `DateTimeExtensionsTests` class provides unit tests for the DateTime extension methods in the `CoolifyCli.Extensions` namespace. It tests relative time formatting, duration formatting, date manipulation, and business day calculations to ensure these utility methods work correctly across different time ranges and scenarios.
