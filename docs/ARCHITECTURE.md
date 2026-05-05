@@ -576,7 +576,7 @@ Production Use
 - **CLI Framework**: System.CommandLine
 - **HTTP Client**: HttpClient with retry policies
 - **Logging**: Console and file logging
-- **JSON**: Newtonsoft.Json
+- **JSON**: System.Text.Json
 - **Configuration**: Environment variables + .env
 - **Caching**: Memory cache
 - **Dependency Injection**: Manual (can upgrade to DI container)

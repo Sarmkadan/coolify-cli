@@ -3,8 +3,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace CoolifiCli.Formatters;
 
@@ -14,7 +15,7 @@ namespace CoolifiCli.Formatters;
 /// </summary>
 public class JsonFormatter : IOutputFormatter
 {
-    private readonly JsonSerializerSettings _settings;
+    private readonly JsonSerializerOptions _options;
     private readonly bool _prettyPrint;
     private readonly List<string>? _includeFields;
     private readonly List<string>? _excludeFields;
@@ -25,12 +26,11 @@ public class JsonFormatter : IOutputFormatter
         _includeFields = includeFields;
         _excludeFields = excludeFields;
 
-        _settings = new JsonSerializerSettings
+        _options = new JsonSerializerOptions
         {
-            DateFormatString = "yyyy-MM-ddTHH:mm:ssZ",
-            NullValueHandling = NullValueHandling.Ignore,
-            Formatting = prettyPrint ? Formatting.Indented : Formatting.None,
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            WriteIndented = prettyPrint,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
         };
     }
 
@@ -42,7 +42,7 @@ public class JsonFormatter : IOutputFormatter
         if (data == null)
             return "null";
 
-        var json = JsonConvert.SerializeObject(data, _settings);
+        var json = JsonSerializer.Serialize(data, _options);
         return FilterJson(json);
     }
 
@@ -54,7 +54,7 @@ public class JsonFormatter : IOutputFormatter
         if (items == null)
             return "[]";
 
-        var json = JsonConvert.SerializeObject(items.ToList(), _settings);
+        var json = JsonSerializer.Serialize(items.ToList(), _options);
         return FilterJson(json);
     }
 
@@ -66,7 +66,7 @@ public class JsonFormatter : IOutputFormatter
         if (data == null || data.Count == 0)
             return "{}";
 
-        var json = JsonConvert.SerializeObject(data, _settings);
+        var json = JsonSerializer.Serialize(data, _options);
         return FilterJson(json);
     }
 
@@ -77,8 +77,8 @@ public class JsonFormatter : IOutputFormatter
     {
         try
         {
-            var jObject = JObject.Parse(jsonString);
-            var reformatted = jObject.ToString(_settings.Formatting);
+            var node = JsonNode.Parse(jsonString);
+            var reformatted = node?.ToJsonString(_options) ?? "{}";
             return FilterJson(reformatted);
         }
         catch (JsonException ex)
@@ -94,8 +94,8 @@ public class JsonFormatter : IOutputFormatter
     {
         try
         {
-            var jObject = JObject.Parse(jsonString);
-            return jObject.ToString(Formatting.None);
+            var node = JsonNode.Parse(jsonString);
+            return node?.ToJsonString() ?? "{}";
         }
         catch (JsonException ex)
         {
@@ -110,8 +110,8 @@ public class JsonFormatter : IOutputFormatter
     {
         try
         {
-            var jObject = JObject.Parse(jsonString);
-            return jObject.ToString(Formatting.Indented);
+            var node = JsonNode.Parse(jsonString);
+            return node?.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) ?? "{}";
         }
         catch (JsonException ex)
         {
@@ -120,15 +120,22 @@ public class JsonFormatter : IOutputFormatter
     }
 
     /// <summary>
-    /// Extracts a specific field from JSON using dot notation (e.g., "data.items[0].name").
+    /// Extracts a specific field from JSON using dot notation (e.g., "data.items").
     /// </summary>
     public string? ExtractField(string jsonString, string fieldPath)
     {
         try
         {
-            var jObject = JObject.Parse(jsonString);
-            var token = jObject.SelectToken(fieldPath);
-            return token?.ToString();
+            JsonNode? node = JsonNode.Parse(jsonString);
+            foreach (var part in fieldPath.Split('.'))
+            {
+                if (node is JsonObject obj)
+                    node = obj[part];
+                else
+                    return null;
+            }
+
+            return node?.ToJsonString();
         }
         catch
         {
@@ -146,19 +153,16 @@ public class JsonFormatter : IOutputFormatter
 
         try
         {
-            var jObject = JObject.Parse(json);
+            var jObject = JsonNode.Parse(json)?.AsObject();
+            if (jObject == null) return json;
 
             if (_includeFields != null && _includeFields.Count > 0)
-            {
                 jObject = FilterByInclude(jObject);
-            }
 
             if (_excludeFields != null && _excludeFields.Count > 0)
-            {
                 jObject = FilterByExclude(jObject);
-            }
 
-            return jObject.ToString(_settings.Formatting);
+            return jObject.ToJsonString(_options);
         }
         catch
         {
@@ -169,16 +173,14 @@ public class JsonFormatter : IOutputFormatter
     /// <summary>
     /// Filters JSON to include only specified fields.
     /// </summary>
-    private JObject FilterByInclude(JObject jObject)
+    private JsonObject FilterByInclude(JsonObject jObject)
     {
-        var filtered = new JObject();
+        var filtered = new JsonObject();
 
         foreach (var field in _includeFields!)
         {
             if (jObject.ContainsKey(field))
-            {
-                filtered[field] = jObject[field];
-            }
+                filtered[field] = jObject[field]?.DeepClone();
         }
 
         return filtered;
@@ -187,13 +189,14 @@ public class JsonFormatter : IOutputFormatter
     /// <summary>
     /// Filters JSON to exclude specified fields.
     /// </summary>
-    private JObject FilterByExclude(JObject jObject)
+    private JsonObject FilterByExclude(JsonObject jObject)
     {
-        var filtered = new JObject(jObject);
+        var filtered = new JsonObject();
 
-        foreach (var field in _excludeFields!)
+        foreach (var kvp in jObject)
         {
-            filtered.Remove(field);
+            if (!_excludeFields!.Contains(kvp.Key))
+                filtered[kvp.Key] = kvp.Value?.DeepClone();
         }
 
         return filtered;
