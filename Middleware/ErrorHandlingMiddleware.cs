@@ -36,7 +36,7 @@ public class ErrorHandlingMiddleware : ICommandMiddleware
         {
             HandleValidationError(context, vex);
         }
-        catch (CoolifyApiException apiEx)
+        catch (ApiException apiEx)
         {
             HandleApiError(context, apiEx);
         }
@@ -70,7 +70,7 @@ public class ErrorHandlingMiddleware : ICommandMiddleware
     /// <summary>
     /// Handles Coolify API errors with status code awareness.
     /// </summary>
-    private void HandleApiError(CommandContext context, CoolifyApiException ex)
+    private void HandleApiError(CommandContext context, ApiException ex)
     {
         context.ExitCode = Constants.ExitCodes.ApiError;
 
