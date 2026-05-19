@@ -56,7 +56,7 @@ jobs:
         run: dotnet build -c Release --no-restore
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-${{ matrix.os_name }}
           path: bin/Release/net10.0/
@@ -171,7 +171,7 @@ jobs:
           cd ..
 
       - name: Upload Release Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.os_name }}
           path: dist/
