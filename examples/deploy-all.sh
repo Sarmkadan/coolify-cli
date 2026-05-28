@@ -1,9 +1,4 @@
 #!/bin/bash
-# =============================================================================
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
-# =============================================================================
-
 # Deploy all applications sequentially with health verification
 
 set -e  # Exit on error

@@ -3,8 +3,6 @@
 # =============================================================================
 # Environment Variable Sync Script
 # Synchronize environment variables across applications and environments
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
 # =============================================================================
 
 set -euo pipefail
