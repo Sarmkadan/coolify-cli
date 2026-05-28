@@ -1,9 +1,4 @@
 #nullable enable
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =============================================================================
-
 using CoolifyCli.Infrastructure;
 using CoolifyCli.Services;
 using System.CommandLine;
