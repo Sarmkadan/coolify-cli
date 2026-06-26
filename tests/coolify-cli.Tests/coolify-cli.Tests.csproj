@@ -33,6 +33,7 @@
     <Compile Include="../../Models/TuiState.cs" />
     <Compile Include="../../Models/DeploymentDiff.cs" />
     <Compile Include="../../Models/ResourceUsage.cs" />
+    <Compile Include="../../Models/EnvironmentVariable.cs" />
     <Compile Include="../../Caching/ICacheProvider.cs" />
     <Compile Include="../../Caching/MemoryCacheProvider.cs" />
   </ItemGroup>
