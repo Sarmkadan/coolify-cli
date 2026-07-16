@@ -1513,6 +1513,116 @@ catch (OperationCanceledException)
 }
 ```
 
+## HealthCheckService
+
+The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
+
+Here's a realistic example of using the `HealthCheckService` to monitor application health:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+
+var healthCheckService = new HealthCheckService(apiClient, logger);
+
+// Example 1: Perform a single health check on an application
+var healthResponse = await healthCheckService.CheckApplicationHealthAsync(42);
+if (healthResponse.Success && healthResponse.Data is not null)
+{
+    var health = healthResponse.Data;
+    Console.WriteLine($"Application health: {health.Status}");
+    Console.WriteLine($"Response time: {health.ResponseTimeMs}ms");
+    Console.WriteLine($"CPU usage: {health.CpuUsagePercent}%");
+    Console.WriteLine($"Memory usage: {health.MemoryUsageMb} MB");
+}
+
+// Example 2: Check health for multiple applications at once
+var appIds = new List<int> { 42, 43, 44, 45 };
+var bulkHealthResponse = await healthCheckService.CheckBulkHealthAsync(appIds);
+if (bulkHealthResponse.Success && bulkHealthResponse.Data is not null)
+{
+    foreach (var (appId, health) in bulkHealthResponse.Data)
+    {
+        Console.WriteLine($"App {appId}: {health.Status} (CPU: {health.CpuUsagePercent}%)");
+    }
+}
+
+// Example 3: Get historical health data for trend analysis
+var historyResponse = await healthCheckService.GetHealthHistoryAsync(42, days: 30);
+if (historyResponse.Success && historyResponse.Data is not null)
+{
+    Console.WriteLine($"Retrieved {historyResponse.Data.Count} health records from the last 30 days");
+    // Analyze trends over time
+}
+
+// Example 4: Retrieve application metrics
+var metricsResponse = await healthCheckService.GetMetricsAsync(42, metricType: "cpu");
+if (metricsResponse.Success && metricsResponse.Data is not null)
+{
+    Console.WriteLine("CPU usage metrics retrieved successfully");
+}
+
+// Example 5: Get real-time metrics for immediate monitoring
+var realtimeMetricsResponse = await healthCheckService.GetRealtimeMetricsAsync(42);
+if (realtimeMetricsResponse.Success)
+{
+    Console.WriteLine("Real-time metrics fetched successfully");
+}
+
+// Example 6: Monitor an application continuously with cancellation
+using var cts = new CancellationTokenSource();
+
+// Start monitoring in background
+var monitoringTask = Task.Run(async () =>
+{
+    await foreach (var health in healthCheckService.MonitorHealthAsync(42, intervalSeconds: 15, cts.Token))
+    {
+        Console.WriteLine($"[{health.CheckedAt:HH:mm:ss}] Status: {health.Status}, CPU: {health.CpuUsagePercent}%");
+        
+        // Alert on unhealthy status
+        if (health.Status != HealthStatus.Healthy)
+        {
+            Console.WriteLine($"ALERT: Application is {health.Status}");
+        }
+    }
+});
+
+// Run for 2 minutes then stop
+await Task.Delay(TimeSpan.FromMinutes(2));
+cts.Cancel();
+
+try
+{
+    await monitoringTask;
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("Health monitoring stopped");
+}
+
+// Example 7: Get application alerts
+var alertsResponse = await healthCheckService.GetApplicationAlertsAsync(42);
+if (alertsResponse.Success && alertsResponse.Data is not null)
+{
+    Console.WriteLine($"Found {alertsResponse.Data.Count} active alerts");
+}
+
+// Example 8: Acknowledge an alert
+var acknowledgeResponse = await healthCheckService.AcknowledgeAlertAsync(123, "admin-user");
+if (acknowledgeResponse.Success)
+{
+    Console.WriteLine("Alert acknowledged successfully");
+}
+
+// Example 9: Get system-wide health summary
+var systemHealthResponse = await healthCheckService.GetSystemHealthAsync();
+if (systemHealthResponse.Success)
+{
+    Console.WriteLine("System health summary retrieved");
+}
+```
+
 ## ResourceUsageTests
 
 The `ResourceUsageTests` class provides unit tests for the `ResourceUsage` model, which tracks and analyzes resource consumption metrics such as CPU percentage and memory usage. These tests verify the calculation of memory percentage, alert severity determination based on resource thresholds, and summary line generation for monitoring purposes.
