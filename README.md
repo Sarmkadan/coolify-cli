@@ -326,6 +326,94 @@ var artifactPath = successLog.GetMetadata("Artifacts");
 // artifactPath is "web-storefront-v1.2.3.tar.gz"
 ```
 
+## LogService
+
+The `LogService` class provides comprehensive log retrieval and management capabilities for applications and databases managed by Coolify. It supports retrieving recent logs, searching by content, filtering by log level, querying by time ranges, real-time streaming, and exporting logs to various formats. This service integrates with the Coolify API to provide centralized log access and management.
+
+Here's a realistic example of using the `LogService` to manage and retrieve logs:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var logService = new LogService(apiClient, logger);
+
+// Example 1: Get recent application logs
+var recentLogsResponse = await logService.GetApplicationLogsAsync("web-storefront", lines: 200);
+if (recentLogsResponse.Success && recentLogsResponse.Data is not null)
+{
+  Console.WriteLine($"Retrieved {recentLogsResponse.Data.Count} log entries");
+  foreach (var log in recentLogsResponse.Data.Take(5))
+  {
+    Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.Level} {log.Message}");
+  }
+}
+
+// Example 2: Search logs for specific error messages
+var searchResponse = await logService.SearchLogsAsync("api-service", "timeout", limit: 50);
+if (searchResponse.Success)
+{
+  Console.WriteLine($"Found {searchResponse.Data?.Count ?? 0} matching log entries");
+}
+
+// Example 3: Filter logs by severity level
+var errorLogsResponse = await logService.GetLogsByLevelAsync("web-storefront", LogLevel.Error);
+if (errorLogsResponse.Success)
+{
+  Console.WriteLine($"Found {errorLogsResponse.Data?.Count ?? 0} error entries");
+}
+
+// Example 4: Get logs within a specific time range
+var startTime = DateTime.UtcNow.AddHours(-1);
+var endTime = DateTime.UtcNow;
+var timeRangeResponse = await logService.GetLogsByTimeRangeAsync("web-storefront", startTime, endTime);
+if (timeRangeResponse.Success)
+{
+  Console.WriteLine($"Logs between {startTime:HH:mm:ss} and {endTime:HH:mm:ss}");
+}
+
+// Example 5: Stream logs in real-time with cancellation
+using var cts = new CancellationTokenSource();
+
+// Start streaming logs in background
+var streamingTask = Task.Run(async () =>
+{
+  await foreach (var logEntry in logService.StreamLogsAsync("web-storefront", cts.Token))
+  {
+    Console.WriteLine($"[{logEntry.Timestamp:HH:mm:ss}] {logEntry.Level} {logEntry.Message}");
+  }
+});
+
+// Run for 30 seconds then stop
+await Task.Delay(TimeSpan.FromSeconds(30), cts.Token);
+cts.Cancel();
+
+try
+{
+  await streamingTask;
+}
+catch (OperationCanceledException)
+{
+  Console.WriteLine("Log streaming stopped");
+}
+
+// Example 6: Get database logs
+var dbLogsResponse = await logService.GetDatabaseLogsAsync(42, lines: 100);
+if (dbLogsResponse.Success)
+{
+  Console.WriteLine($"Retrieved {dbLogsResponse.Data?.Count ?? 0} database log entries");
+}
+
+// Example 7: Export logs to JSON format
+var exportResponse = await logService.ExportLogsAsync("web-storefront", "json");
+if (exportResponse.Success)
+{
+  Console.WriteLine("Log export initiated successfully");
+}
+```
+
 ## DeploymentTests
 
 The `DeploymentTests` class provides unit tests that verify the behavior of the `ApplicationDeployment` class, focusing on validation, deployment state management, failure tracking, and caching functionality. These tests ensure that deployment configurations are properly validated, state transitions work correctly, failure states are tracked accurately, and cached deployments are retrieved and updated as expected.
