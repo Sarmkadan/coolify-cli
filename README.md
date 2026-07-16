@@ -222,6 +222,76 @@ Console.WriteLine($"Proposed: {branchChange.ProposedValue}");
 Console.WriteLine($"Category: {branchChange.Category}");
 ```
 
+## LogEntry
+
+The `LogEntry` class represents a single log entry from an application or system component. It supports structured logging with levels (Debug, Info, Warning, Error, Fatal), timestamps, source tracking, and metadata storage. This model is used throughout the application for logging deployment events, errors, warnings, and informational messages with rich context.
+
+Here's a realistic example of creating and using a `LogEntry`:
+
+```csharp
+// Create a log entry for a successful deployment event
+var successLog = new LogEntry
+{
+ApplicationId = "web-storefront",
+Message = "Deployment completed successfully",
+Level = LogLevel.Info,
+Source = "DeploymentCoordinator",
+Timestamp = DateTime.UtcNow,
+Metadata = new Dictionary<string, string>
+{
+["DurationMs"] = "12500",
+["BuildId"] = "build-42",
+["Environment"] = "production"
+}
+};
+
+// Log an informational message
+Console.WriteLine(successLog.ToString());
+// Output: [2024-06-15 14:30:45] INFO [DeploymentCoordinator] Deployment completed successfully
+
+// Create a warning log entry for high resource usage
+var warningLog = new LogEntry
+{
+ApplicationId = "api-service",
+Message = "High CPU usage detected",
+Level = LogLevel.Warning,
+Source = "ResourceMonitor",
+Metadata = new Dictionary<string, string>
+{
+["CpuPercent"] = "92.5",
+["MemoryMb"] = "1850",
+["Threshold"] = "80"
+}
+};
+
+// Log a warning
+Console.WriteLine(warningLog.ToString());
+// Output: [2024-06-15 14:31:12] WARN [ResourceMonitor] High CPU usage detected
+
+// Create a log entry from an exception
+try
+{
+// Some operation that might fail
+}
+catch (Exception ex)
+{
+var errorLog = LogEntry.FromException("web-storefront", ex, "DatabaseService");
+Console.WriteLine(errorLog.ToString());
+// Output: [2024-06-15 14:32:05] ERROR [DatabaseService] Connection timeout
+// Metadata includes ExceptionType and InnerException
+
+// Check if a log entry is critical
+if (errorLog.IsCritical())
+{
+Console.WriteLine("Critical error detected!");
+}
+
+// Add additional metadata to an existing log entry
+successLog.AddMetadata("Artifacts", "web-storefront-v1.2.3.tar.gz");
+var artifactPath = successLog.GetMetadata("Artifacts");
+// artifactPath is "web-storefront-v1.2.3.tar.gz"
+```
+
 ## DeploymentTests
 
 The `DeploymentTests` class provides unit tests that verify the behavior of the `ApplicationDeployment` class, focusing on validation, deployment state management, failure tracking, and caching functionality. These tests ensure that deployment configurations are properly validated, state transitions work correctly, failure states are tracked accurately, and cached deployments are retrieved and updated as expected.
