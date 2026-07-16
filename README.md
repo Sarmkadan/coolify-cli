@@ -1923,6 +1923,114 @@ ConfigurationHelper.ImportConfiguration("config-backup.json");
 ConfigurationHelper.ResetConfiguration();
 ```
 
+## CsvFormatter
+
+The `CsvFormatter` class provides comprehensive CSV formatting capabilities for converting objects, collections, and dictionaries into properly formatted CSV output. It handles proper escaping of special characters, custom delimiters, header row inclusion, and field selection. The formatter also supports parsing CSV data back into structured dictionaries for data import scenarios.
+
+Here's a realistic example of using the `CsvFormatter` to format and parse CSV data:
+
+```csharp
+// Create a CSV formatter with default settings (comma delimiter, include headers)
+var csvFormatter = new CsvFormatter();
+
+// Example 1: Format a single object as CSV
+var deployment = new ApplicationDeployment
+{
+    Id = 42,
+    Name = "web-storefront",
+    Repository = "https://github.com/org/web-storefront",
+    Branch = "main",
+    EnvironmentId = "env-prod",
+    BuildCommand = "dotnet publish",
+    StartCommand = "dotnet run",
+    Ports = new List<string> { "8080" },
+    HealthCheckIntervalSeconds = 30,
+    EnvironmentVariables = new Dictionary<string, string> { ["LOG_LEVEL"] = "info" }
+};
+
+var csvLine = csvFormatter.Format(deployment);
+Console.WriteLine(csvLine);
+// Output: Id,Name,Repository,Branch,EnvironmentId,BuildCommand,StartCommand,Ports,HealthCheckIntervalSeconds,EnvironmentVariables
+//         42,web-storefront,https://github.com/org/web-storefront,main,env-prod,dotnet publish,dotnet run,"8080",30,"LOG_LEVEL=info"
+
+// Example 2: Format a collection of objects as CSV with headers
+var deployments = new List<ApplicationDeployment>
+{
+    new ApplicationDeployment
+    {
+        Id = 42,
+        Name = "web-storefront",
+        Repository = "https://github.com/org/web-storefront",
+        Branch = "main"
+    },
+    new ApplicationDeployment
+    {
+        Id = 43,
+        Name = "api-service",
+        Repository = "https://github.com/org/api-service",
+        Branch = "release/v2"
+    }
+};
+
+var csvCollection = csvFormatter.FormatCollection(deployments);
+Console.WriteLine(csvCollection);
+/* Output:
+Id,Name,Repository,Branch
+42,web-storefront,https://github.com/org/web-storefront,main
+43,api-service,https://github.com/org/api-service,release/v2
+*/
+
+// Example 3: Format a dictionary as CSV
+var configData = new Dictionary<string, object?>
+{
+    ["ApplicationId"] = 42,
+    ["Name"] = "web-storefront",
+    ["Environment"] = "production",
+    ["Replicas"] = 3,
+    ["Enabled"] = true
+};
+
+var csvDictionary = csvFormatter.FormatDictionary(configData);
+Console.WriteLine(csvDictionary);
+/* Output:
+ApplicationId,Name,Environment,Replicas,Enabled
+42,web-storefront,production,3,True
+*/
+
+// Example 4: Parse CSV data back into structured dictionaries
+var csvContent = @"Id,Name,Environment,Status
+42,web-storefront,production,Running
+43,api-service,staging,Stopped";
+
+var parsedData = csvFormatter.ParseCsv(csvContent);
+Console.WriteLine($"Parsed {parsedData.Count} rows");
+foreach (var row in parsedData)
+{
+    Console.WriteLine($"Row: {row["Name"]} is {row["Status"]} in {row["Environment"]}");
+}
+/* Output:
+Parsed 2 rows
+Row: web-storefront is Running in production
+Row: api-service is Stopped in staging
+*/
+
+// Example 5: Use custom delimiter (semicolon)
+var semicolonFormatter = new CsvFormatter(delimiter: ';');
+var csvSemicolon = semicolonFormatter.FormatDictionary(configData);
+Console.WriteLine(csvSemicolon);
+// Output: ApplicationId;Name;Environment;Replicas;Enabled
+//         42;web-storefront;production;3;True
+
+// Example 6: Exclude header row
+var noHeaderFormatter = new CsvFormatter(includeHeader: false);
+var csvNoHeader = noHeaderFormatter.FormatCollection(deployments);
+Console.WriteLine(csvNoHeader);
+/* Output:
+42,web-storefront,https://github.com/org/web-storefront,main
+43,api-service,https://github.com/org/api-service,release/v2
+*/
+```
+
 ## ValidationHelper
 
 The `ValidationHelper` class provides a comprehensive set of utility methods for validating common data patterns and input values. It includes helpers for validating IDs, strings, email addresses, URLs, IP addresses, hostnames, ports, database names, usernames, semantic versions, and collections. The class also provides range validation and membership checks for various data types.
