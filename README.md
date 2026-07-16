@@ -1223,6 +1223,104 @@ var partitions = deploymentIds.Partition(4);
 // partitions contains: [[1,2,3,4], [5,6,7,8], [9,10]]
 ```
 
+## EnvironmentVariableService
+
+The `EnvironmentVariableService` class provides comprehensive management of environment variables for applications and services within Coolify. It handles CRUD operations, bulk updates, secret rotation, validation, and change tracking across different environment scopes. The service integrates with the API client to ensure consistent environment variable management across the deployment lifecycle.
+
+Here's a realistic example of using the EnvironmentVariableService to manage application environment variables:
+
+```csharp
+// Initialize the environment variable service with API client and logger
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var envVarService = new EnvironmentVariableService(apiClient, logger, config);
+
+// Retrieve all environment variables for a specific application
+var appVarsResponse = await envVarService.GetApplicationVariablesAsync("web-storefront");
+if (appVarsResponse.Success)
+{
+    var environmentVariables = appVarsResponse.Data;
+    Console.WriteLine($"Found {environmentVariables.Count} environment variables");
+}
+
+// Create a new environment variable
+var createResponse = await envVarService.CreateVariableAsync(new EnvironmentVariable
+{
+    ApplicationId = "web-storefront",
+    Key = "DATABASE_URL",
+    Value = "postgresql://user:pass@localhost:5432/mydb",
+    IsSecret = true,
+    Description = "Database connection string",
+    EnvironmentScope = "production"
+});
+
+if (createResponse.Success)
+{
+    Console.WriteLine($"Created variable: {createResponse.Data.Key}");
+}
+
+// Update an existing environment variable
+var updateResponse = await envVarService.UpdateVariableAsync(new EnvironmentVariable
+{
+    Id = "var-123",
+    ApplicationId = "web-storefront",
+    Key = "DATABASE_URL",
+    Value = "postgresql://user:newpass@localhost:5432/mydb",
+    IsSecret = true,
+    EnvironmentScope = "production"
+});
+
+// Get a specific environment variable by ID
+var getResponse = await envVarService.GetVariableAsync("var-123");
+if (getResponse.Success)
+{
+    var variable = getResponse.Data;
+    Console.WriteLine($"Variable {variable.Key} = {variable.GetDisplayValue(maskSecrets: true)}");
+}
+
+// Bulk update multiple environment variables
+var bulkUpdateResponse = await envVarService.BulkUpdateVariablesAsync(new List<EnvironmentVariable>
+{
+    new EnvironmentVariable { Id = "var-123", Value = "postgresql://updated:pass@localhost:5432/mydb" },
+    new EnvironmentVariable { Id = "var-456", Value = "redis://cache:6379" }
+});
+
+// Get variables by scope (e.g., all production variables)
+var scopeResponse = await envVarService.GetVariablesByScopeAsync("web-storefront", "production");
+
+// Rotate secrets for an application (generates new values for all secret variables)
+var rotateResponse = await envVarService.RotateSecretsAsync("web-storefront", "production");
+
+// Validate environment variables before deployment
+var validationResponse = await envVarService.ValidateVariablesAsync("web-storefront", new Dictionary<string, string>
+{
+    ["DATABASE_URL"] = "postgresql://user:pass@localhost:5432/mydb",
+    ["REDIS_URL"] = "redis://cache:6379"
+});
+
+if (!validationResponse.Success)
+{
+    Console.WriteLine("Validation errors:");
+    foreach (var error in validationResponse.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Get change history for audit purposes
+var historyResponse = await envVarService.GetChangeHistoryAsync("web-storefront", "production");
+if (historyResponse.Success)
+{
+    var changes = historyResponse.Data;
+    Console.WriteLine($"Found {changes.Count} change records");
+}
+
+// Delete an environment variable
+var deleteResponse = await envVarService.DeleteVariableAsync("var-123");
+```
+
 ## EnumExtensions
 
 The `EnumExtensions` class provides a comprehensive set of utility methods for working with enums in C#. It includes helpers for getting enum descriptions, parsing strings to enums, converting enums to display strings, checking flags, converting to numeric values, and generating CLI-friendly formats. These utilities are particularly useful for CLI applications, configuration options, and user-friendly enum displays.
