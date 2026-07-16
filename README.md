@@ -1775,6 +1775,41 @@ var updateResponse = await apiClient.PutAsync<ApplicationDeployment>($"/applicat
 var deleteResponse = await apiClient.DeleteAsync<ApplicationDeployment>($"/applications/{createResponse.Data.Id}");
 ```
 
+## ConsoleLogger
+
+The `ConsoleLogger` class provides a simple console-based logging implementation for Coolify CLI applications. It outputs formatted log messages to the console with automatic color coding based on log level (Info, Debug, Warn, Error, Fatal) and supports both verbose and quiet modes. This logger is ideal for CLI tools and command-line applications where colored console output enhances readability.
+
+Here's a realistic example of creating and using a `ConsoleLogger`:
+
+```csharp
+// Create a console logger with default settings (verbose disabled, color enabled)
+var logger = new ConsoleLogger();
+
+// Log messages at different levels
+logger.Info("Application started successfully");
+logger.Debug("Debug information - only shown in verbose mode");
+logger.Warn("Warning: high memory usage detected");
+logger.Error("Failed to connect to database");
+logger.Fatal("Application crashed - critical failure");
+
+// Create a verbose logger for detailed debugging
+var verboseLogger = new ConsoleLogger(verbose: true);
+
+// Log an exception with stack trace in verbose mode
+try
+{
+    // Some operation that might fail
+}
+catch (Exception ex)
+{
+    verboseLogger.Error(ex, "Database operation failed");
+}
+
+// Create a logger without color output for CI/CD environments
+var noColorLogger = new ConsoleLogger(colorOutput: false);
+noColorLogger.Info("Starting deployment process");
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
