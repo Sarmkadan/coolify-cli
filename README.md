@@ -1114,6 +1114,70 @@ if (serviceHealth.IsHealthy)
 }
 ```
 
+## ResourceMonitorService
+
+The `ResourceMonitorService` class provides real-time resource monitoring capabilities for applications managed by Coolify. It polls the Coolify API for per-application resource usage metrics including CPU, memory, network I/O, and other system resources. The service supports both one-time snapshots and continuous monitoring streams, making it ideal for CLI monitoring commands and automated alerting systems.
+
+Here's a realistic example of using the ResourceMonitorService to monitor application resources:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var resourceMonitor = new ResourceMonitorService(apiClient, logger);
+
+// Example 1: Get a single resource usage snapshot
+var snapshotResponse = await resourceMonitor.GetResourceUsageAsync(42);
+if (snapshotResponse.Success && snapshotResponse.Data is not null)
+{
+  var usage = snapshotResponse.Data;
+  Console.WriteLine($"CPU: {usage.CpuPercent:F1}%");
+  Console.WriteLine($"Memory: {usage.MemoryMb} MB");
+  Console.WriteLine($"Memory usage: {usage.MemoryPercent:F1}%");
+  Console.WriteLine($"Network RX: {usage.NetworkRxBytes:N0} bytes");
+  Console.WriteLine($"Network TX: {usage.NetworkTxBytes:N0} bytes");
+}
+
+// Example 2: Get bulk resource usage for multiple applications
+var appIds = new List<int> { 42, 43, 44 };
+var bulkUsage = await resourceMonitor.GetBulkResourceUsageAsync(appIds);
+Console.WriteLine($"Retrieved resource data for {bulkUsage.Count} applications");
+
+// Example 3: Render resource usage in a table format
+ResourceMonitorService.RenderHeader();
+foreach (var usage in bulkUsage)
+{
+  ResourceMonitorService.RenderUsageLine(usage);
+}
+
+// Example 4: Continuously monitor an application with cancellation
+using var cts = new CancellationTokenSource();
+
+// Start monitoring in background
+var monitoringTask = Task.Run(async () =>
+{
+  await foreach (var usage in resourceMonitor.MonitorAsync(42, intervalSeconds: 10, cts.Token))
+  {
+    Console.WriteLine($"[{usage.CapturedAt:HH:mm:ss}] CPU: {usage.CpuPercent:F1}%, Memory: {usage.MemoryMb} MB");
+  }
+});
+
+// Run for 1 minute then stop
+await Task.Delay(TimeSpan.FromMinutes(1));
+cts.Cancel();
+
+try
+{
+  await monitoringTask;
+}
+catch (OperationCanceledException)
+{
+  Console.WriteLine("Monitoring stopped");
+}
+```
+
 ## ResourceUsage
 
 The `ResourceUsage` class represents a point-in-time snapshot of resource consumption for a single application instance. It tracks CPU utilisation, memory usage, network I/O, file handles, and thread counts to provide comprehensive monitoring data. The class includes methods for calculating memory percentage, determining alert severity based on resource thresholds, and generating human-readable summary lines for tabular display.
@@ -1158,6 +1222,70 @@ Console.WriteLine($"Alert severity: {severity}"); // Output: Alert severity: Cri
 var summary = usage.ToSummaryLine();
 Console.WriteLine(summary);
 // Output: "    42 web-storefront                 85.0%    1950 MB   95.2%    1.5 GB      83 MB"
+```
+
+## ResourceMonitorService
+
+The `ResourceMonitorService` class provides real-time resource monitoring capabilities for applications managed by Coolify. It polls the Coolify API for per-application resource usage metrics including CPU, memory, network I/O, and other system resources. The service supports both one-time snapshots and continuous monitoring streams, making it ideal for CLI monitoring commands and automated alerting systems.
+
+Here's a realistic example of using the ResourceMonitorService to monitor application resources:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var resourceMonitor = new ResourceMonitorService(apiClient, logger);
+
+// Example 1: Get a single resource usage snapshot
+var snapshotResponse = await resourceMonitor.GetResourceUsageAsync(42);
+if (snapshotResponse.Success && snapshotResponse.Data is not null)
+{
+  var usage = snapshotResponse.Data;
+  Console.WriteLine($"CPU: {usage.CpuPercent:F1}%");
+  Console.WriteLine($"Memory: {usage.MemoryMb} MB");
+  Console.WriteLine($"Memory usage: {usage.MemoryPercent:F1}%");
+  Console.WriteLine($"Network RX: {usage.NetworkRxBytes:N0} bytes");
+  Console.WriteLine($"Network TX: {usage.NetworkTxBytes:N0} bytes");
+}
+
+// Example 2: Get bulk resource usage for multiple applications
+var appIds = new List<int> { 42, 43, 44 };
+var bulkUsage = await resourceMonitor.GetBulkResourceUsageAsync(appIds);
+Console.WriteLine($"Retrieved resource data for {bulkUsage.Count} applications");
+
+// Example 3: Render resource usage in a table format
+ResourceMonitorService.RenderHeader();
+foreach (var usage in bulkUsage)
+{
+  ResourceMonitorService.RenderUsageLine(usage);
+}
+
+// Example 4: Continuously monitor an application with cancellation
+using var cts = new CancellationTokenSource();
+
+// Start monitoring in background
+var monitoringTask = Task.Run(async () =>
+{
+  await foreach (var usage in resourceMonitor.MonitorAsync(42, intervalSeconds: 10, cts.Token))
+  {
+    Console.WriteLine($"[{usage.CapturedAt:HH:mm:ss}] CPU: {usage.CpuPercent:F1}%, Memory: {usage.MemoryMb} MB");
+  }
+});
+
+// Run for 1 minute then stop
+await Task.Delay(TimeSpan.FromMinutes(1));
+cts.Cancel();
+
+try
+{
+  await monitoringTask;
+}
+catch (OperationCanceledException)
+{
+  Console.WriteLine("Monitoring stopped");
+}
 ```
 
 ## ResourceUsageTests
