@@ -1,4 +1,39 @@
-// existing content ...
+## StringExtensions
+
+The `StringExtensions` class provides a set of utility methods for string manipulation and validation. It includes helpers for formatting text into various naming conventions, truncating text, masking sensitive information, and validating common data formats like emails, URLs, and IP addresses.
+
+Here's an example of how to use some of the utility methods:
+
+```csharp
+// Convert strings to various naming conventions
+var pascal = "deploy_my_service".ToPascalCase(); // "DeployMyService"
+var camel = "Deploy-My-Service".ToCamelCase();   // "deployMyService"
+var snake = "DeployMyService".ToSnakeCase();     // "deploy_my_service"
+var kebab = "DeployMyService".ToKebabCase();     // "deploy-my-service"
+
+// Truncate text with optional ellipsis
+var longText = "This is a very long text that needs to be shortened";
+var truncated = longText.Truncate(15);           // "This is a very ..."
+
+// Validate data formats
+var isEmailValid = "user@example.com".IsValidEmail(); // True
+var isUrlValid = "https://coolify.io".IsValidUrl();     // True
+var isIpValid = "192.168.1.1".IsValidIpAddress();    // True
+
+// Mask sensitive information
+var apiKey = "sk_live_1234567890abcdef";
+var maskedKey = apiKey.MaskSensitive(showChars: 4);   // "sk_l_************def"
+
+// Split and trim strings
+var items = " item1 , item2 , item3 ".SplitTrimmed(','); // ["item1", "item2", "item3"]
+
+// Colorize strings for CLI output
+var colored = "Warning!".WithColor(ConsoleColor.Yellow);
+
+// Pad string
+var padded = "ID".PadTo(10, '-'); // "ID--------"
+```
+
 
 ## IntegrationTests
 
