@@ -1716,6 +1716,65 @@ var requiredVars = TemplateVariableResolver.CollectPlaceholders(rawYaml);
 Console.WriteLine($"Template requires {requiredVars.Count} variables");
 ```
 
+## CoolifyApiClient
+
+The `CoolifyApiClient` class is the core HTTP client for communicating with the Coolify API. It handles authentication, request serialization, error handling, and provides standardized methods for all HTTP operations (GET, POST, PUT, DELETE). This client is used by all other services in the Coolify CLI to interact with the Coolify API server.
+
+Here's a realistic example of how to initialize and use the CoolifyApiClient:
+
+```csharp
+// Initialize the Coolify API client with base URL and API key
+var httpClient = new HttpClient();
+var apiClient = new CoolifyApiClient(
+    httpClient: httpClient,
+    baseUrl: "https://api.coolify.io",
+    apiKey: "your-api-key-here"
+);
+
+// Test the API connection before making requests
+var connectionSuccessful = await apiClient.TestConnectionAsync();
+if (!connectionSuccessful)
+{
+    Console.WriteLine("Failed to connect to Coolify API");
+    return;
+}
+
+// Example 1: GET request to retrieve application data
+var appsResponse = await apiClient.GetAsync<List<ApplicationDeployment>>("/applications");
+if (appsResponse.Success && appsResponse.Data is not null)
+{
+    Console.WriteLine($"Found {appsResponse.Data.Count} applications");
+    foreach (var app in appsResponse.Data.Take(5))
+    {
+        Console.WriteLine($" - {app.Name} (ID: {app.Id})");
+    }
+}
+
+// Example 2: POST request to create a new application
+var newApp = new ApplicationDeployment
+{
+    Name = "web-storefront",
+    Repository = "https://github.com/myorg/web-storefront.git",
+    Branch = "main",
+    EnvironmentId = "env-prod-01",
+    BuildCommand = "npm run build",
+    StartCommand = "npm start"
+};
+
+var createResponse = await apiClient.PostAsync<ApplicationDeployment>("/applications", newApp);
+if (createResponse.Success && createResponse.Data is not null)
+{
+    Console.WriteLine($"Application created successfully with ID: {createResponse.Data.Id}");
+}
+
+// Example 3: PUT request to update an existing application
+var updateData = new { Name = "web-storefront-updated", Description = "Updated description" };
+var updateResponse = await apiClient.PutAsync<ApplicationDeployment>($"/applications/{createResponse.Data.Id}", updateData);
+
+// Example 4: DELETE request to remove an application
+var deleteResponse = await apiClient.DeleteAsync<ApplicationDeployment>($"/applications/{createResponse.Data.Id}");
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
