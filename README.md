@@ -883,6 +883,52 @@ if (serviceHealth.IsHealthy)
 }
 ```
 
+## ResourceUsage
+
+The `ResourceUsage` class represents a point-in-time snapshot of resource consumption for a single application instance. It tracks CPU utilisation, memory usage, network I/O, file handles, and thread counts to provide comprehensive monitoring data. The class includes methods for calculating memory percentage, determining alert severity based on resource thresholds, and generating human-readable summary lines for tabular display.
+
+Here's a realistic example of creating and using a `ResourceUsage` instance:
+
+```csharp
+// Create a resource usage snapshot for a production web service
+var usage = new ResourceUsage
+{
+    ApplicationId = 42,
+    ApplicationName = "web-storefront",
+    CapturedAt = DateTime.UtcNow,
+    CpuPercent = 68.5,
+    MemoryMb = 1024,
+    MemoryLimitMb = 2048,
+    NetworkRxBytes = 1548723456,
+    NetworkTxBytes = 87654321,
+    OpenFileHandles = 42,
+    ThreadCount = 25
+};
+
+// Calculate memory percentage (should be ~50.0%)
+var memoryPercent = usage.MemoryPercent;
+Console.WriteLine($"Memory usage: {memoryPercent}%"); // Output: Memory usage: 50.0%
+
+// Get alert severity based on resource thresholds
+var severity = usage.GetAlertSeverity();
+Console.WriteLine($"Alert severity: {severity}"); // Output: Alert severity: null (within normal ranges)
+
+// Update CPU to trigger warning threshold
+usage.CpuPercent = 85;
+severity = usage.GetAlertSeverity();
+Console.WriteLine($"Alert severity: {severity}"); // Output: Alert severity: Warning
+
+// Update memory to trigger critical threshold
+usage.MemoryMb = 1950;
+severity = usage.GetAlertSeverity();
+Console.WriteLine($"Alert severity: {severity}"); // Output: Alert severity: Critical
+
+// Generate a summary line for monitoring display
+var summary = usage.ToSummaryLine();
+Console.WriteLine(summary);
+// Output: "    42 web-storefront                 85.0%    1950 MB   95.2%    1.5 GB      83 MB"
+```
+
 ## ResourceUsageTests
 
 The `ResourceUsageTests` class provides unit tests for the `ResourceUsage` model, which tracks and analyzes resource consumption metrics such as CPU percentage and memory usage. These tests verify the calculation of memory percentage, alert severity determination based on resource thresholds, and summary line generation for monitoring purposes.
