@@ -1923,6 +1923,58 @@ ConfigurationHelper.ImportConfiguration("config-backup.json");
 ConfigurationHelper.ResetConfiguration();
 ```
 
+## CliHelpers
+
+The `CliHelpers` class provides a comprehensive set of utility methods for CLI output formatting, user interaction, and data display. It includes helpers for printing colored status messages, formatting bytes and time spans, creating progress bars, displaying tables, and collecting user input through various prompt methods. This class is essential for creating consistent, user-friendly command-line interfaces.
+
+Here's a realistic example of using the `CliHelpers` methods:
+
+```csharp
+// Print section headers for organized output
+CliHelpers.PrintHeader("Application Deployment Status");
+
+// Print colored status messages
+CliHelpers.PrintSuccess("Application deployed successfully!");
+CliHelpers.PrintError("Failed to connect to database");
+CliHelpers.PrintWarning("High memory usage detected");
+CliHelpers.PrintInfo("Checking application health...");
+
+// Print subheaders for grouped information
+CliHelpers.PrintSubheader("Resource Usage");
+
+// Format bytes and time spans for human-readable display
+var fileSize = 1024 * 1024 * 150; // 150 MB
+var formattedSize = CliHelpers.FormatBytes(fileSize); // "150 MB"
+
+var duration = TimeSpan.FromSeconds(125);
+var formattedDuration = CliHelpers.FormatTimeSpan(duration); // "2m 5s"
+
+// Get colored status indicators
+var statusIndicator = CliHelpers.GetStatusIndicator(DeploymentStatus.Deployed);
+var healthIndicator = CliHelpers.GetHealthIndicator(HealthStatus.Healthy);
+
+// Display a formatted table
+var headers = new[] { "ID", "Name", "Status", "Uptime" };
+var rows = new List<string[]>
+{
+    new[] { "1", "web-app", "Running", "2h 30m" },
+    new[] { "2", "api-service", "Running", "1h 45m" },
+    new[] { "3", "worker", "Stopped", "N/A" }
+};
+CliHelpers.PrintTable(headers, rows);
+
+// Create a progress bar
+var progressBar = CliHelpers.GetProgressBar(75); // "[███████████░░░░] 75%"
+
+// Prompt user for input and confirmation
+var shouldContinue = CliHelpers.PromptConfirmation("Continue with deployment?");
+if (shouldContinue)
+{
+    var userInput = CliHelpers.PromptInput("Enter application name");
+    var secretInput = CliHelpers.PromptSecretInput("Enter API key");
+}
+```
+
 ## JsonConverter
 
 The `JsonConverter` class provides a comprehensive set of utilities for JSON serialization, deserialization, and transformation. It handles type-safe conversions with error handling, supports dynamic parsing, object merging, value extraction, and provides utilities for JSON manipulation including property setting/removal, reformatting, validation, size calculation, and difference detection.
