@@ -326,6 +326,46 @@ var services = " api , web , worker ".SplitTrimmed(',');
 services.Should().Equal("api", "web", "worker");
 ```
 
+## ResourceUsageTests
+
+The `ResourceUsageTests` class provides unit tests for the `ResourceUsage` model, which tracks and analyzes resource consumption metrics such as CPU percentage and memory usage. These tests verify the calculation of memory percentage, alert severity determination based on resource thresholds, and summary line generation for monitoring purposes.
+
+Here's an example of how to use the tested methods:
+
+```csharp
+// Create a resource usage with memory limit
+var usage = new ResourceUsage
+{
+    ApplicationId = 42,
+    ApplicationName = "api-service",
+    CpuPercent = 75.5,
+    MemoryMb = 850,
+    MemoryLimitMb = 1024
+};
+
+// Calculate memory percentage (should be ~83.0%)
+var memoryPercent = usage.MemoryPercent;
+// memoryPercent is 83.0
+
+// Get alert severity based on resource thresholds
+var severity = usage.GetAlertSeverity();
+// severity is null (within normal ranges)
+
+// Update CPU to trigger warning
+usage.CpuPercent = 85;
+severity = usage.GetAlertSeverity();
+// severity is SeverityLevel.Warning
+
+// Update memory to trigger critical
+usage.MemoryMb = 980;
+severity = usage.GetAlertSeverity();
+// severity is SeverityLevel.Critical
+
+// Generate a summary line for monitoring
+var summary = usage.ToSummaryLine();
+// summary contains "42", "api-service", and "75.5"
+```
+
 ## CollectionExtensionsTests
 
 The `CollectionExtensionsTests` class provides unit tests for collection extension methods in the `CoolifyCli.Extensions` namespace. It tests various utility methods for working with collections including batching operations, filtering, transformation, and dictionary manipulation to ensure these extension methods work correctly across different scenarios.
