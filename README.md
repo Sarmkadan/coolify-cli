@@ -582,6 +582,66 @@ if (deployment.Status == DeploymentStatus.Deploying)
 }
 ```
 
+## DatabaseConfiguration
+
+The `DatabaseConfiguration` class represents a database instance managed by Coolify. It supports multiple database engines (PostgreSQL, MySQL, MongoDB, Redis) with connection pooling, health monitoring, and backup configuration. This model is used for database provisioning, connection management, and infrastructure-as-code templates.
+
+Here's a realistic example of creating and using a `DatabaseConfiguration` for a production PostgreSQL database:
+
+```csharp
+// Create a production PostgreSQL database configuration
+var postgresConfig = new DatabaseConfiguration
+{
+  Id = 1,
+  Name = "production-postgres",
+  Type = DatabaseType.PostgreSQL,
+  Version = "15",
+  Host = "prod-db.internal",
+  Port = 5432,
+  RootUsername = "admin",
+  RootPassword = "SecurePassword123!",
+  DefaultDatabase = "web-storefront",
+  CreatedAt = DateTime.UtcNow,
+  MaxConnections = 200,
+  ConnectionTimeoutSeconds = 30,
+  EnableBackups = true,
+  BackupRetentionDays = 30,
+  BackupSchedule = "0 2 * * *",
+  IsHealthy = true,
+  LastHealthCheckAt = DateTime.UtcNow.AddMinutes(-5),
+  EnvironmentId = "env-prod-01",
+  AllowedHostPatterns = new List<string> { "10.0.0.0/8", "192.168.0.0/16" }
+};
+
+// Validate the database configuration
+var validationErrors = postgresConfig.Validate().ToList();
+if (validationErrors.Count > 0)
+{
+  Console.WriteLine("Database configuration validation failed:");
+  foreach (var error in validationErrors)
+  {
+    Console.WriteLine($"- {error}");
+  }
+}
+else
+{
+  Console.WriteLine("Database configuration is valid!");
+}
+
+// Build a connection string for application use
+var connectionString = postgresConfig.BuildConnectionString();
+Console.WriteLine($"Connection string: {connectionString}");
+
+// Mark database as healthy after successful health check
+postgresConfig.MarkAsHealthy();
+Console.WriteLine($"Database health status: {(postgresConfig.IsHealthy ? "Healthy" : "Unhealthy")}");
+Console.WriteLine($"Last health check: {postgresConfig.LastHealthCheckAt}");
+
+// Get default port for a specific database type
+var defaultPort = DatabaseConfiguration.GetDefaultPort(DatabaseType.PostgreSQL);
+Console.WriteLine($"Default PostgreSQL port: {defaultPort}");
+```
+
 ## ApiResponse
 
 The `ApiResponse<T>` class is a generic wrapper for standardized API responses from Coolify. It provides consistent error handling, data serialization, and status tracking across all endpoints. The response includes success status, data payload, error messages, HTTP status codes, pagination metadata, and timestamps.
