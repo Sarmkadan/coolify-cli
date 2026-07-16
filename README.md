@@ -417,6 +417,101 @@ var services = " api , web , worker ".SplitTrimmed(',');
 services.Should().Equal("api", "web", "worker");
 ```
 
+## InfrastructureTemplate
+
+The `InfrastructureTemplate` record represents a declarative infrastructure-as-code YAML template that describes the desired state of applications and databases to reconcile with Coolify. It serves as the root document model for defining infrastructure stacks with metadata, applications, and databases in a structured format.
+
+Here's an example of how to create and use an `InfrastructureTemplate`:
+
+```csharp
+// Create a production web application infrastructure template
+var template = new InfrastructureTemplate
+{
+    ApiVersion = "v2",
+    Kind = "CoolifyInfrastructure",
+    Metadata = new IacTemplateMetadata
+    {
+        Name = "production-web-stack",
+        Description = "Production web application with database and cache",
+        Environment = "production",
+        Version = "1.0.0",
+        Labels = new Dictionary<string, string>
+        {
+            { "team", "platform" },
+            { "cost-center", "engineering" }
+        }
+    },
+    Applications = new List<IacTemplateApplication>
+    {
+        new IacTemplateApplication
+        {
+            Name = "web-app",
+            Repository = "https://github.com/myorg/web-app.git",
+            Branch = "main",
+            Runtime = RuntimeEnvironment.Docker,
+            EnvironmentId = "env-prod-001",
+            BuildCommand = "npm run build",
+            StartCommand = "npm start",
+            Ports = new List<int> { 3000, 8080 },
+            HealthCheck = new IacHealthCheckSpec
+            {
+                Url = "/health",
+                IntervalSeconds = 30,
+                FailureThreshold = 3
+            },
+            Environment = new Dictionary<string, string>
+            {
+                { "NODE_ENV", "production" },
+                { "DATABASE_URL", "${{db-connection-string}}" }
+            },
+            Resources = new IacResourceLimits
+            {
+                CpuLimit = "500m",
+                MemoryLimit = "512Mi"
+            },
+            Scaling = new IacScalingSpec
+            {
+                Instances = 3,
+                Policy = ScalingPolicy.Auto
+            }
+        }
+    },
+    Databases = new List<IacTemplateDatabase>
+    {
+        new IacTemplateDatabase
+        {
+            Name = "main-db",
+            Type = DatabaseType.PostgreSql,
+            Version = "15",
+            MaxConnections = 100,
+            ConnectionTimeoutSeconds = 30,
+            Backup = new IacBackupSpec
+            {
+                Enabled = true,
+                Strategy = BackupStrategy.Snapshot,
+                RetentionDays = 30,
+                Schedule = "0 2 * * *"
+            }
+        }
+    }
+};
+
+// Validate the template structure
+var validationErrors = template.Validate().ToList();
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Template validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+else
+{
+    Console.WriteLine("Template is valid!");
+}
+```
+
 ## ResourceUsageTests
 
 The `ResourceUsageTests` class provides unit tests for the `ResourceUsage` model, which tracks and analyzes resource consumption metrics such as CPU percentage and memory usage. These tests verify the calculation of memory percentage, alert severity determination based on resource thresholds, and summary line generation for monitoring purposes.
