@@ -1923,6 +1923,126 @@ ConfigurationHelper.ImportConfiguration("config-backup.json");
 ConfigurationHelper.ResetConfiguration();
 ```
 
+## JsonFormatter
+
+The `JsonFormatter` class provides comprehensive JSON formatting capabilities for converting objects, collections, and dictionaries into properly formatted JSON output. It supports pretty-printing, minification, reformatting, field filtering, and selective JSON extraction. The formatter handles proper escaping, null value handling, and provides utilities for both object-to-JSON and JSON-to-JSON transformations.
+
+Here's a realistic example of using the `JsonFormatter` to format and transform JSON data:
+
+```csharp
+// Create a JSON formatter with pretty printing enabled
+var jsonFormatter = new JsonFormatter(prettyPrint: true);
+
+// Example 1: Format an application deployment as pretty-printed JSON
+var deployment = new ApplicationDeployment
+{
+    Id = 42,
+    Name = "web-storefront",
+    Repository = "https://github.com/org/web-storefront",
+    Branch = "main",
+    EnvironmentId = "env-prod",
+    BuildCommand = "npm run build",
+    StartCommand = "npm start",
+    Ports = new List<string> { "3000", "8080" },
+    EnvironmentVariables = new Dictionary<string, string>
+    {
+        ["NODE_ENV"] = "production",
+        ["DATABASE_URL"] = "postgresql://prod-db:5432/storefront"
+    }
+};
+
+var formattedJson = jsonFormatter.Format(deployment);
+Console.WriteLine(formattedJson);
+/* Output:
+{
+  "Id": 42,
+  "Name": "web-storefront",
+  "Repository": "https://github.com/org/web-storefront",
+  "Branch": "main",
+  "EnvironmentId": "env-prod",
+  "BuildCommand": "npm run build",
+  "StartCommand": "npm start",
+  "Ports": [
+    "3000",
+    "8080"
+  ],
+  "EnvironmentVariables": {
+    "NODE_ENV": "production",
+    "DATABASE_URL": "postgresql://prod-db:5432/storefront"
+  }
+}
+*/
+
+// Example 2: Format a collection of deployments as JSON array
+var deployments = new List<ApplicationDeployment>
+{
+    new ApplicationDeployment { Id = 42, Name = "web-storefront", Branch = "main" },
+    new ApplicationDeployment { Id = 43, Name = "api-service", Branch = "release/v2" }
+};
+
+var collectionJson = jsonFormatter.FormatCollection(deployments);
+Console.WriteLine(collectionJson);
+/* Output:
+[
+  {
+    "Id": 42,
+    "Name": "web-storefront",
+    "Branch": "main"
+  },
+  {
+    "Id": 43,
+    "Name": "api-service",
+    "Branch": "release/v2"
+  }
+]
+*/
+
+// Example 3: Format a dictionary as JSON object
+var configData = new Dictionary<string, object?>
+{
+    ["ApplicationId"] = 42,
+    ["Name"] = "web-storefront",
+    ["Environment"] = "production",
+    ["Replicas"] = 3,
+    ["Enabled"] = true
+};
+
+var dictionaryJson = jsonFormatter.FormatDictionary(configData);
+Console.WriteLine(dictionaryJson);
+/* Output:
+{
+  "ApplicationId": 42,
+  "Name": "web-storefront",
+  "Environment": "production",
+  "Replicas": 3,
+  "Enabled": true
+}
+*/
+
+// Example 4: Reformat existing JSON with consistent formatting
+var messyJson = "{  \"Name\": \"web-storefront\",  \"Id\":42,  \"Branch\":\"main\" }";
+var reformattedJson = jsonFormatter.ReformatJson(messyJson);
+Console.WriteLine(reformattedJson);
+/* Output:
+{
+  "Name": "web-storefront",
+  "Id": 42,
+  "Branch": "main"
+}
+*/
+
+// Example 5: Minify JSON for compact storage/transmission
+var minifiedJson = jsonFormatter.Minify(formattedJson);
+Console.WriteLine(minifiedJson);
+// Output: {"Id":42,"Name":"web-storefront","Repository":"https://github.com/org/web-storefront",...}
+
+// Example 6: Extract a specific field using dot notation
+var jsonWithNestedData = "{\"data\":{\"items\":[{\"id\":1,\"name\":\"item1\"},{\"id\":2,\"name\":\"item2\"}]}}";
+var extractedField = jsonFormatter.ExtractField(jsonWithNestedData, "data.items");
+Console.WriteLine(extractedField);
+// Output: [{"id":1,"name":"item1"},{"id":2,"name":"item2"}]
+```
+
 ## CsvFormatter
 
 The `CsvFormatter` class provides comprehensive CSV formatting capabilities for converting objects, collections, and dictionaries into properly formatted CSV output. It handles proper escaping of special characters, custom delimiters, header row inclusion, and field selection. The formatter also supports parsing CSV data back into structured dictionaries for data import scenarios.
