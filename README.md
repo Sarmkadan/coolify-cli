@@ -417,6 +417,105 @@ var services = " api , web , worker ".SplitTrimmed(',');
 services.Should().Equal("api", "web", "worker");
 ```
 
+## DeploymentContext
+
+The `DeploymentContext` class encapsulates the deployment context with application, environment, and configuration details. It serves as a coordination container for multi-step deployment operations, tracking the entire deployment lifecycle from initialization through completion. The context maintains references to the application being deployed, environment variables, linked databases, deployment status, logs, artifacts, and approval workflows.
+
+Here's a realistic example of creating and using a `DeploymentContext` for a production deployment:
+
+```csharp
+// Create a deployment context for a production web service
+var context = new DeploymentContext
+{
+    DeploymentId = Guid.NewGuid().ToString(),
+    Application = new ApplicationDeployment
+    {
+        Id = 42,
+        Name = "web-storefront",
+        Description = "Production e-commerce storefront application",
+        Repository = "https://github.com/myorg/web-storefront.git",
+        Branch = "release/v2.1",
+        EnvironmentId = "env-prod-01",
+        Status = DeploymentStatus.Deployed,
+        BuildCommand = "npm run build",
+        StartCommand = "npm start",
+        Ports = new List<string> { "3000", "8080" },
+        EnvironmentVariables = new Dictionary<string, string>
+        {
+            ["NODE_ENV"] = "production",
+            ["DATABASE_URL"] = "postgresql://prod-db:5432/storefront",
+            ["REDIS_URL"] = "redis://cache-service:6379",
+            ["API_BASE_URL"] = "https://api.myorg.com/v1"
+        },
+        HealthCheckUrl = "/health",
+        HealthCheckIntervalSeconds = 30,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow.AddDays(-1),
+        UpdatedAt = DateTime.UtcNow,
+        LastDeployedAt = DateTime.UtcNow.AddHours(-2)
+    },
+    TargetStatus = DeploymentStatus.Deployed,
+    StartedAt = DateTime.UtcNow,
+    EnvironmentVariables = new List<EnvironmentVariable>(),
+    LinkedDatabases = new List<DatabaseConfiguration>(),
+    DeploymentLogs = new List<LogEntry>(),
+    Artifacts = new Dictionary<string, string>(),
+    RequiresApproval = false
+};
+
+// Load environment variables from configuration
+var envVars = new List<EnvironmentVariable>
+{
+    new EnvironmentVariable
+    {
+        ApplicationId = "web-storefront",
+        Key = "DATABASE_URL",
+        Value = "postgresql://prod-db:5432/storefront",
+        IsSecret = true,
+        EnvironmentScope = "production"
+    },
+    new EnvironmentVariable
+    {
+        ApplicationId = "web-storefront",
+        Key = "REDIS_URL",
+        Value = "redis://cache-service:6379",
+        IsSecret = true,
+        EnvironmentScope = "production"
+    }
+};
+context.LoadEnvironmentVariables(envVars);
+
+// Log deployment events
+context.LogEvent("Deployment initialized", LogLevel.Info, "DeploymentCoordinator");
+context.LogEvent("Environment variables loaded", LogLevel.Debug, "ConfigLoader");
+
+// Validate deployment context
+var validationErrors = context.Validate().ToList();
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+else
+{
+    Console.WriteLine("Deployment context is valid!");
+}
+
+// Track deployment progress
+context.LogEvent("Starting build process", LogLevel.Info);
+
+// Simulate deployment completion
+context.MarkAsCompleted();
+context.LogEvent("Deployment completed successfully", LogLevel.Info);
+
+Console.WriteLine($"Deployment duration: {context.GetDuration().ToReadableDuration()}");
+Console.WriteLine($"Total log entries: {context.DeploymentLogs.Count}");
+Console.WriteLine($"Artifacts produced: {context.Artifacts.Count}");
+```
+
 ## ApplicationDeployment
 
 The `ApplicationDeployment` class represents a deployed application instance in the Coolify infrastructure. It encapsulates all configuration and runtime state for an application, including repository information, build and start commands, environment variables, port mappings, health checks, and deployment status tracking. This model is used throughout the application for deployment management, validation, and state transitions.
