@@ -631,6 +631,64 @@ else
 }
 ```
 
+## ServiceHealth
+
+The `ServiceHealth` class represents the health status and resource metrics of a service instance in the Coolify infrastructure. It tracks service identifiers, health check results, response times, resource utilization (CPU, memory), connection metrics, error rates, and provides methods to record successful and failed health checks. This model is used throughout the application for monitoring, alerting, and service discovery.
+
+Here's a realistic example of creating and using a `ServiceHealth` instance:
+
+```csharp
+// Create a service health record for a web service
+var serviceHealth = new ServiceHealth
+{
+    Id = 1,
+    ServiceId = "web-app-001",
+    Status = HealthStatus.Healthy,
+    CheckedAt = DateTime.UtcNow,
+    ResponseTimeMs = 45.2,
+    HttpStatusCode = 200,
+    CpuUsagePercent = 12.5,
+    MemoryUsageMb = 185.7,
+    ActiveConnections = 42,
+    ErrorRatePercent = 0.0,
+    LastSuccessfulCheck = DateTime.UtcNow.AddMinutes(-2),
+    FailureCount = 0,
+    FailureReason = null,
+    Warnings = new List<string>(),
+    IsHealthy = true,
+    RequiresAttention = false
+};
+
+// Record a successful health check
+serviceHealth.RecordSuccess(38.7, 200, 8.3, 156.2, 25);
+
+// Check if the service requires attention
+if (serviceHealth.RequiresAttention)
+{
+    Console.WriteLine($"Service {serviceHealth.ServiceId} requires attention!");
+    Console.WriteLine($"Status: {serviceHealth.Status}");
+    Console.WriteLine($"Failure count: {serviceHealth.FailureCount}");
+    Console.WriteLine($"Failure reason: {serviceHealth.FailureReason}");
+}
+
+// Add a warning for resource thresholds
+if (serviceHealth.CpuUsagePercent > 80.0)
+{
+    serviceHealth.Warnings.Add("High CPU usage detected");
+}
+
+if (serviceHealth.MemoryUsageMb > 500.0)
+{
+    serviceHealth.Warnings.Add("High memory usage detected");
+}
+
+// Check if the service is healthy
+if (serviceHealth.IsHealthy)
+{
+    Console.WriteLine($"Service {serviceHealth.ServiceId} is healthy");
+}
+```
+
 ## ResourceUsageTests
 
 The `ResourceUsageTests` class provides unit tests for the `ResourceUsage` model, which tracks and analyzes resource consumption metrics such as CPU percentage and memory usage. These tests verify the calculation of memory percentage, alert severity determination based on resource thresholds, and summary line generation for monitoring purposes.
