@@ -417,6 +417,72 @@ var services = " api , web , worker ".SplitTrimmed(',');
 services.Should().Equal("api", "web", "worker");
 ```
 
+## ApplicationDeployment
+
+The `ApplicationDeployment` class represents a deployed application instance in the Coolify infrastructure. It encapsulates all configuration and runtime state for an application, including repository information, build and start commands, environment variables, port mappings, health checks, and deployment status tracking. This model is used throughout the application for deployment management, validation, and state transitions.
+
+Here's a realistic example of creating and using an `ApplicationDeployment`:
+
+```csharp
+// Create a production web service deployment
+var deployment = new ApplicationDeployment
+{
+    Id = 42,
+    Name = "web-storefront",
+    Description = "Production e-commerce storefront application",
+    Repository = "https://github.com/myorg/web-storefront.git",
+    Branch = "release/v2.1",
+    EnvironmentId = "env-prod-01",
+    Status = DeploymentStatus.Deployed,
+    BuildCommand = "npm run build",
+    StartCommand = "npm start",
+    Ports = new List<string> { "3000", "8080" },
+    EnvironmentVariables = new Dictionary<string, string>
+    {
+        ["NODE_ENV"] = "production",
+        ["DATABASE_URL"] = "postgresql://prod-db:5432/storefront",
+        ["REDIS_URL"] = "redis://cache-service:6379",
+        ["API_BASE_URL"] = "https://api.myorg.com/v1"
+    },
+    HealthCheckUrl = "/health",
+    HealthCheckIntervalSeconds = 30,
+    IsActive = true,
+    CreatedAt = DateTime.UtcNow.AddDays(-1),
+    UpdatedAt = DateTime.UtcNow,
+    LastDeployedAt = DateTime.UtcNow.AddHours(-2)
+};
+
+// Validate the deployment configuration
+var validationErrors = deployment.Validate().ToList();
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+else
+{
+    Console.WriteLine("Deployment configuration is valid!");
+}
+
+// Track deployment state transitions
+if (deployment.Status == DeploymentStatus.Failed && deployment.RequiresAttention())
+{
+    Console.WriteLine($"Deployment {deployment.Name} requires attention!");
+    Console.WriteLine($"Failure count: {deployment.FailureCount}");
+    Console.WriteLine($"Last error: {deployment.LastErrorMessage}");
+}
+
+// Update deployment after successful deployment
+if (deployment.Status == DeploymentStatus.Deploying)
+{
+    deployment.MarkAsDeployed();
+    Console.WriteLine($"Deployment successful at {deployment.LastDeployedAt}");
+}
+```
+
 ## ApiResponse
 
 The `ApiResponse<T>` class is a generic wrapper for standardized API responses from Coolify. It provides consistent error handling, data serialization, and status tracking across all endpoints. The response includes success status, data payload, error messages, HTTP status codes, pagination metadata, and timestamps.
