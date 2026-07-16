@@ -907,6 +907,143 @@ var defaultPort = DatabaseConfiguration.GetDefaultPort(DatabaseType.PostgreSQL);
 Console.WriteLine($"Default PostgreSQL port: {defaultPort}");
 ```
 
+## DatabaseService
+
+The `DatabaseService` class provides comprehensive database lifecycle management capabilities for Coolify. It handles database provisioning, configuration retrieval, health checks, connection testing, backups, restores, and cleanup operations. The service integrates with the Coolify API to provide centralized database management across different database types and environments.
+
+Here's a realistic example of using the `DatabaseService` to manage databases:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+
+var databaseService = new DatabaseService(apiClient, logger);
+
+// Example 1: Get all databases in the environment
+var allDatabasesResponse = await databaseService.GetAllDatabasesAsync();
+if (allDatabasesResponse.Success && allDatabasesResponse.Data is not null)
+{
+    Console.WriteLine($"Found {allDatabasesResponse.Data.Count} databases:");
+    foreach (var db in allDatabasesResponse.Data.Take(5))
+    {
+        Console.WriteLine($" - {db.Name} ({db.Type}): {db.Host}:{db.Port}");
+    }
+}
+
+// Example 2: Get a specific database by ID
+var databaseResponse = await databaseService.GetDatabaseAsync(42);
+if (databaseResponse.Success && databaseResponse.Data is not null)
+{
+    var db = databaseResponse.Data;
+    Console.WriteLine($"Database: {db.Name}");
+    Console.WriteLine($"Type: {db.Type}, Version: {db.Version}");
+    Console.WriteLine($"Status: {(db.IsHealthy ? "Healthy" : "Unhealthy")}");
+}
+
+// Example 3: Create a new database instance
+var newDatabase = new DatabaseConfiguration
+{
+    Name = "analytics-postgres",
+    Type = DatabaseType.PostgreSQL,
+    Version = "15",
+    Host = "analytics-db.internal",
+    Port = 5432,
+    RootUsername = "admin",
+    RootPassword = "SecurePassword456!",
+    DefaultDatabase = "analytics",
+    MaxConnections = 100,
+    ConnectionTimeoutSeconds = 30,
+    EnableBackups = true,
+    BackupRetentionDays = 14
+};
+
+var createResponse = await databaseService.CreateDatabaseAsync(newDatabase);
+if (createResponse.Success && createResponse.Data is not null)
+{
+    Console.WriteLine($"Database created successfully with ID: {createResponse.Data.Id}");
+}
+else
+{
+    Console.WriteLine($"Failed to create database: {createResponse.GetFirstError()}");
+}
+
+// Example 4: Update an existing database configuration
+var updateResponse = await databaseService.UpdateDatabaseAsync(42, new DatabaseConfiguration
+{
+    Name = "production-postgres",
+    Type = DatabaseType.PostgreSQL,
+    Version = "15",
+    Host = "prod-db-v2.internal",
+    Port = 5432,
+    RootUsername = "admin",
+    RootPassword = "UpdatedPassword789!",
+    DefaultDatabase = "web-storefront",
+    MaxConnections = 250,
+    ConnectionTimeoutSeconds = 30,
+    EnableBackups = true,
+    BackupRetentionDays = 30
+});
+
+if (updateResponse.Success)
+{
+    Console.WriteLine("Database updated successfully");
+}
+
+// Example 5: Check database health
+var healthResponse = await databaseService.CheckDatabaseHealthAsync(42);
+if (healthResponse.Success && healthResponse.Data is not null)
+{
+    var health = healthResponse.Data;
+    Console.WriteLine($"Database health: {health.Status}");
+    Console.WriteLine($"Response time: {health.ResponseTimeMs}ms");
+    Console.WriteLine($"CPU usage: {health.CpuPercent}%");
+    Console.WriteLine($"Memory usage: {health.MemoryUsageMb} MB");
+}
+
+// Example 6: Test database connection
+var connectionResponse = await databaseService.TestConnectionAsync(42);
+if (connectionResponse.Success)
+{
+    Console.WriteLine($"Connection test: {(connectionResponse.Data ? "Success" : "Failed")}");
+}
+
+// Example 7: Create a backup
+var backupResponse = await databaseService.BackupDatabaseAsync(42);
+if (backupResponse.Success)
+{
+    Console.WriteLine("Backup initiated successfully");
+}
+
+// Example 8: Get backup history
+var backupHistoryResponse = await databaseService.GetBackupHistoryAsync(42);
+if (backupHistoryResponse.Success && backupHistoryResponse.Data is not null)
+{
+    Console.WriteLine($"Found {backupHistoryResponse.Data.Count} backups");
+}
+
+// Example 9: Restore from backup
+var restoreResponse = await databaseService.RestoreDatabaseAsync(42, "backup-2024-06-15-1430");
+if (restoreResponse.Success)
+{
+    Console.WriteLine("Restore initiated successfully");
+}
+
+// Example 10: Delete a database
+var deleteResponse = await databaseService.DeleteDatabaseAsync(42);
+if (deleteResponse.Success)
+{
+    Console.WriteLine("Database deleted successfully");
+}
+
+// Example 11: Get available backups
+var availableBackupsResponse = await databaseService.GetAvailableBackupsAsync(42);
+if (availableBackupsResponse.Success && availableBackupsResponse.Data is not null)
+{
+    Console.WriteLine($"Found {availableBackupsResponse.Data.Count} available backups");
+}
+```
+
 ## InfrastructureTemplateEngine
 
 The `InfrastructureTemplateEngine` class provides infrastructure-as-code capabilities for managing Coolify resources declaratively. It reads YAML templates from disk, validates their structure, computes a live-state diff via the Coolify API, and reconciles resources (applications and databases) to match the desired state defined in the template. The engine supports dry-run mode for previewing changes, fail-fast execution, and comprehensive logging for audit trails.
