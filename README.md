@@ -1664,6 +1664,58 @@ if (deleteResponse.Success)
 }
 ```
 
+## TemplateVariableResolver
+
+The `TemplateVariableResolver` class resolves `${VAR_NAME}` placeholder tokens embedded in raw YAML template text by substituting values sourced first from caller-supplied overrides, then from the process environment. Any token that cannot be resolved is collected and returned so the caller can surface a targeted error rather than producing a silently-incomplete template.
+
+Here's a realistic example of using the `TemplateVariableResolver` to expand YAML templates with environment variables:
+
+```csharp
+// Create a resolver with optional overrides
+var overrides = new Dictionary<string, string> { { "DB_HOST", "prod-db.internal" } };
+var resolver = new TemplateVariableResolver(logger, overrides);
+
+// Load additional variables from a .env file
+var loadedCount = resolver.LoadDotEnvFile("./production.env");
+Console.WriteLine($"Loaded {loadedCount} variables from .env file");
+
+// Set additional overrides programmatically
+resolver.SetOverride("API_KEY", "sk_live_abc123");
+
+// Expand YAML template with placeholders
+var rawYaml = @"
+apiVersion: v1
+kind: Application
+metadata:
+  name: web-app
+spec:
+  databaseUrl: ${DB_URL}
+  apiKey: ${API_KEY}
+  host: ${DB_HOST}
+  replicas: ${REPLICAS:3}
+";
+
+var (expandedYaml, unresolved) = resolver.Expand(rawYaml);
+
+if (unresolved.Count > 0)
+{
+    Console.WriteLine("Missing required variables:");
+    foreach (var varName in unresolved)
+    {
+        Console.WriteLine($"  - ${{{varName}}}");
+    }
+}
+else
+{
+    Console.WriteLine("Template expanded successfully:");
+    Console.WriteLine(expandedYaml);
+}
+
+// Collect placeholders for pre-flight validation
+var requiredVars = TemplateVariableResolver.CollectPlaceholders(rawYaml);
+Console.WriteLine($"Template requires {requiredVars.Count} variables");
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
