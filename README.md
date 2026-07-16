@@ -569,6 +569,87 @@ var partitions = deploymentIds.Partition(4);
 // partitions contains: [[1,2,3,4], [5,6,7,8], [9,10]]
 ```
 
+## EnumExtensions
+
+The `EnumExtensions` class provides a comprehensive set of utility methods for working with enums in C#. It includes helpers for getting enum descriptions, parsing strings to enums, converting enums to display strings, checking flags, converting to numeric values, and generating CLI-friendly formats. These utilities are particularly useful for CLI applications, configuration options, and user-friendly enum displays.
+
+Here's an example of how to use some of the utility methods:
+
+```csharp
+// Define an enum with Description attributes
+public enum DeploymentStatus
+{
+    [Description("Not yet deployed")]
+    NotDeployed,
+    
+    [Description("Currently deploying")]
+    Deploying,
+    
+    [Description("Successfully deployed")]
+    Deployed,
+    
+    [Description("Deployment failed")]
+    Failed
+}
+
+// Get the description from an enum value
+var status = DeploymentStatus.Deploying;
+var description = status.GetDescription(); // "Currently deploying"
+
+// Convert an enum to a human-readable display string
+var displayString = status.ToDisplayString(); // "Deploying"
+
+// Parse a string to an enum
+var parsedStatus = "deployed".ParseEnum<DeploymentStatus>(); // DeploymentStatus.Deployed
+
+// Try to parse a string to an enum (returns null if invalid)
+var invalidStatus = "invalid".TryParseEnum<DeploymentStatus>(); // null
+
+// Get all enum values
+var allStatuses = EnumExtensions.GetAllValues<DeploymentStatus>();
+// [NotDeployed, Deploying, Deployed, Failed]
+
+// Get all enum values with their descriptions
+var statusMap = EnumExtensions.GetValueDescriptionMap<DeploymentStatus>();
+// {NotDeployed: "Not yet deployed", Deploying: "Currently deploying", ...}
+
+// Get all display strings
+var displayStrings = EnumExtensions.GetDisplayStrings<DeploymentStatus>();
+// ["Not deployed", "Deploying", "Deployed", "Failed"]
+
+// Check if an enum has a specific flag (works with [Flags] enums)
+[Flags]
+public enum Permissions
+{
+    None = 0,
+    Read = 1,
+    Write = 2,
+    Execute = 4,
+    All = Read | Write | Execute
+}
+
+var userPermissions = Permissions.Read | Permissions.Write;
+userPermissions.HasFlag(Permissions.Read).Should().BeTrue(); // true
+userPermissions.HasFlag(Permissions.Execute).Should().BeFalse(); // false
+
+// Convert enum to numeric values
+var statusAsLong = status.ToLong<DeploymentStatus>(); // 1L
+var statusAsInt = status.ToInt<DeploymentStatus>(); // 1
+
+// Convert enum to CLI format (kebab-case)
+var cliArg = DeploymentStatus.Deployed.ToCliFormat(); // "deployed"
+
+// Get a random enum value
+var randomStatus = EnumExtensions.GetRandomValue<DeploymentStatus>();
+
+// Check if enum equals a name (case-insensitive)
+status.EqualsIgnoreCase("DEPLOYING").Should().BeTrue(); // true
+
+// Get custom attributes from enum values
+var descriptionAttribute = status.GetAttribute<DescriptionAttribute>();
+// Returns the DescriptionAttribute instance
+```
+
 ## CollectionExtensionsTests
 
 The `CollectionExtensionsTests` class provides unit tests for collection extension methods in the `CoolifyCli.Extensions` namespace. It tests various utility methods for working with collections including batching operations, filtering, transformation, and dictionary manipulation to ensure these extension methods work correctly across different scenarios.
