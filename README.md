@@ -1869,6 +1869,60 @@ if (entry != null)
 cache.SetExpiration("api-config", TimeSpan.FromHours(2));
 ```
 
+## ConfigurationHelper
+
+The `ConfigurationHelper` class provides utilities for managing CLI configuration files and settings persistence. It handles loading, saving, and manipulating configuration data stored as JSON files, with support for default values, validation, and configuration directory initialization. This helper is essential for maintaining user preferences, application settings, and environment configurations across CLI sessions.
+
+Here's a realistic example of using the `ConfigurationHelper` to manage application configuration:
+
+```csharp
+// Initialize the configuration directory (typically done once at application startup)
+ConfigurationHelper.InitializeConfigDirectory();
+
+// Set configuration values for user preferences
+ConfigurationHelper.SetConfigValue("DefaultEnvironment", "production");
+ConfigurationHelper.SetConfigValue("VerboseMode", true);
+ConfigurationHelper.SetConfigValue("LastUsedApplication", 42);
+
+// Retrieve configuration values with defaults
+var defaultEnv = ConfigurationHelper.GetConfigValue("DefaultEnvironment", "development");
+var verboseMode = (bool)(ConfigurationHelper.GetConfigValue("VerboseMode") ?? false);
+var lastAppId = (int)(ConfigurationHelper.GetConfigValue("LastUsedApplication") ?? -1);
+
+Console.WriteLine($"Default environment: {defaultEnv}");
+Console.WriteLine($"Verbose mode: {verboseMode}");
+Console.WriteLine($"Last used application ID: {lastAppId}");
+
+// Update configuration when user preferences change
+ConfigurationHelper.SetConfigValue("DefaultEnvironment", "staging");
+
+// Delete configuration values when they're no longer needed
+ConfigurationHelper.DeleteConfigValue("TemporarySetting");
+
+// Display current configuration (non-sensitive values only)
+ConfigurationHelper.DisplayConfiguration();
+
+// Validate configuration before using it
+var validationErrors = ConfigurationHelper.ValidateConfiguration();
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Configuration validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Export configuration for backup or sharing
+ConfigurationHelper.ExportConfiguration("config-backup.json");
+
+// Import configuration from a backup file
+ConfigurationHelper.ImportConfiguration("config-backup.json");
+
+// Reset to default configuration if needed
+ConfigurationHelper.ResetConfiguration();
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
