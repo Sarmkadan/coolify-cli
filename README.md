@@ -2710,3 +2710,73 @@ groups[0].Should().BeEquivalentTo(new[] { 1, 2, 3 });
 groups[1].Should().BeEquivalentTo(new[] { 10, 11 });
 groups[2].Should().BeEquivalentTo(new[] { 20 });
 ```
+
+## TextFormatter
+
+The `TextFormatter` class provides comprehensive text formatting capabilities for CLI output generation. It supports plain text, colored text, structured layouts (headers, tables, lists), indentation, progress bars, code blocks, and various styled messages (success, error, warning, info). This formatter is ideal for creating consistent, readable console output across all CLI commands.
+
+Here's a realistic example of using the `TextFormatter` to display deployment information:
+
+```csharp
+// Create a new text formatter
+var formatter = new TextFormatter();
+
+// Add a header with automatic underline
+formatter.WriteHeader("Deployment Summary");
+
+// Add formatted messages with appropriate colors
+formatter.WriteSuccess("Application deployed successfully!");
+formatter.WriteInfo("Deployment completed in 2 minutes 34 seconds");
+formatter.WriteWarning("High memory usage detected on worker nodes");
+
+// Add a separator for visual organization
+formatter.WriteSeparator();
+
+// Add key-value pairs for structured data
+formatter.WriteKeyValue("Application Name", "web-storefront");
+formatter.WriteKeyValue("Environment", "production");
+formatter.WriteKeyValue("Status", "Deployed");
+formatter.WriteKeyValue("Version", "v2.1.0");
+formatter.WriteKeyValue("Duration", "2m 34s");
+
+// Add a subheader for related information
+formatter.WriteSubheader("Resource Usage");
+
+// Add a table to display resource metrics
+formatter.WriteTable(
+    headers: new[] { "Metric", "Current", "Limit", "Status" },
+    rows: new[]
+    {
+        new[] { "CPU", "68.5%", "100%", "Normal" },
+        new[] { "Memory", "1.2 GB", "2 GB", "Normal" },
+        new[] { "Storage", "45 GB", "100 GB", "Normal" }
+    }
+);
+
+// Add a list of deployment steps
+formatter.WriteLine();
+formatter.WriteSubheader("Deployment Steps");
+formatter.WriteListItem("1. Cloning repository");
+formatter.WriteListItem("2. Installing dependencies");
+formatter.WriteListItem("3. Building application");
+formatter.WriteListItem("4. Running health checks");
+formatter.WriteListItem("5. Deploying to production");
+
+// Add a code block for configuration examples
+formatter.WriteLine();
+formatter.WriteSubheader("Configuration");
+formatter.WriteCodeBlock("{\n  \"name\": \"web-storefront\",\n  \"port\": 3000,\n  \"environment\": \"production\",\n  \"replicas\": 3\n}");
+
+// Add a progress bar for ongoing operations
+formatter.WriteLine();
+formatter.WriteSubheader("Progress");
+formatter.WriteProgressBar(current: 7, total: 10, label: "Deployment Progress");
+
+// Add a panel for important messages
+formatter.WriteLine();
+formatter.WriteSubheader("Important Notes");
+formatter.WritePanel("Remember to update your DNS records to point to the new deployment IP address.\nChanges will take effect within 5 minutes.", title: "DNS Update Required");
+
+// Display the formatted content
+Console.WriteLine(formatter.ToString());
+```
