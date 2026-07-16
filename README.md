@@ -819,6 +819,95 @@ var defaultPort = DatabaseConfiguration.GetDefaultPort(DatabaseType.PostgreSQL);
 Console.WriteLine($"Default PostgreSQL port: {defaultPort}");
 ```
 
+## InfrastructureTemplateEngine
+
+The `InfrastructureTemplateEngine` class provides infrastructure-as-code capabilities for managing Coolify resources declaratively. It reads YAML templates from disk, validates their structure, computes a live-state diff via the Coolify API, and reconciles resources (applications and databases) to match the desired state defined in the template. The engine supports dry-run mode for previewing changes, fail-fast execution, and comprehensive logging for audit trails.
+
+Here's a realistic example of using the `InfrastructureTemplateEngine` to manage infrastructure:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var appService = new ApplicationService(apiClient, logger, config);
+var dbService = new DatabaseService(apiClient, logger, config);
+
+// Create the template engine
+var templateEngine = new InfrastructureTemplateEngine(appService, dbService, logger);
+
+// Load a template from disk (YAML file)
+var loadResult = await templateEngine.LoadTemplateAsync("production-stack.yaml");
+if (!loadResult.Success)
+{
+    Console.WriteLine($"Failed to load template: {loadResult.Message}");
+    return;
+}
+
+var template = loadResult.Data!;
+
+// Validate the template structure
+var validationResult = await templateEngine.ValidateTemplateAsync(template);
+if (!validationResult.Success)
+{
+    Console.WriteLine("Template validation failed:");
+    foreach (var error in validationResult.Data!.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+    return;
+}
+
+// Compute the diff between template and live environment
+var diffResult = await templateEngine.ComputeDiffAsync(template);
+if (!diffResult.Success)
+{
+    Console.WriteLine($"Failed to compute diff: {diffResult.Message}");
+    return;
+}
+
+var diff = diffResult.Data!;
+
+Console.WriteLine($"Template diff summary:");
+Console.WriteLine($"  Added: {diff.Added.Count}");
+Console.WriteLine($"  Modified: {diff.Modified.Count}");
+Console.WriteLine($"  Removed: {diff.Removed.Count}");
+Console.WriteLine($"  Unchanged: {diff.Unchanged.Count}");
+
+// Apply the template to reconcile the live environment
+var applyOptions = new IacTemplateOptions
+{
+    DryRun = false,      // Set to true to preview changes without applying
+    FailFast = true,       // Stop on first failure
+    SkipValidation = false // Validate before applying
+};
+
+var applyResult = await templateEngine.ApplyTemplateAsync(template, applyOptions);
+if (!applyResult.Success)
+{
+    Console.WriteLine($"Failed to apply template: {applyResult.Message}");
+    return;
+}
+
+var result = applyResult.Data!;
+Console.WriteLine($"Apply completed in {result.Duration.TotalSeconds:F1}s");
+Console.WriteLine($"Succeeded: {result.SucceededCount}, Failed: {result.FailedCount}");
+
+// Export the current live state as a template
+var exportResult = await templateEngine.ExportCurrentStateAsync();
+if (exportResult.Success)
+{
+    var exportedTemplate = exportResult.Data!;
+    
+    // Serialize to YAML for saving to disk
+    var yaml = InfrastructureTemplateEngine.SerializeToYaml(exportedTemplate);
+    await File.WriteAllTextAsync("exported-infrastructure.yaml", yaml);
+    
+    Console.WriteLine("Current state exported successfully!");
+}
+```
+
 ## ApiResponse
 
 The `ApiResponse<T>` class is a generic wrapper for standardized API responses from Coolify. It provides consistent error handling, data serialization, and status tracking across all endpoints. The response includes success status, data payload, error messages, HTTP status codes, pagination metadata, and timestamps.
