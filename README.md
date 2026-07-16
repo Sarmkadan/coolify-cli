@@ -1810,6 +1810,65 @@ var noColorLogger = new ConsoleLogger(colorOutput: false);
 noColorLogger.Info("Starting deployment process");
 ```
 
+## MemoryCacheProvider
+
+The `MemoryCacheProvider` class provides an in-memory caching implementation with support for expiration, atomic operations, and factory-based value creation. It serves as a lightweight, thread-safe cache provider for storing and retrieving application data with automatic cleanup of expired entries. The provider includes methods for CRUD operations, atomic get-or-add patterns, and cache management utilities.
+
+Here's a realistic example of how to use the `MemoryCacheProvider`:
+
+```csharp
+// Initialize the memory cache provider with a cleanup interval
+// Use a reasonable cleanup interval for production (e.g., every 5 minutes)
+using var cache = new MemoryCacheProvider(cleanupInterval: TimeSpan.FromMinutes(5));
+
+// Store a value with default expiration (24 hours)
+cache.Set("api-config", new ApiConfiguration { BaseUrl = "https://api.coolify.io", Timeout = 30 });
+
+// Store a value with custom expiration (1 hour)
+cache.SetExpiration("temp-data", TimeSpan.FromHours(1));
+
+// Verify existence and retrieve
+if (cache.Exists("api-config"))
+{
+    var config = cache.Get<ApiConfiguration>("api-config");
+    // config contains the ApiConfiguration object
+}
+
+// Try to retrieve a value safely
+if (cache.TryGet("api-config", out ApiConfiguration? retrievedConfig))
+{
+    // retrievedConfig contains the ApiConfiguration object
+}
+
+// Remove an entry
+cache.Remove("temp-data");
+
+// Clear all entries (useful for cache invalidation)
+cache.Clear();
+
+// Efficiently get or add a value (invokes factory if key is missing)
+var result = cache.GetOrAdd("deployment-42", () => 
+    new ApplicationDeployment { Id = 42, Name = "web-storefront" });
+// result contains the ApplicationDeployment object
+
+// Get all cache keys (for debugging or monitoring)
+var allKeys = cache.GetAllKeys();
+Console.WriteLine($"Cache contains {allKeys.Count()} entries");
+
+// Check cache entry metadata
+var entry = cache.GetEntry("api-config");
+if (entry != null)
+{
+    Console.WriteLine($"Created at: {entry.CreatedAt}");
+    Console.WriteLine($"Last accessed: {entry.LastAccessedAt}");
+    Console.WriteLine($"Expires at: {entry.ExpiresAt}");
+    Console.WriteLine($"Is expired: {entry.IsExpired}");
+}
+
+// Set expiration on existing entry
+cache.SetExpiration("api-config", TimeSpan.FromHours(2));
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
