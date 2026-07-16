@@ -1,3 +1,59 @@
+## DateTimeExtensions
+
+The `DateTimeExtensions` class provides a comprehensive set of utility methods for date and time manipulation, formatting, and calculations. It includes helpers for converting dates to relative time strings, formatting durations, date arithmetic, Unix timestamp conversions, and business day calculations.
+
+Here's an example of how to use some of the utility methods:
+
+```csharp
+// Convert a DateTime to a human-readable relative time
+var deploymentTime = DateTime.UtcNow.AddHours(-2);
+var relativeTime = deploymentTime.ToRelativeTime(); // "2 hours ago"
+
+// Format a TimeSpan as a readable duration
+var duration = new TimeSpan(3, 45, 30);
+var formattedDuration = duration.ToReadableDuration(); // "3h 45m 30s"
+
+// Get start and end of day
+var now = DateTime.UtcNow;
+var startOfDay = now.StartOfDay(); // Midnight of current day
+var endOfDay = now.EndOfDay(); // Just before midnight of current day
+
+// Get start of week (Monday by default)
+var monday = now.StartOfWeek(); // Start of current week (Monday)
+var mondayWithCustomStart = now.StartOfWeek(DayOfWeek.Sunday); // Start of week on Sunday
+
+// Get start and end of month
+var startOfMonth = now.StartOfMonth(); // First day of current month
+var endOfMonth = now.EndOfMonth(); // Last day of current month
+
+// Check if a date is in the past, future, or today
+var pastDate = DateTime.UtcNow.AddDays(-1);
+pastDate.IsPast().Should().BeTrue(); // true
+
+var futureDate = DateTime.UtcNow.AddDays(1);
+futureDate.IsFuture().Should().BeTrue(); // true
+
+var today = DateTime.UtcNow;
+today.IsToday().Should().BeTrue(); // true
+
+// Calculate business days between two dates
+var businessDays = DateTime.UtcNow.StartOfWeek().BusinessDaysBetween(DateTime.UtcNow.EndOfWeek());
+
+// Round a DateTime to the nearest minute
+var preciseTime = DateTime.UtcNow.AddSeconds(30);
+var roundedTime = preciseTime.RoundToMinute(); // Seconds set to 0
+
+// Convert between DateTime and Unix timestamp
+var timestamp = DateTime.UtcNow.ToUnixTimestamp(); // Seconds since epoch
+var dateFromTimestamp = timestamp.FromUnixTimestamp(); // Convert back to DateTime
+
+// Format DateTime as ISO 8601 string for API calls
+var isoDate = DateTime.UtcNow.ToIso8601String(); // "2024-06-15T14:30:45.1234567Z"
+
+// Convert milliseconds to readable duration
+var msDuration = 15000L.MillisecondsToReadable(); // "15s"
+```
+
 ## StringExtensions
 
 The `StringExtensions` class provides a set of utility methods for string manipulation and validation. It includes helpers for formatting text into various naming conventions, truncating text, masking sensitive information, and validating common data formats like emails, URLs, and IP addresses.
