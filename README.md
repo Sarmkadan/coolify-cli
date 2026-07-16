@@ -1923,6 +1923,73 @@ ConfigurationHelper.ImportConfiguration("config-backup.json");
 ConfigurationHelper.ResetConfiguration();
 ```
 
+## ValidationHelper
+
+The `ValidationHelper` class provides a comprehensive set of utility methods for validating common data patterns and input values. It includes helpers for validating IDs, strings, email addresses, URLs, IP addresses, hostnames, ports, database names, usernames, semantic versions, and collections. The class also provides range validation and membership checks for various data types.
+
+Here's a realistic example of using the `ValidationHelper` methods:
+
+```csharp
+// Validate a positive integer ID
+var isValidId = ValidationHelper.IsValidId(42); // true
+var isInvalidId = ValidationHelper.IsValidId(-1); // false
+
+// Validate that a string is not null or whitespace
+var isValidString = ValidationHelper.IsValidString("production"); // true
+var isInvalidString = ValidationHelper.IsValidString("   "); // false
+
+// Validate string length requirements
+var hasMinLength = ValidationHelper.HasMinLength("hello", 5); // true
+var hasMaxLength = ValidationHelper.HasMaxLength("hello", 10); // true
+var hasLengthBetween = ValidationHelper.HasLengthBetween("hello", 3, 10); // true
+
+// Validate email addresses
+var isValidEmail = ValidationHelper.IsValidEmail("user@example.com"); // true
+var isInvalidEmail = ValidationHelper.IsValidEmail("invalid-email"); // false
+
+// Validate URLs
+var isValidUrl = ValidationHelper.IsValidUrl("https://coolify.io"); // true
+var isInvalidUrl = ValidationHelper.IsValidUrl("not-a-url"); // false
+
+// Validate IP addresses
+var isValidIp = ValidationHelper.IsValidIpAddress("192.168.1.1"); // true
+var isInvalidIp = ValidationHelper.IsValidIpAddress("999.999.999.999"); // false
+
+// Validate hostnames
+var isValidHostname = ValidationHelper.IsValidHostname("server.example.com"); // true
+var isInvalidHostname = ValidationHelper.IsValidHostname("-invalid-hostname"); // false
+
+// Validate port numbers (1-65535)
+var isValidPort = ValidationHelper.IsValidPort("8080"); // true
+var isInvalidPort = ValidationHelper.IsValidPort("99999"); // false
+
+// Validate database names
+var isValidDbName = ValidationHelper.IsValidDatabaseName("my_database"); // true
+var isInvalidDbName = ValidationHelper.IsValidDatabaseName("1invalid"); // false
+
+// Validate usernames
+var isValidUsername = ValidationHelper.IsValidUsername("john.doe"); // true
+var isInvalidUsername = ValidationHelper.IsValidUsername("user@name"); // false
+
+// Validate that a value is in a list of allowed values
+var isOneOf = ValidationHelper.IsOneOf("production", "development", "staging", "production"); // true
+
+// Validate numeric ranges
+var isInRange = ValidationHelper.IsInRange(50, 1, 100); // true
+var isNotInRange = ValidationHelper.IsInRange(150, 1, 100); // false
+
+// Validate collections
+var isNotEmpty = ValidationHelper.IsNotEmpty(new List<string> { "item1", "item2" }); // true
+var isEmpty = ValidationHelper.IsNotEmpty(new List<string>()); // false
+
+var hasMinimumCount = ValidationHelper.HasMinimumCount(new List<string> { "a", "b", "c" }, 2); // true
+var hasMaximumCount = ValidationHelper.HasMaximumCount(new List<string> { "a", "b" }, 3); // true
+
+// Validate semantic versions (major.minor.patch)
+var isValidVersion = ValidationHelper.IsValidSemanticVersion("1.2.3"); // true
+var isInvalidVersion = ValidationHelper.IsValidSemanticVersion("v1.2.3"); // false
+```
+
 ## CliHelpers
 
 The `CliHelpers` class provides a comprehensive set of utility methods for CLI output formatting, user interaction, and data display. It includes helpers for printing colored status messages, formatting bytes and time spans, creating progress bars, displaying tables, and collecting user input through various prompt methods. This class is essential for creating consistent, user-friendly command-line interfaces.
