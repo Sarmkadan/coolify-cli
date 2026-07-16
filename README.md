@@ -184,6 +184,40 @@ diff.ApplicationId.Should().Be(1);
 diff.ApplicationName.Should().Be("my-service");
 ```
 
+## DatabaseManagementCommands
+
+The `DatabaseManagementCommands` class provides database lifecycle management commands for backup, restore, optimization, and credential management operations. It handles critical database operations with safety validations and confirmation prompts to prevent accidental data loss.
+
+Here's a realistic example of using the database management commands:
+
+```csharp
+// Create database management commands instance
+var dbCommands = new DatabaseManagementCommands(apiClient, logger, config);
+
+// Create and execute backup command
+var backupCommand = dbCommands.CreateBackupCommand();
+// backupCommand can be added to a CLI root command with arguments:
+// backupCommand.AddArgument(new Argument<int>("id"));
+// backupCommand.AddOption(new Option<string>("--type"));
+// backupCommand.AddOption(new Option<string>("--destination"));
+
+// Create and execute restore command
+var restoreCommand = dbCommands.CreateRestoreCommand();
+// restoreCommand.AddArgument(new Argument<int>("id"));
+// restoreCommand.AddOption(new Option<string>("--backup"));
+// restoreCommand.AddOption(new Option<bool>("--force"));
+
+// Create and execute optimize command
+var optimizeCommand = dbCommands.CreateOptimizeCommand();
+// optimizeCommand.AddArgument(new Argument<int>("id"));
+// optimizeCommand.AddOption(new Option<string>("--mode"));
+
+// Create and execute credentials command
+var credentialsCommand = dbCommands.CreateCredentialsCommand();
+// credentialsCommand.AddArgument(new Argument<int>("id"));
+// credentialsCommand.AddOption(new Option<bool>("--reset"));
+```
+
 ## DeploymentDiffEntry
 
 The `DeploymentDiffEntry` class represents a single property change between the current and proposed deployment configuration. It tracks the property name, current value, proposed value, category for display purposes, and provides a helper method to determine if the values actually differ. This model is used by the `DeploymentDiff` class to summarize all changes between two deployment configurations.
