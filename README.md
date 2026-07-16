@@ -1923,6 +1923,76 @@ ConfigurationHelper.ImportConfiguration("config-backup.json");
 ConfigurationHelper.ResetConfiguration();
 ```
 
+## JsonConverter
+
+The `JsonConverter` class provides a comprehensive set of utilities for JSON serialization, deserialization, and transformation. It handles type-safe conversions with error handling, supports dynamic parsing, object merging, value extraction, and provides utilities for JSON manipulation including property setting/removal, reformatting, validation, size calculation, and difference detection.
+
+Here's a realistic example of using the `JsonConverter` utilities for JSON manipulation:
+
+```csharp
+// Serialize an object to JSON
+var config = new Dictionary<string, object?> 
+{
+    ["name"] = "web-app",
+    ["port"] = 3000,
+    ["enabled"] = true,
+    ["environment"] = "production"
+};
+
+var json = JsonConverter.ToJson(config);
+// json: "{\"name\":\"web-app\",\"port\":3000,\"enabled\":true,\"environment\":\"production\"}"
+
+// Serialize with pretty printing
+var prettyJson = JsonConverter.ToJson(config, prettyPrint: true);
+
+// Deserialize JSON back to an object
+var deserialized = JsonConverter.FromJson<Dictionary<string, object?>>(json);
+
+// Parse JSON as dynamic object
+var dynamicObject = JsonConverter.ParseDynamic(json);
+var name = dynamicObject["name"].GetValue<string>(); // "web-app"
+
+// Merge two JSON objects
+var baseConfig = new Dictionary<string, object?> { ["timeout"] = 30 };
+var overrideConfig = new Dictionary<string, object?> { ["timeout"] = 60, ["retries"] = 3 };
+var merged = JsonConverter.Merge(baseConfig, overrideConfig);
+// merged["timeout"] = 60, merged["retries"] = 3
+
+// Extract a value using dot notation path
+var jsonWithNested = "{\"database\":{\"host\":\"localhost\",\"port\":5432}}";
+var host = JsonConverter.ExtractValue<string>(jsonWithNested, "database.host"); // "localhost"
+
+// Set a value in JSON
+var updatedJson = JsonConverter.SetValue(json, "timeout", 45);
+
+// Remove a property
+var withoutTimeout = JsonConverter.RemoveProperty(updatedJson, "timeout");
+
+// Reformat JSON for consistent formatting
+var reformatted = JsonConverter.Reformat(json, prettyPrint: true);
+
+// Validate JSON
+var isValid = JsonConverter.IsValidJson(json); // true
+
+// Get JSON size in bytes
+var size = JsonConverter.GetJsonSize(config); // Size in bytes
+
+// Convert dictionary to JSON
+var dictJson = JsonConverter.DictionaryToJson(config);
+
+// Convert JSON to dictionary
+var backToDict = JsonConverter.JsonToDictionary(json);
+
+// Sanitize JSON by removing sensitive paths
+var sanitized = JsonConverter.SanitizeJson(json, new List<string> { "password" });
+
+// Compare two JSON objects for equality
+var isEqual = JsonConverter.JsonEquals(json, dictJson); // true
+
+// Get differences between two JSON objects
+var differences = JsonConverter.GetJsonDifferences(json, updatedJson);
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
