@@ -1193,6 +1193,37 @@ var partitions = deploymentIds.Partition(4);
 
 The `EnumExtensions` class provides a comprehensive set of utility methods for working with enums in C#. It includes helpers for getting enum descriptions, parsing strings to enums, converting enums to display strings, checking flags, converting to numeric values, and generating CLI-friendly formats. These utilities are particularly useful for CLI applications, configuration options, and user-friendly enum displays.
 
+## AdvancedAppCommands
+
+The `AdvancedAppCommands` class provides advanced application lifecycle management commands for deployment configuration, environment variables, scaling, and rollback operations. It offers fine-grained control over application management through commands like restart, set-env, scale, and rollback.
+
+Here's an example of how to use the `AdvancedAppCommands` class to manage application lifecycle:
+
+```csharp
+// Create an instance of AdvancedAppCommands with required dependencies
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var advancedCommands = new AdvancedAppCommands(apiClient, logger, config);
+
+// Create and execute restart command
+var restartCommand = advancedCommands.CreateRestartCommand();
+// restartCommand can be added to a CLI root command and executed with appropriate arguments
+
+// Create and execute set-env command to update environment variables
+var setEnvCommand = advancedCommands.CreateSetEnvCommand();
+// setEnvCommand can be configured with --file or --var options for environment variable updates
+
+// Create and execute scale command to adjust application resources
+var scaleCommand = advancedCommands.CreateScaleCommand();
+// scaleCommand accepts --instances, --cpu, and --memory options for scaling
+
+// Create and execute rollback command to revert to a previous deployment
+var rollbackCommand = advancedCommands.CreateRollbackCommand();
+// rollbackCommand accepts --deployment option to specify a specific deployment ID
+```
+
 ## EnvironmentVariable
 
 The `EnvironmentVariable` class represents configuration variables for applications and services, supporting secret management, environment scoping, and change tracking. It provides validation, value masking for display, and cloning capabilities for auditing purposes.
