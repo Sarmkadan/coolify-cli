@@ -366,6 +366,118 @@ var summary = usage.ToSummaryLine();
 // summary contains "42", "api-service", and "75.5"
 ```
 
+## CollectionExtensions
+
+The `CollectionExtensions` class provides a comprehensive set of extension methods for working with collections in C#. These utilities simplify common operations like filtering, batching, transformation, and dictionary manipulation, making collection processing more readable and concise.
+
+Here's an example of how to use some of the most useful methods:
+
+```csharp
+// Check if a collection is null or empty
+var emptyList = new List<string>();
+if (emptyList.IsNullOrEmpty())
+{
+    Console.WriteLine("Collection is null or empty");
+}
+
+var populatedList = new[] { "app1", "app2", "app3" };
+if (!populatedList.IsNullOrEmpty())
+{
+    Console.WriteLine($"Collection has {populatedList.Count} items");
+}
+
+// Split a collection into batches of 3 items each
+var deploymentIds = Enumerable.Range(1, 10).ToList();
+var batches = deploymentIds.Batch(3).ToList();
+// batches contains: [[1,2,3], [4,5,6], [7,8,9], [10]]
+
+// Filter out null values from a collection
+var servicesWithNulls = new string?[] { "web", null, "api", null, "worker" };
+var validServices = servicesWithNulls.WhereNotNull().ToList();
+// validServices: ["web", "api", "worker"]
+
+// Split a collection into two based on a predicate
+var (evenDeployments, oddDeployments) = deploymentIds.Split(n => n % 2 == 0);
+// evenDeployments: [2,4,6,8,10]
+// oddDeployments: [1,3,5,7,9]
+
+// Flatten nested collections
+var nestedDeploymentGroups = new List<List<string>>
+{
+    new() { "web-app", "web-worker" },
+    new() { "api-service" },
+    new() { "cache-redis", "cache-memcached" }
+};
+var allDeployments = nestedDeploymentGroups.Flatten().ToList();
+// allDeployments: ["web-app", "web-worker", "api-service", "cache-redis", "cache-memcached"]
+
+// Find items with max/min values based on a key selector
+var applications = new[] 
+{
+    new { Name = "web", Memory = 512 },
+    new { Name = "api", Memory = 1024 },
+    new { Name = "worker", Memory = 256 }
+};
+
+var maxMemoryApp = applications.MaxBy(a => a.Memory);
+// maxMemoryApp.Name is "api"
+
+var minMemoryApp = applications.MinBy(a => a.Memory);
+// minMemoryApp.Name is "worker"
+
+// Merge two dictionaries, with second dictionary values overwriting first
+var defaultConfig = new Dictionary<string, string>
+{
+    { "timeout", "30" },
+    { "retries", "3" }
+};
+
+var customConfig = new Dictionary<string, string>
+{
+    { "retries", "5" },
+    { "region", "us-east-1" }
+};
+
+var mergedConfig = defaultConfig.Merge(customConfig);
+// mergedConfig["timeout"] is "30"
+// mergedConfig["retries"] is "5"
+// mergedConfig["region"] is "us-east-1"
+
+// Convert a dictionary to a query string
+var queryParams = new Dictionary<string, string>
+{
+    { "env", "production" },
+    { "region", "us-east-1" },
+    { "version", "v2" }
+};
+var queryString = queryParams.ToQueryString();
+// queryString is "env=production&region=us-east-1&version=v2"
+
+// Group consecutive items based on a condition
+var deploymentNumbers = new[] { 1, 2, 3, 10, 11, 20, 21, 22 };
+var groups = deploymentNumbers.GroupConsecutive((a, b) => b - a <= 1).ToList();
+// groups[0]: [1,2,3]
+// groups[1]: [10,11]
+// groups[2]: [20,21,22]
+
+// Safely get an item at index
+var deploymentList = new[] { "web", "api", "worker", "cache" };
+var thirdItem = deploymentList.GetAtIndexOrDefault(2); // "worker"
+var outOfRangeItem = deploymentList.GetAtIndexOrDefault(10); // null
+
+// Shuffle a collection randomly
+var shuffledDeployments = deploymentList.Shuffle().ToList();
+// shuffledDeployments contains the same items in random order
+
+// Order by descending using a key selector
+var sortedApps = applications.OrderByDescending(a => a.Memory).ToList();
+// sortedApps[0] has the highest memory
+
+// Partition a collection into groups of specified size
+var partitions = deploymentIds.Partition(4);
+// partitions contains: [[1,2,3,4], [5,6,7,8], [9,10]]
+```
+
 ## CollectionExtensionsTests
 
 The `CollectionExtensionsTests` class provides unit tests for collection extension methods in the `CoolifyCli.Extensions` namespace. It tests various utility methods for working with collections including batching operations, filtering, transformation, and dictionary manipulation to ensure these extension methods work correctly across different scenarios.
