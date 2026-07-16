@@ -668,6 +668,56 @@ var partitions = deploymentIds.Partition(4);
 
 The `EnumExtensions` class provides a comprehensive set of utility methods for working with enums in C#. It includes helpers for getting enum descriptions, parsing strings to enums, converting enums to display strings, checking flags, converting to numeric values, and generating CLI-friendly formats. These utilities are particularly useful for CLI applications, configuration options, and user-friendly enum displays.
 
+## EnvironmentVariable
+
+The `EnvironmentVariable` class represents configuration variables for applications and services, supporting secret management, environment scoping, and change tracking. It provides validation, value masking for display, and cloning capabilities for auditing purposes.
+
+Here's an example of how to create and use an environment variable:
+
+```csharp
+// Create a new environment variable for a web application
+var envVar = new EnvironmentVariable
+{
+    ApplicationId = "web-app-001",
+    Key = "DATABASE_URL",
+    Value = "postgresql://user:pass@localhost:5432/mydb",
+    IsSecret = true,
+    Description = "Database connection string for production environment",
+    EnvironmentScope = "production",
+    CreatedBy = "system"
+};
+
+// Validate the environment variable configuration
+var validationErrors = envVar.Validate().ToList();
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+else
+{
+    Console.WriteLine("Environment variable configuration is valid!");
+}
+
+// Get a masked display value for logging (shows last 4 chars of secret)
+var displayValue = envVar.GetDisplayValue(maskSecrets: true);
+// displayValue is "***d/mydb"
+
+// Clone the variable for auditing before making changes
+var auditCopy = envVar.Clone();
+
+// Update the variable and mark it as changed
+envVar.Value = "postgresql://user:newpass@localhost:5432/mydb";
+envVar.MarkAsUpdated("admin-user");
+
+// Verify the update
+Console.WriteLine($"Updated at: {envVar.UpdatedAt}");
+Console.WriteLine($"Updated by: {envVar.UpdatedBy}");
+```
+
 Here's an example of how to use some of the utility methods:
 
 ```csharp
