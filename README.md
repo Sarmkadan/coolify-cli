@@ -184,6 +184,44 @@ diff.ApplicationId.Should().Be(1);
 diff.ApplicationName.Should().Be("my-service");
 ```
 
+## DeploymentDiffEntry
+
+The `DeploymentDiffEntry` class represents a single property change between the current and proposed deployment configuration. It tracks the property name, current value, proposed value, category for display purposes, and provides a helper method to determine if the values actually differ. This model is used by the `DeploymentDiff` class to summarize all changes between two deployment configurations.
+
+Here's a realistic example of creating and using a `DeploymentDiffEntry`:
+
+```csharp
+// Create a deployment diff entry for a changed environment variable
+var envVarChange = new DeploymentDiffEntry
+{
+    Property = "LOG_LEVEL",
+    CurrentValue = "info",
+    ProposedValue = "debug",
+    Category = "EnvVars"
+};
+
+// Check if the values differ
+if (envVarChange.HasChange)
+{
+    Console.WriteLine($"Environment variable {envVarChange.Property} will change from '{envVarChange.CurrentValue}' to '{envVarChange.ProposedValue}'");
+}
+
+// Create a deployment diff entry for a core configuration change
+var branchChange = new DeploymentDiffEntry
+{
+    Property = "Branch",
+    CurrentValue = "main",
+    ProposedValue = "release/v2.1",
+    Category = "Core"
+};
+
+// Access the property values
+Console.WriteLine($"Property: {branchChange.Property}");
+Console.WriteLine($"Current: {branchChange.CurrentValue}");
+Console.WriteLine($"Proposed: {branchChange.ProposedValue}");
+Console.WriteLine($"Category: {branchChange.Category}");
+```
+
 ## DeploymentTests
 
 The `DeploymentTests` class provides unit tests that verify the behavior of the `ApplicationDeployment` class, focusing on validation, deployment state management, failure tracking, and caching functionality. These tests ensure that deployment configurations are properly validated, state transitions work correctly, failure states are tracked accurately, and cached deployments are retrieved and updated as expected.
