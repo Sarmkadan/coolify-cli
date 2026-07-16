@@ -251,55 +251,90 @@ cachedDeployment.Id.Should().Be(42);
 cachedDeployment.Name.Should().Be("cached-service");
 ```
 
-## TuiStateTests
+## TuiState
 
-The `TuiStateTests` class provides unit tests for the `TuiState` class, which manages the state of a terminal user interface for navigating and selecting applications. These tests verify navigation behavior (moving up and down), boundary conditions, selection retrieval, and scroll management to ensure the TUI state transitions correctly across different scenarios.
+The `TuiState` class manages the state of a terminal user interface for navigating and selecting applications and databases. It tracks the active view, selected items, scroll position, status messages, and provides navigation methods for interactive terminal applications. The state also maintains timestamps for refresh operations and can signal when the application should exit.
 
-Here's an example of how to use the tested methods to manage application selection in a terminal UI:
+Here's a realistic example of creating and using a `TuiState` for a terminal UI application:
 
 ```csharp
-// Create a TUI state with some applications
+// Create a TUI state with applications and databases
 var state = new TuiState
 {
+    ActiveView = TuiView.Applications,
     Applications = new List<ApplicationDeployment>
     {
-        new() { Id = 1, Name = "web-app" },
-        new() { Id = 2, Name = "api-service" },
-        new() { Id = 3, Name = "worker-process" },
-        new() { Id = 4, Name = "database" },
-        new() { Id = 5, Name = "cache-layer" }
+        new() { Id = 1, Name = "web-storefront", Description = "Production web application" },
+        new() { Id = 2, Name = "api-gateway", Description = "API gateway service" },
+        new() { Id = 3, Name = "worker-queue", Description = "Background worker service" },
+        new() { Id = 4, Name = "cache-service", Description = "Redis cache layer" },
+        new() { Id = 5, Name = "auth-service", Description = "Authentication service" }
+    },
+    Databases = new List<DatabaseConfiguration>
+    {
+        new() { Id = 1, Name = "production-postgres", Type = DatabaseType.PostgreSQL },
+        new() { Id = 2, Name = "redis-cache", Type = DatabaseType.Redis },
+        new() { Id = 3, Name = "analytics-mongo", Type = DatabaseType.MongoDB }
     },
     SelectedIndex = 0,
-    ScrollOffset = 0
+    ScrollOffset = 0,
+    StatusMessage = "Ready",
+    IsRefreshing = false,
+    LastRefreshedAt = DateTime.UtcNow,
+    ShouldExit = false
 };
 
-// Navigate down through the list
+// Navigate down through the applications list
 state.MoveDown(state.Applications.Count);
-state.SelectedIndex.Should().Be(1); // Moves to second item
+Console.WriteLine($"Selected index: {state.SelectedIndex}"); // Output: Selected index: 1
 
 state.MoveDown(state.Applications.Count);
-state.SelectedIndex.Should().Be(2); // Moves to third item
+Console.WriteLine($"Selected index: {state.SelectedIndex}"); // Output: Selected index: 2
 
 // Navigate up
 state.MoveUp();
-state.SelectedIndex.Should().Be(1); // Moves back to second item
+Console.WriteLine($"Selected index: {state.SelectedIndex}"); // Output: Selected index: 1
 
 // Get the currently selected application
 var selectedApp = state.GetSelectedApp();
-selectedApp.Should().NotBeNull();
-selectedApp!.Name.Should().Be("api-service");
+Console.WriteLine($"Selected app: {selectedApp?.Name}"); // Output: Selected app: api-gateway
 
 // Reset selection to initial state
 state.ResetSelection();
-state.SelectedIndex.Should().Be(0);
-state.ScrollOffset.Should().Be(0);
+Console.WriteLine($"Reset - Selected index: {state.SelectedIndex}, Scroll offset: {state.ScrollOffset}");
+// Output: Reset - Selected index: 0, Scroll offset: 0
 
 // Get visible apps for rendering (with a window size of 3)
 var visibleApps = state.GetVisibleApps(3);
-visibleApps.Should().HaveCount(3);
-visibleApps[0].Name.Should().Be("web-app");
-visibleApps[1].Name.Should().Be("api-service");
-visibleApps[2].Name.Should().Be("worker-process");
+Console.WriteLine($"Visible apps count: {visibleApps.Count}");
+foreach (var app in visibleApps)
+{
+    Console.WriteLine($"  - {app.Name}");
+}
+/* Output:
+  - web-storefront
+  - api-gateway
+  - worker-queue
+*/
+
+// Set a selected app ID
+state.SelectedAppId = 3;
+Console.WriteLine($"Selected app ID: {state.SelectedAppId}"); // Output: Selected app ID: 3
+
+// Update status message
+state.StatusMessage = "Loading applications...";
+state.IsRefreshing = true;
+Console.WriteLine($"Status: {state.StatusMessage}, IsRefreshing: {state.IsRefreshing}");
+// Output: Status: Loading applications..., IsRefreshing: True
+
+// Mark as refreshed
+state.IsRefreshing = false;
+state.LastRefreshedAt = DateTime.UtcNow;
+Console.WriteLine($"Refreshed at: {state.LastRefreshedAt}");
+
+// Signal application to exit
+state.ShouldExit = true;
+Console.WriteLine($"Should exit: {state.ShouldExit}"); // Output: Should exit: True
 ```
 
 ## MemoryCacheProviderTests
