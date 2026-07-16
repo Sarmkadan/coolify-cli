@@ -417,6 +417,59 @@ var services = " api , web , worker ".SplitTrimmed(',');
 services.Should().Equal("api", "web", "worker");
 ```
 
+## ApiResponse
+
+The `ApiResponse<T>` class is a generic wrapper for standardized API responses from Coolify. It provides consistent error handling, data serialization, and status tracking across all endpoints. The response includes success status, data payload, error messages, HTTP status codes, pagination metadata, and timestamps.
+
+Here's an example of how to use the `ApiResponse<T>` class:
+
+```csharp
+// Create a successful API response with data
+var deployment = new ApplicationDeployment
+{
+    Id = 1,
+    Name = "web-app",
+    Repository = "https://github.com/org/web-app",
+    Branch = "main"
+};
+
+var successResponse = ApiResponse<ApplicationDeployment>.SuccessResponse(
+    deployment,
+    "Deployment configuration retrieved successfully"
+);
+
+Console.WriteLine($"Success: {successResponse.Success}");
+Console.WriteLine($"Status: {successResponse.StatusCode}");
+Console.WriteLine($"Message: {successResponse.Message}");
+Console.WriteLine($"Data: {successResponse.Data?.Name}");
+
+// Create a failed API response with error details
+var errorResponse = ApiResponse<string>.ErrorResponse(
+    new List<string> { "Repository URL is invalid", "Branch not found" },
+    400
+);
+
+Console.WriteLine($"Success: {errorResponse.Success}");
+Console.WriteLine($"Status: {errorResponse.StatusCode}");
+Console.WriteLine($"Errors: {string.Join(", ", errorResponse.Errors)}");
+
+// Add an error to an existing response
+var response = ApiResponse<ApplicationDeployment>.SuccessResponse(deployment);
+response.AddError("Validation failed: missing build command");
+Console.WriteLine($"Has errors: {response.HasErrors()}");
+Console.WriteLine($"First error: {response.GetFirstError()}");
+
+// Check response status
+if (response.Success)
+{
+    Console.WriteLine("Operation completed successfully");
+}
+else
+{
+    Console.WriteLine($"Failed: {response.GetFirstError()}");
+}
+```
+
 ## InfrastructureTemplate
 
 The `InfrastructureTemplate` record represents a declarative infrastructure-as-code YAML template that describes the desired state of applications and databases to reconcile with Coolify. It serves as the root document model for defining infrastructure stacks with metadata, applications, and databases in a structured format.
