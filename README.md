@@ -1513,6 +1513,157 @@ catch (OperationCanceledException)
 }
 ```
 
+## ApplicationService
+
+The `ApplicationService` class provides comprehensive application deployment management capabilities for Coolify. It orchestrates the entire application lifecycle including creation, configuration updates, deployment, rollback, and lifecycle management operations. The service integrates with the Coolify API to provide centralized application management across different environments.
+
+Here's a realistic example of using the `ApplicationService` to manage applications:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var applicationService = new ApplicationService(apiClient, logger);
+
+// Example 1: Get all applications in the environment
+var allAppsResponse = await applicationService.GetAllApplicationsAsync();
+if (allAppsResponse.Success && allAppsResponse.Data is not null)
+{
+    Console.WriteLine($"Found {allAppsResponse.Data.Count} applications:");
+    foreach (var app in allAppsResponse.Data.Take(5))
+    {
+        Console.WriteLine($" - {app.Name} (ID: {app.Id}, Status: {app.Status})");
+    }
+}
+
+// Example 2: Get a specific application by ID
+var appResponse = await applicationService.GetApplicationAsync(42);
+if (appResponse.Success && appResponse.Data is not null)
+{
+    var app = appResponse.Data;
+    Console.WriteLine($"Application: {app.Name}");
+    Console.WriteLine($"Repository: {app.Repository}");
+    Console.WriteLine($"Environment: {app.EnvironmentId}");
+    Console.WriteLine($"Status: {app.Status}");
+}
+
+// Example 3: Create a new application
+var newApp = new ApplicationDeployment
+{
+    Name = "web-storefront",
+    Description = "Production web storefront application",
+    Repository = "https://github.com/myorg/web-storefront.git",
+    Branch = "main",
+    EnvironmentId = "env-prod-01",
+    BuildCommand = "npm run build",
+    StartCommand = "npm start",
+    Ports = new List<string> { "3000", "8080" },
+    EnvironmentVariables = new Dictionary<string, string>
+    {
+        ["NODE_ENV"] = "production",
+        ["DATABASE_URL"] = "postgresql://prod-db:5432/storefront"
+    },
+    HealthCheckUrl = "/health",
+    HealthCheckIntervalSeconds = 30
+};
+
+var createResponse = await applicationService.CreateApplicationAsync(newApp);
+if (createResponse.Success && createResponse.Data is not null)
+{
+    Console.WriteLine($"Application created successfully with ID: {createResponse.Data.Id}");
+}
+
+// Example 4: Update an existing application
+var updateResponse = await applicationService.UpdateApplicationAsync(42, new ApplicationDeployment
+{
+    Name = "web-storefront",
+    Description = "Production web storefront - updated",
+    Repository = "https://github.com/myorg/web-storefront.git",
+    Branch = "release/v2.1",
+    EnvironmentId = "env-prod-01",
+    BuildCommand = "npm run build",
+    StartCommand = "npm start",
+    Ports = new List<string> { "3000", "8080" },
+    EnvironmentVariables = new Dictionary<string, string>
+    {
+        ["NODE_ENV"] = "production",
+        ["DATABASE_URL"] = "postgresql://prod-db:5432/storefront",
+        ["REDIS_URL"] = "redis://cache-service:6379"
+    },
+    HealthCheckUrl = "/health",
+    HealthCheckIntervalSeconds = 30
+});
+
+// Example 5: Deploy an application
+var deploymentContext = new DeploymentContext
+{
+    DeploymentId = Guid.NewGuid().ToString(),
+    Application = new ApplicationDeployment
+    {
+        Id = 42,
+        Name = "web-storefront",
+        Repository = "https://github.com/myorg/web-storefront.git",
+        Branch = "release/v2.1"
+    },
+    TargetStatus = DeploymentStatus.Deployed,
+    StartedAt = DateTime.UtcNow
+};
+
+deploymentContext.LoadEnvironmentVariables(newApp.EnvironmentVariables.Select(kvp => 
+    new EnvironmentVariable
+    {
+        ApplicationId = newApp.Name,
+        Key = kvp.Key,
+        Value = kvp.Value,
+        IsSecret = false,
+        EnvironmentScope = "production"
+    }).ToList());
+
+var deployResponse = await applicationService.DeployApplicationAsync(42, deploymentContext);
+if (deployResponse.Success && deployResponse.Data is not null)
+{
+    Console.WriteLine($"Deployment initiated successfully for application 42");
+    Console.WriteLine($"Deployment ID: {deployResponse.Data.DeploymentId}");
+}
+
+// Example 6: Rollback an application to a previous version
+var rollbackResponse = await applicationService.RollbackApplicationAsync(42, "v1.2.3");
+if (rollbackResponse.Success && rollbackResponse.Data is not null)
+{
+    Console.WriteLine($"Rollback completed to version {rollbackResponse.Data.LastDeployedAt}");
+}
+
+// Example 7: Start a stopped application
+var startResponse = await applicationService.StartApplicationAsync(42);
+if (startResponse.Success && startResponse.Data is not null)
+{
+    Console.WriteLine($"Application started successfully, new status: {startResponse.Data.Status}");
+}
+
+// Example 8: Stop a running application
+var stopResponse = await applicationService.StopApplicationAsync(42);
+if (stopResponse.Success && stopResponse.Data is not null)
+{
+    Console.WriteLine($"Application stopped successfully, new status: {stopResponse.Data.Status}");
+}
+
+// Example 9: Get deployment history
+var historyResponse = await applicationService.GetDeploymentHistoryAsync(42, limit: 20);
+if (historyResponse.Success && historyResponse.Data is not null)
+{
+    Console.WriteLine($"Found {historyResponse.Data.Count} previous deployments");
+}
+
+// Example 10: Delete an application
+var deleteResponse = await applicationService.DeleteApplicationAsync(42);
+if (deleteResponse.Success)
+{
+    Console.WriteLine("Application deleted successfully");
+}
+```
+
 ## HealthCheckService
 
 The `HealthCheckService` class provides comprehensive health monitoring capabilities for applications and databases managed by Coolify. It performs real-time health checks, tracks historical health data, retrieves metrics, manages alerts, and provides continuous monitoring streams. The service integrates with the Coolify API to provide centralized health monitoring across your infrastructure.
