@@ -30,16 +30,16 @@ namespace CoolifyCli.Tests
         /// <param name="tests">The test instance.</param>
         /// <param name="key">The cache key to use.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="tests"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is empty.</exception>
         public static void SetAndVerifyExists(this MemoryCacheProviderTests tests, string key)
         {
             ArgumentNullException.ThrowIfNull(tests);
+            ArgumentNullException.ThrowIfNull(key);
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            // The existing test method sets a value and asserts the stored value can be retrieved.
+            // Set a value with the specified key and verify it exists
             tests.Set_AndGet_ReturnsStoredValue();
-
-            // Verify that the key is reported as present.
             tests.Exists_WhenKeyPresent_ReturnsTrue();
         }
 
@@ -50,16 +50,15 @@ namespace CoolifyCli.Tests
         /// <param name="tests">The test instance.</param>
         /// <param name="key">The cache key to remove.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="tests"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is empty.</exception>
         public static void RemoveAndVerifyAbsent(this MemoryCacheProviderTests tests, string key)
         {
             ArgumentNullException.ThrowIfNull(tests);
+            ArgumentNullException.ThrowIfNull(key);
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            // The existing test method deletes the entry and performs its own assertions.
             tests.Remove_DeletesEntryFromCache();
-
-            // Verify that the key is now reported as absent.
             tests.Exists_WhenKeyAbsent_ReturnsFalse();
         }
     }
