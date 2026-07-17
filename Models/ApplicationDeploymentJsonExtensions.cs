@@ -7,7 +7,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace CoolifyCli.Models;
 
 /// <summary>
-/// Provides System.Text.Json serialization and deserialization extensions for ApplicationDeployment.
+/// Provides System.Text.Json serialization and deserialization extensions for <see cref="ApplicationDeployment"/>.
 /// </summary>
 public static class ApplicationDeploymentJsonExtensions
 {
@@ -21,12 +21,12 @@ public static class ApplicationDeploymentJsonExtensions
     };
 
     /// <summary>
-    /// Serializes an ApplicationDeployment instance to a JSON string.
+    /// Serializes an <see cref="ApplicationDeployment"/> instance to a JSON string.
     /// </summary>
-    /// <param name="value">The ApplicationDeployment instance to serialize.</param>
+    /// <param name="value">The <see cref="ApplicationDeployment"/> instance to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
-    /// <returns>A JSON string representation of the ApplicationDeployment.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null.</exception>
+    /// <returns>A JSON string representation of the <see cref="ApplicationDeployment"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static string ToJson(this ApplicationDeployment value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -42,11 +42,12 @@ public static class ApplicationDeploymentJsonExtensions
     }
 
     /// <summary>
-    /// Deserializes an ApplicationDeployment instance from a JSON string.
+    /// Deserializes an <see cref="ApplicationDeployment"/> instance from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized ApplicationDeployment instance, or null if JSON is invalid.</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or empty.</exception>
+    /// <returns>The deserialized <see cref="ApplicationDeployment"/> instance, or null if JSON is invalid.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid and cannot be deserialized.</exception>
     public static ApplicationDeployment? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -62,12 +63,13 @@ public static class ApplicationDeploymentJsonExtensions
     }
 
     /// <summary>
-    /// Attempts to deserialize an ApplicationDeployment instance from a JSON string.
+    /// Attempts to deserialize an <see cref="ApplicationDeployment"/> instance from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized ApplicationDeployment instance if successful.</param>
+    /// <param name="value">Receives the deserialized <see cref="ApplicationDeployment"/> instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid and cannot be deserialized.</exception>
     public static bool TryFromJson(string json, out ApplicationDeployment? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
