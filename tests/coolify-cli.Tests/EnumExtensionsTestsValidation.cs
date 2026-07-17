@@ -8,10 +8,11 @@ using CoolifyCli.Models;
 namespace CoolifyCli.Tests;
 
 /// <summary>
-/// Validation helpers for enum values used in EnumExtensionsTests.
+/// Validation helpers for enum values used in EnumExtensions tests.
 /// Provides validation methods for testing enum extension methods.
 /// </summary>
-public static class EnumExtensionsTestsValidation
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+public sealed class EnumExtensionsTestsValidation
 {
     /// <summary>
     /// Validates a DeploymentStatus enum value and returns a list of human-readable problems.
@@ -19,8 +20,8 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The DeploymentStatus value to validate.</param>
     /// <returns>A read-only list of validation problems, or empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static IReadOnlyList<string> Validate(this DeploymentStatus value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public IReadOnlyList<string> Validate(DeploymentStatus value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -48,18 +49,15 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The DeploymentStatus value to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this DeploymentStatus value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public bool IsValid(DeploymentStatus value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified DeploymentStatus value is valid.
     /// </summary>
     /// <param name="value">The DeploymentStatus value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if the value is not valid, containing a list of problems.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static void EnsureValid(this DeploymentStatus value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public void EnsureValid(DeploymentStatus value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -76,8 +74,8 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The DatabaseType value to validate.</param>
     /// <returns>A read-only list of validation problems, or empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static IReadOnlyList<string> Validate(this DatabaseType value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public IReadOnlyList<string> Validate(DatabaseType value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -105,18 +103,15 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The DatabaseType value to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this DatabaseType value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public bool IsValid(DatabaseType value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified DatabaseType value is valid.
     /// </summary>
     /// <param name="value">The DatabaseType value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if the value is not valid, containing a list of problems.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static void EnsureValid(this DatabaseType value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public void EnsureValid(DatabaseType value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -133,8 +128,8 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The RuntimeEnvironment value to validate.</param>
     /// <returns>A read-only list of validation problems, or empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static IReadOnlyList<string> Validate(this RuntimeEnvironment value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public IReadOnlyList<string> Validate(RuntimeEnvironment value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -162,18 +157,15 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The RuntimeEnvironment value to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this RuntimeEnvironment value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public bool IsValid(RuntimeEnvironment value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified RuntimeEnvironment value is valid.
     /// </summary>
     /// <param name="value">The RuntimeEnvironment value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if the value is not valid, containing a list of problems.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static void EnsureValid(this RuntimeEnvironment value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public void EnsureValid(RuntimeEnvironment value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -190,8 +182,8 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The SeverityLevel value to validate.</param>
     /// <returns>A read-only list of validation problems, or empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static IReadOnlyList<string> Validate(this SeverityLevel value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public IReadOnlyList<string> Validate(SeverityLevel value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -219,18 +211,15 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The SeverityLevel value to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this SeverityLevel value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public bool IsValid(SeverityLevel value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified SeverityLevel value is valid.
     /// </summary>
     /// <param name="value">The SeverityLevel value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if the value is not valid, containing a list of problems.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static void EnsureValid(this SeverityLevel value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public void EnsureValid(SeverityLevel value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -247,8 +236,8 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The ScalingPolicy value to validate.</param>
     /// <returns>A read-only list of validation problems, or empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static IReadOnlyList<string> Validate(this ScalingPolicy value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public IReadOnlyList<string> Validate(ScalingPolicy value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -276,18 +265,15 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The ScalingPolicy value to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this ScalingPolicy value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public bool IsValid(ScalingPolicy value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified ScalingPolicy value is valid.
     /// </summary>
     /// <param name="value">The ScalingPolicy value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if the value is not valid, containing a list of problems.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static void EnsureValid(this ScalingPolicy value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public void EnsureValid(ScalingPolicy value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -304,8 +290,8 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The BackupStrategy value to validate.</param>
     /// <returns>A read-only list of validation problems, or empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static IReadOnlyList<string> Validate(this BackupStrategy value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public IReadOnlyList<string> Validate(BackupStrategy value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -333,18 +319,15 @@ public static class EnumExtensionsTestsValidation
     /// </summary>
     /// <param name="value">The BackupStrategy value to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this BackupStrategy value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public bool IsValid(BackupStrategy value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified BackupStrategy value is valid.
     /// </summary>
     /// <param name="value">The BackupStrategy value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if the value is not valid, containing a list of problems.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
-    public static void EnsureValid(this BackupStrategy value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public void EnsureValid(BackupStrategy value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
