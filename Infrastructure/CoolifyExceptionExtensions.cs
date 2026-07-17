@@ -58,14 +58,14 @@ public static class CoolifyExceptionExtensions
             message.AppendLine("Context Data:");
             foreach (var kvp in exception.ContextData)
             {
-                message.Append("  ").Append(kvp.Key).Append(": ").AppendLine(kvp.Value);
+                message.Append(" ").Append(kvp.Key).Append(": ").AppendLine(kvp.Value);
             }
         }
 
         if (exception.InnerException != null)
         {
             message.AppendLine("Inner Exception:");
-            message.Append("  ").AppendLine(exception.InnerException.ToString());
+            message.Append(" ").AppendLine(exception.InnerException.ToString());
         }
 
         return message.ToString().Trim();
@@ -112,7 +112,7 @@ public static class CoolifyExceptionExtensions
     /// </summary>
     /// <param name="exception">The exception to add context to. Must not be null.</param>
     /// <param name="data">The dictionary of context data to add. Must not be null.</param>
-    /// <exception cref="ArgumentNullException">Thrown when either parameter is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="exception"/> or <paramref name="data"/> is null.</exception>
     public static void AddContextData(this CoolifyException exception, Dictionary<string, string> data)
     {
         ArgumentNullException.ThrowIfNull(exception);
@@ -120,7 +120,8 @@ public static class CoolifyExceptionExtensions
 
         foreach (var kvp in data)
         {
-            exception.AddContextData(kvp.Key, kvp.Value);
+            ArgumentException.ThrowIfNullOrEmpty(kvp.Key);
+            exception.AddContextData(kvp.Key, kvp.Value ?? string.Empty);
         }
     }
 
@@ -139,10 +140,16 @@ public static class CoolifyExceptionExtensions
         {
             ApiCommunicationException apiCommEx when apiCommEx.HttpStatusCode.HasValue
                 => $"API_COMMUNICATION_{apiCommEx.HttpStatusCode.Value}",
+            ApplicationNotFoundException appNotFoundEx => $"APPLICATION_NOT_FOUND_{appNotFoundEx.ErrorCode}",
+            DatabaseNotFoundException dbNotFoundEx => $"DATABASE_NOT_FOUND_{dbNotFoundEx.ErrorCode}",
             ApiException apiEx => $"API_{apiEx.StatusCode}_{apiEx.ApiErrorCode ?? "UNKNOWN"}",
             DeploymentException => $"DEPLOYMENT_{exception.ErrorCode}",
             OperationTimeoutException => $"TIMEOUT_{exception.ErrorCode}",
             ValidationException => $"VALIDATION_{exception.ErrorCode}",
+            ConfigurationException => $"CONFIG_{exception.ErrorCode}",
+            TemplateNotFoundException => $"TEMPLATE_NOT_FOUND_{exception.ErrorCode}",
+            TemplateValidationException => $"TEMPLATE_VALIDATION_{exception.ErrorCode}",
+            TemplateApplyException => $"TEMPLATE_APPLY_{exception.ErrorCode}",
             _ => exception.ErrorCode ?? "UNKNOWN_ERROR"
         };
     }
