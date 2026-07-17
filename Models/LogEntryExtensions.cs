@@ -13,8 +13,7 @@ public static class LogEntryExtensions
         ArgumentNullException.ThrowIfNull(logEntry);
 
         return logEntry.Level == LogLevel.Error
-            && (logEntry.ExitCode.HasValue && logEntry.ExitCode > 0
-                || !string.IsNullOrEmpty(logEntry.StackTrace));
+            && (logEntry.ExitCode > 0 || !string.IsNullOrEmpty(logEntry.StackTrace));
     }
 
     /// <summary>
@@ -27,7 +26,9 @@ public static class LogEntryExtensions
     {
         ArgumentNullException.ThrowIfNull(logEntry);
 
-        var metadataString = string.Join(Environment.NewLine, logEntry.Metadata.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
-        return $"{logEntry.ToString()}{Environment.NewLine}Metadata:{Environment.NewLine}{metadataString}";
+        var metadataString = logEntry.Metadata.Count > 0
+            ? string.Join(Environment.NewLine, logEntry.Metadata.Select(kvp => $"{kvp.Key}: {kvp.Value}"))
+            : "No metadata";
+        return $"{logEntry}{Environment.NewLine}Metadata:{Environment.NewLine}{metadataString}";
     }
 }
