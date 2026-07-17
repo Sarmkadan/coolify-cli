@@ -67,9 +67,10 @@ public static class ServiceHealthValidation
             problems.Add("CheckedAt must be set to a valid DateTime.");
         }
 
-        if (value.LastSuccessfulCheck == default)
+        // LastSuccessfulCheck can be null for failed checks, but should be set for successful ones
+        if (value.Status != HealthStatus.Critical && value.LastSuccessfulCheck == default)
         {
-            problems.Add("LastSuccessfulCheck should be set for successful checks.");
+            problems.Add("LastSuccessfulCheck should be set for non-critical statuses.");
         }
 
         // Validate status consistency
@@ -84,12 +85,6 @@ public static class ServiceHealthValidation
             problems.Add("FailureReason should only be set when Status is Critical.");
         }
 
-        // Validate warnings list
-        if (value.Warnings == null)
-        {
-            problems.Add("Warnings collection cannot be null.");
-        }
-
         return problems.AsReadOnly();
     }
 
@@ -99,10 +94,7 @@ public static class ServiceHealthValidation
     /// <param name="value">The service health instance to check.</param>
     /// <returns>True if the instance is valid; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this ServiceHealth value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public static bool IsValid(this ServiceHealth value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that a <see cref="ServiceHealth"/> instance is valid, throwing an <see cref="ArgumentException"/>
@@ -119,8 +111,8 @@ public static class ServiceHealthValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"ServiceHealth instance is invalid. Problems:\n  - {
-                    string.Join("\n  - ", problems)
+                $"ServiceHealth instance is invalid. Problems:\n - {
+                    string.Join("\n - ", problems)
                 }",
                 nameof(value));
         }
