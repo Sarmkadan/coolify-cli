@@ -7,10 +7,12 @@ using CoolifyCli.Models;
 
 /// <summary>
 /// Provides JSON serialization extensions for <see cref="TemplateDiffResult"/>,
-/// <see cref="TemplateApplyResult"/>,
-/// and <see cref="TemplateValidationResult"/>.
+/// <see cref="TemplateApplyResult"/>, and <see cref="TemplateValidationResult"/>.
 /// Enables converting result objects to and from JSON strings with consistent formatting.
 /// </summary>
+/// <remarks>
+/// This class is static as it contains extension methods for JSON serialization.
+/// </remarks>
 public static class TemplateDiffFormatterJsonExtensions
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -125,9 +127,10 @@ public static class TemplateDiffFormatterJsonExtensions
     /// <param name="value">Receives the deserialized <see cref="TemplateDiffResult"/> instance if successful.</param>
     /// <returns><see langword="true"/> if parsing succeeded; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is empty or whitespace.</exception>
     public static bool TryFromJson(string json, out TemplateDiffResult? value)
     {
-        ArgumentNullException.ThrowIfNull(json);
+        ArgumentException.ThrowIfNullOrEmpty(json);
 
         try
         {
@@ -148,9 +151,10 @@ public static class TemplateDiffFormatterJsonExtensions
     /// <param name="value">Receives the deserialized <see cref="TemplateApplyResult"/> instance if successful.</param>
     /// <returns><see langword="true"/> if parsing succeeded; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is empty or whitespace.</exception>
     public static bool TryFromJson(string json, out TemplateApplyResult? value)
     {
-        ArgumentNullException.ThrowIfNull(json);
+        ArgumentException.ThrowIfNullOrEmpty(json);
 
         try
         {
@@ -171,9 +175,10 @@ public static class TemplateDiffFormatterJsonExtensions
     /// <param name="value">Receives the deserialized <see cref="TemplateValidationResult"/> instance if successful.</param>
     /// <returns><see langword="true"/> if parsing succeeded; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is empty or whitespace.</exception>
     public static bool TryFromJson(string json, out TemplateValidationResult? value)
     {
-        ArgumentNullException.ThrowIfNull(json);
+        ArgumentException.ThrowIfNullOrEmpty(json);
 
         try
         {
