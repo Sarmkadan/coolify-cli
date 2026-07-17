@@ -2602,6 +2602,48 @@ var partitions = deploymentIds.Partition(4);
 // partitions contains: [[1,2,3,4], [5,6,7,8], [9,10]]
 ```
 
+## CoolifyExceptionExtensions
+
+The `CoolifyExceptionExtensions` class provides extension methods for handling and formatting `CoolifyException` and its derived types. It includes methods for creating detailed error messages, checking error types (client/server errors), adding context data, and generating error identifiers for logging and diagnostics.
+
+Here's an example of how to use these extension methods:
+
+```csharp
+try
+{
+    // Some Coolify API operation that might throw
+    var deployment = await apiClient.GetApplicationAsync("web-app");
+}
+catch (CoolifyException ex)
+{
+    // Get a detailed error message for logging
+    string detailedMessage = ex.ToDetailedErrorMessage();
+    logger.Error(detailedMessage);
+    
+    // Check if it's a client error (4xx) or server error (5xx)
+    if (ex.IsClientError())
+    {
+        Console.WriteLine("Client error occurred - check your request");
+    }
+    else if (ex.IsServerError())
+    {
+        Console.WriteLine("Server error occurred - please try again later");
+    }
+    
+    // Add contextual information for better debugging
+    var contextData = new Dictionary<string, string>
+    {
+        ["ApplicationName"] = "web-app",
+        ["Operation"] = "GetApplication"
+    };
+    ex.AddContextData(contextData);
+    
+    // Get a standardized error identifier for metrics/tracking
+    string errorId = ex.GetErrorIdentifier();
+    Console.WriteLine($"Error ID: {errorId}");
+}
+```
+
 ## EnvironmentVariableService
 
 The `EnvironmentVariableService` class provides comprehensive management of environment variables for applications and services within Coolify. It handles CRUD operations, bulk updates, secret rotation, validation, and change tracking across different environment scopes. The service integrates with the API client to ensure consistent environment variable management across the deployment lifecycle.
