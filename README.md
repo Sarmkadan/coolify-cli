@@ -778,6 +778,108 @@ else
 }
 ```
 
+## DatabaseServiceValidation
+
+The `DatabaseServiceValidation` class provides validation utilities for database operations in the Coolify CLI. It includes methods to validate database IDs, backup IDs, database service instances, and database configurations to ensure data integrity before performing database operations. This class helps prevent invalid operations and provides clear error messages when validation fails.
+
+Here's a realistic example of how to use the `DatabaseServiceValidation` class to validate database operations:
+
+```csharp
+// Initialize required services
+var apiClient = new CoolifyApiClient("https://api.coolify.io", "your-api-token");
+var logger = new Logger();
+var config = new CoolifyConfiguration { /* your configuration */ };
+
+var databaseService = new DatabaseService(apiClient, logger, config);
+
+// Example 1: Validate database ID before database operations
+const int databaseId = 42;
+databaseId.ValidateDatabaseId();
+Console.WriteLine($"Database ID {databaseId} is valid");
+
+// Example 2: Validate backup ID before backup operations
+const string backupId = "backup-2024-06-15-1430";
+backupId.ValidateBackupId();
+Console.WriteLine($"Backup ID '{backupId}' is valid");
+
+// Example 3: Validate database service instance before use
+DatabaseService? nullService = null;
+try
+{
+    nullService.ValidateDatabaseService();
+}
+catch (ArgumentNullException ex)
+{
+    Console.WriteLine($"Validation caught null service: {ex.Message}");
+}
+
+// Example 4: Validate a database configuration and check for problems
+var databaseConfig = new DatabaseConfiguration
+{
+    Name = "production-postgres",
+    Type = DatabaseType.PostgreSQL,
+    Version = "15",
+    Host = "prod-db.internal",
+    Port = 5432,
+    RootUsername = "admin",
+    RootPassword = "SecurePassword123!",
+    DefaultDatabase = "web-storefront",
+    MaxConnections = 200,
+    ConnectionTimeoutSeconds = 30,
+    EnableBackups = true,
+    BackupRetentionDays = 30,
+    CreatedAt = DateTime.UtcNow,
+    EnvironmentId = "env-prod-01"
+};
+
+var validationErrors = databaseConfig.Validate();
+
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Database configuration validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+else
+{
+    Console.WriteLine("Database configuration is valid!");
+}
+
+// Example 5: Check if a database configuration is valid using IsValid method
+if (databaseConfig.IsValid())
+{
+    Console.WriteLine("Database configuration passed validation");
+}
+else
+{
+    Console.WriteLine("Database configuration failed validation");
+}
+
+// Example 6: Use EnsureValid to throw an exception if database configuration is invalid
+try
+{
+    var invalidConfig = new DatabaseConfiguration
+    {
+        Name = "", // Invalid: empty name
+        Type = DatabaseType.PostgreSQL,
+        Host = "prod-db.internal"
+    };
+    invalidConfig.EnsureValid();
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation caught invalid database: {ex.Message}");
+}
+
+// Example 7: Validate both database ID and backup ID for operations that require both
+const int dbId = 42;
+const string bkpId = "backup-2024-06-15";
+dbId.ValidateDatabaseAndBackupIds(bkpId);
+Console.WriteLine($"Both database ID {dbId} and backup ID '{bkpId}' are valid");
+```
+
 ## MemoryCacheProviderTests
 
 The `MemoryCacheProviderTests` class provides unit tests for the `MemoryCacheProvider` class, which handles in-memory caching with support for expiration, atomic operations, and factory-based value creation. These tests verify core CRUD operations, expiration handling, concurrency, and cache management to ensure that cached data is reliably stored, retrieved, and cleaned up as expected.
