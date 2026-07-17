@@ -16,10 +16,16 @@ public static class ResourceUsageTestsExtensions
     /// <param name="cpuPercent">The CPU percentage to set.</param>
     /// <param name="memoryMb">The memory usage in MB to set.</param>
     /// <param name="memoryLimitMb">The memory limit in MB to set.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="cpuPercent"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="memoryMb"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="memoryLimitMb"/> is negative.</exception>
     /// <returns>A new <see cref="ResourceUsage"/> instance.</returns>
     public static ResourceUsage WithUsage(this ResourceUsageTests _, double cpuPercent, double memoryMb, double memoryLimitMb)
     {
         ArgumentNullException.ThrowIfNull(_);
+        ArgumentOutOfRangeException.ThrowIfNegative(cpuPercent);
+        ArgumentOutOfRangeException.ThrowIfNegative(memoryMb);
+        ArgumentOutOfRangeException.ThrowIfNegative(memoryLimitMb);
 
         return new ResourceUsage
         {
@@ -37,11 +43,19 @@ public static class ResourceUsageTestsExtensions
     /// <param name="cpuPercent">The CPU percentage to set.</param>
     /// <param name="memoryMb">The memory usage in MB to set.</param>
     /// <param name="memoryLimitMb">The memory limit in MB to set.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="applicationName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="applicationName"/> is empty or whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="cpuPercent"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="memoryMb"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="memoryLimitMb"/> is negative.</exception>
     /// <returns>A new <see cref="ResourceUsage"/> instance with application context.</returns>
     public static ResourceUsage WithApplication(this ResourceUsageTests _, int applicationId, string applicationName, double cpuPercent, double memoryMb, double memoryLimitMb)
     {
         ArgumentNullException.ThrowIfNull(_);
         ArgumentException.ThrowIfNullOrEmpty(applicationName);
+        ArgumentOutOfRangeException.ThrowIfNegative(cpuPercent);
+        ArgumentOutOfRangeException.ThrowIfNegative(memoryMb);
+        ArgumentOutOfRangeException.ThrowIfNegative(memoryLimitMb);
 
         return new ResourceUsage
         {
@@ -58,6 +72,9 @@ public static class ResourceUsageTestsExtensions
     /// </summary>
     /// <param name="count">The number of usage instances to create.</param>
     /// <param name="scenario">The load scenario to generate.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="_" /> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than 1.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="scenario"/> is not a valid <see cref="LoadScenario"/> value.</exception>
     /// <returns>A read-only list of <see cref="ResourceUsage"/> instances.</returns>
     public static IReadOnlyList<ResourceUsage> GenerateLoadScenario(this ResourceUsageTests _, int count, LoadScenario scenario = LoadScenario.Normal)
     {
@@ -110,6 +127,7 @@ public static class ResourceUsageTestsExtensions
     /// Asserts that the resource usage has normal severity level (no alerts).
     /// </summary>
     /// <param name="usage">The resource usage to check.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="usage"/> is null.</exception>
     /// <returns>True if severity is normal; otherwise false.</returns>
     public static bool HasNormalSeverity(this ResourceUsageTests _, ResourceUsage usage)
     {
@@ -123,6 +141,7 @@ public static class ResourceUsageTestsExtensions
     /// Asserts that the resource usage has warning severity level.
     /// </summary>
     /// <param name="usage">The resource usage to check.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="usage"/> is null.</exception>
     /// <returns>True if severity is warning; otherwise false.</returns>
     public static bool HasWarningSeverity(this ResourceUsageTests _, ResourceUsage usage)
     {
@@ -136,6 +155,7 @@ public static class ResourceUsageTestsExtensions
     /// Asserts that the resource usage has critical severity level.
     /// </summary>
     /// <param name="usage">The resource usage to check.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="usage"/> is null.</exception>
     /// <returns>True if severity is critical; otherwise false.</returns>
     public static bool HasCriticalSeverity(this ResourceUsageTests _, ResourceUsage usage)
     {
