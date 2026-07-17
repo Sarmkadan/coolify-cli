@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace CoolifyCli.Infrastructure;
 
 /// <summary>
@@ -36,25 +34,23 @@ public static class CoolifyExceptionValidation
         }
 
         // Validate derived exception properties
-        if (value is ApiCommunicationException apiCommEx)
+        switch (value)
         {
-            ValidateApiCommunicationException(apiCommEx, problems);
-        }
-        else if (value is ApiException apiEx)
-        {
-            ValidateApiException(apiEx, problems);
-        }
-        else if (value is DeploymentException deploymentEx)
-        {
-            ValidateDeploymentException(deploymentEx, problems);
-        }
-        else if (value is OperationTimeoutException timeoutEx)
-        {
-            ValidateOperationTimeoutException(timeoutEx, problems);
-        }
-        else if (value is ValidationException validationEx)
-        {
-            ValidateValidationException(validationEx, problems);
+            case ApiCommunicationException apiCommEx:
+                ValidateApiCommunicationException(apiCommEx, problems);
+                break;
+            case ApiException apiEx:
+                ValidateApiException(apiEx, problems);
+                break;
+            case DeploymentException deploymentEx:
+                ValidateDeploymentException(deploymentEx, problems);
+                break;
+            case OperationTimeoutException timeoutEx:
+                ValidateOperationTimeoutException(timeoutEx, problems);
+                break;
+            case ValidationException validationEx:
+                ValidateValidationException(validationEx, problems);
+                break;
         }
 
         return problems.AsReadOnly();
@@ -68,6 +64,7 @@ public static class CoolifyExceptionValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this CoolifyException value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return value.Validate().Count == 0;
     }
 
