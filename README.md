@@ -689,6 +689,95 @@ if (enumValidator.IsValid(backupStrategy))
 }
 ```
 
+## CollectionExtensionsValidation
+
+The `CollectionExtensionsValidation` class provides validation utilities for collections and dictionaries to ensure they are in a valid state. It includes methods to validate collection instances, check if collections are valid, and throw exceptions for invalid states. This class helps prevent null reference exceptions and ensures collections contain expected data before processing.
+
+Here's a realistic example of how to use the `CollectionExtensionsValidation` class to validate different collection types:
+
+```csharp
+// Example 1: Validate an IEnumerable collection and check for problems
+var emptyList = new List<string>();
+var problems = emptyList.Validate();
+
+if (problems.Count > 0)
+{
+    Console.WriteLine("Collection validation failed:");
+    foreach (var problem in problems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+else
+{
+    Console.WriteLine("Collection is valid!");
+}
+
+// Example 2: Check if a collection is valid using IsValid method
+var populatedList = new List<string> { "item1", "item2", "item3" };
+if (populatedList.IsValid())
+{
+    Console.WriteLine("Collection is valid");
+}
+else
+{
+    Console.WriteLine("Collection is not valid");
+}
+
+// Example 3: Use EnsureValid to throw an exception if collection is invalid
+try
+{
+    var emptyDict = new Dictionary<string, int>();
+    emptyDict.EnsureValid();
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation caught invalid collection: {ex.Message}");
+}
+
+// Example 4: Validate an ICollection
+var emptyArray = Array.Empty<string>();
+var arrayProblems = emptyArray.Validate();
+if (arrayProblems.Count == 0)
+{
+    Console.WriteLine("Array is valid");
+}
+
+// Example 5: Validate a dictionary with generic types
+var emptyGenericDict = new Dictionary<string, int>();
+var dictProblems = emptyGenericDict.Validate();
+if (dictProblems.Count == 0)
+{
+    Console.WriteLine("Generic dictionary is valid");
+}
+
+// Example 6: Validate a ReadOnlyCollection<string>
+var readOnlyCollection = new List<string> { "config1", "config2" }.AsReadOnly();
+if (readOnlyCollection.IsValid())
+{
+    Console.WriteLine("ReadOnlyCollection is valid");
+}
+
+// Example 7: Real-world usage in application configuration
+var environmentVariables = new Dictionary<string, string>
+{
+    { "DATABASE_URL", "postgresql://localhost:5432/mydb" },
+    { "API_KEY", "sk_test_12345" }
+};
+
+// Validate configuration before processing
+if (environmentVariables.IsValid())
+{
+    Console.WriteLine("Configuration is valid, proceeding with deployment...");
+    // Process the configuration
+}
+else
+{
+    Console.WriteLine("Invalid configuration detected!");
+    environmentVariables.EnsureValid(); // This will throw if validation failed
+}
+```
+
 ## MemoryCacheProviderTests
 
 The `MemoryCacheProviderTests` class provides unit tests for the `MemoryCacheProvider` class, which handles in-memory caching with support for expiration, atomic operations, and factory-based value creation. These tests verify core CRUD operations, expiration handling, concurrency, and cache management to ensure that cached data is reliably stored, retrieved, and cleaned up as expected.
