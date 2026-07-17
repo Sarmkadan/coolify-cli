@@ -804,6 +804,75 @@ var services = " api , web , worker ".SplitTrimmed(',');
 services.Should().Equal("api", "web", "worker");
 ```
 
+## StringExtensionsTestsValidation
+
+The `StringExtensionsTestsValidation` class provides validation utilities for testing string extension methods in the Coolify CLI. It includes comprehensive validation methods for various string operations including Pascal case conversion, text truncation, sensitive data masking, and whitespace handling. This class is particularly useful for unit testing scenarios where string validation is required.
+
+Here's a realistic example of how to use the `StringExtensionsTestsValidation` class to validate different string extension behaviors:
+
+```csharp
+// Create a validation helper instance
+var stringValidator = new StringExtensionsTestsValidation();
+
+// Example 1: Validate PascalCase conversion results
+var pascalCaseTests = new[] { "deploy_my_service", "my-service", "apiGateway" };
+var pascalCaseProblems = stringValidator.ValidateToPascalCase(pascalCaseTests);
+
+if (pascalCaseProblems.Count > 0)
+{
+    Console.WriteLine("PascalCase validation failed:");
+    foreach (var problem in pascalCaseProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+else
+{
+    Console.WriteLine("All PascalCase conversions are valid!");
+}
+
+// Example 2: Check if truncation exceeds maximum length using IsValid method
+var longText = "This is a very long deployment description that needs to be shortened";
+var isExceedsMax = stringValidator.IsValidTruncateExceedsMax(longText, maxLength: 20);
+if (isExceedsMax)
+{
+    Console.WriteLine("Text exceeds maximum length");
+}
+else
+{
+    Console.WriteLine("Text is within maximum length");
+}
+
+// Example 3: Use EnsureValid to throw an exception if validation fails
+try
+{
+    var invalidText = "This is a very long deployment description that needs to be shortened";
+    stringValidator.EnsureValidTruncateWithinMax(invalidText, maxLength: 10);
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation caught invalid truncation: {ex.Message}");
+}
+
+// Example 4: Validate sensitive data masking
+var apiKey = "sk_live_1234567890abcdef";
+var maskedKey = apiKey.MaskSensitive(showChars: 4);
+var maskProblems = stringValidator.ValidateMaskSensitive(maskedKey);
+if (maskProblems.Count == 0)
+{
+    Console.WriteLine("Sensitive data masking is valid");
+}
+
+// Example 5: Validate split and trimmed strings
+var commaSeparated = " item1 , item2 , item3 ";
+var splitItems = commaSeparated.SplitTrimmed(',');
+var splitProblems = stringValidator.ValidateSplitTrimmed(splitItems);
+if (splitProblems.Count == 0)
+{
+    Console.WriteLine("Split and trimmed strings are valid");
+}
+```
+
 ## DeploymentContext
 
 The `DeploymentContext` class encapsulates the deployment context with application, environment, and configuration details. It serves as a coordination container for multi-step deployment operations, tracking the entire deployment lifecycle from initialization through completion. The context maintains references to the application being deployed, environment variables, linked databases, deployment status, logs, artifacts, and approval workflows.
