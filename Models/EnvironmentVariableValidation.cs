@@ -71,7 +71,7 @@ public static class EnvironmentVariableValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this EnvironmentVariable value)
     {
-        return Validate(value).Count == 0;
+        return !value.Validate().Any();
     }
 
     /// <summary>
@@ -87,10 +87,10 @@ public static class EnvironmentVariableValidation
         var errors = Validate(value);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                $"Environment variable validation failed:{Environment.NewLine}- {
-                    string.Join($"{Environment.NewLine}- ", errors)
-                }");
+            var errorMessage = $"Environment variable validation failed:{Environment.NewLine}- {
+                string.Join($"{Environment.NewLine}- ", errors)
+            }";
+            throw new ArgumentException(errorMessage);
         }
     }
 
@@ -99,8 +99,11 @@ public static class EnvironmentVariableValidation
     /// </summary>
     /// <param name="key">The key to validate.</param>
     /// <returns>True if key format is valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
     private static bool IsValidKeyFormat(string key)
     {
+        ArgumentNullException.ThrowIfNull(key);
+
         if (string.IsNullOrEmpty(key))
             return false;
 
