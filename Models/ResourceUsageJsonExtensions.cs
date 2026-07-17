@@ -30,10 +30,7 @@ public static class ResourceUsageJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonOptions)
-            {
-                WriteIndented = true
-            }
+            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
             : _jsonOptions;
 
         return JsonSerializer.Serialize(value, options);
@@ -44,6 +41,7 @@ public static class ResourceUsageJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized resource usage instance, or null if the JSON is invalid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static ResourceUsage? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -64,6 +62,7 @@ public static class ResourceUsageJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized resource usage instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out ResourceUsage? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
