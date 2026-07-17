@@ -30,14 +30,11 @@ public static class DatabaseServiceValidation
     /// </summary>
     /// <param name="backupId">The backup ID to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
-    /// <exception cref="ArgumentException">Thrown when backupId is null or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="backupId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="backupId"/> is empty or whitespace.</exception>
     public static void ValidateBackupId(this string? backupId, string paramName = "backupId")
     {
         ArgumentException.ThrowIfNullOrEmpty(backupId, paramName);
-        if (string.IsNullOrWhiteSpace(backupId))
-        {
-            throw new ArgumentException("Backup ID cannot be whitespace.", paramName);
-        }
     }
 
     /// <summary>
@@ -56,7 +53,8 @@ public static class DatabaseServiceValidation
     /// </summary>
     /// <param name="database">The database configuration to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
-    /// <returns>Collection of validation error messages, or empty if valid.</returns>
+    /// <returns>Collection of validation error messages, or empty if valid; never <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="database"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(this DatabaseConfiguration? database, string paramName = "database")
     {
         ArgumentNullException.ThrowIfNull(database, paramName);
@@ -65,12 +63,12 @@ public static class DatabaseServiceValidation
 
         if (string.IsNullOrWhiteSpace(database.Name))
         {
-            errors.Add($"Database name is required.");
+            errors.Add("Database name is required.");
         }
 
         if (database.Type is not (Models.DatabaseType.PostgreSQL or Models.DatabaseType.MySQL or Models.DatabaseType.MongoDB or Models.DatabaseType.Redis or Models.DatabaseType.MariaDB or Models.DatabaseType.CouchDB))
         {
-            errors.Add($"Invalid database type: {database.Type}.");
+            errors.Add(string.Format(CultureInfo.InvariantCulture, "Invalid database type: {0}.", database.Type));
         }
 
         if (string.IsNullOrWhiteSpace(database.Host))
@@ -125,10 +123,10 @@ public static class DatabaseServiceValidation
     /// Checks if a database configuration is valid.
     /// </summary>
     /// <param name="database">The database configuration to check.</param>
-    /// <returns>True if the database configuration is valid; otherwise, false.</returns>
+    /// <returns><see langword="true"/> if the database configuration is valid; otherwise, <see langword="false"/>.</returns>
     public static bool IsValid(this DatabaseConfiguration? database)
     {
-        return Validate(database).Count == 0;
+        return database is not null && Validate(database).Count == 0;
     }
 
     /// <summary>
@@ -155,7 +153,8 @@ public static class DatabaseServiceValidation
     /// <param name="backupId">The backup ID to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when databaseId is not positive.</exception>
-    /// <exception cref="ArgumentException">Thrown when backupId is null or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="backupId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="backupId"/> is empty or whitespace.</exception>
     public static void ValidateDatabaseAndBackupIds(this int databaseId, string backupId, string paramName = "databaseId")
     {
         databaseId.ValidateDatabaseId(paramName);
