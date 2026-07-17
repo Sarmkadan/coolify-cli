@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace CoolifyCli.Models
 {
@@ -28,7 +27,7 @@ namespace CoolifyCli.Models
         }
 
         /// <summary>
-        /// Returns a concise, human‑readable summary of the service health.
+        /// Returns a concise, human-readable summary of the service health.
         /// </summary>
         /// <param name="health">The <see cref="ServiceHealth"/> instance.</param>
         /// <returns>A formatted string containing key health metrics.</returns>
@@ -38,7 +37,7 @@ namespace CoolifyCli.Models
             ArgumentNullException.ThrowIfNull(health);
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "Service '{0}' (ID: {1}) – Status: {2}, Healthy: {3}, Response: {4:F1} ms, CPU: {5:F1} %, Memory: {6:F1} MiB, Errors: {7:F1} %, Connections: {8}",
+                "Service '{0}' (ID: {1}) – Status: {2}, Healthy: {3}, Response: {4:F1} ms, CPU: {5:F1} %, Memory: {6:F1} MiB, Errors: {7:F1} %, Connections: {8}",
                 health.ServiceId,
                 health.Id,
                 health.Status,
@@ -51,7 +50,7 @@ namespace CoolifyCli.Models
         }
 
         /// <summary>
-        /// Retrieves the warnings associated with the health record as a read‑only list.
+        /// Retrieves the warnings associated with the health record as a read-only list.
         /// </summary>
         /// <param name="health">The <see cref="ServiceHealth"/> instance.</param>
         /// <returns>An <see cref="IReadOnlyList{T}"/> of warning messages.</returns>
@@ -67,8 +66,9 @@ namespace CoolifyCli.Models
         /// </summary>
         /// <param name="health">The <see cref="ServiceHealth"/> instance.</param>
         /// <returns>
-        /// <c>true</c> if the <see cref="ServiceHealth.Status"/> is <c>Critical</c>,
-        /// or if the failure count exceeds five, or if the error rate exceeds 50 %; otherwise, <c>false</c>.
+        /// <c>true</c> if the <see cref="ServiceHealth.Status"/> is <see cref="HealthStatus.Critical"/>,
+        /// or if the <see cref="ServiceHealth.FailureCount"/> exceeds five consecutive failures,
+        /// or if the <see cref="ServiceHealth.ErrorRatePercent"/> exceeds 50%; otherwise, <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="health"/> is <c>null</c>.</exception>
         public static bool IsCritical(this ServiceHealth health)
