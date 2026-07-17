@@ -25,24 +25,26 @@ public static class DeploymentContextJsonExtensions
     /// <param name="value">The deployment context to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the deployment context.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this DeploymentContext value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var options = indented
-            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
-            : _jsonOptions;
-
-        return JsonSerializer.Serialize(value, options);
+        return JsonSerializer.Serialize(value, new JsonSerializerOptions(_jsonOptions)
+        {
+            WriteIndented = indented
+        });
     }
 
     /// <summary>
     /// Deserializes a JSON string to a <see cref="DeploymentContext"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized deployment context, or null if deserialization fails.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <returns>The deserialized deployment context if successful; otherwise, <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/> or empty.</exception>
+    /// <remarks>
+    /// Returns <see langword="null"/> if the JSON is invalid or cannot be deserialized to a <see cref="DeploymentContext"/>.
+    /// </remarks>
     public static DeploymentContext? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -61,9 +63,12 @@ public static class DeploymentContextJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="DeploymentContext"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized deployment context if successful.</param>
-    /// <returns>True if deserialization succeeds; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <param name="value">Receives the deserialized deployment context if successful; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/> or empty.</exception>
+    /// <remarks>
+    /// If deserialization fails, <paramref name="value"/> is set to <see langword="null"/> and the method returns <see langword="false"/>.
+    /// </remarks>
     public static bool TryFromJson(string json, out DeploymentContext? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
