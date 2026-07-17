@@ -20,11 +20,8 @@ public static class JsonConverterValidation
     /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
     public static IReadOnlyList<string> Validate(this global::System.Text.Json.Serialization.JsonConverter? value)
     {
-        ArgumentNullException.ThrowIfNull(value);
-
         var problems = new List<string>();
 
-        // Check for null converter
         if (value is null)
         {
             problems.Add("JsonConverter instance is null");
