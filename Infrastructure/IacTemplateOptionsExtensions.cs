@@ -40,22 +40,56 @@ namespace CoolifyCli.Infrastructure
         /// Formats the output based on the specified output format.
         /// </summary>
         /// <param name="options">The <see cref="IacTemplateOptions"/> instance.</param>
-        /// <param name="value">The value to format.</param>
-        /// <returns>The formatted string.</returns>
+        /// <param name="value">The value to format. Cannot be null.</param>
+        /// <returns>The formatted string representation of the value.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> or <paramref name="value"/> is null.</exception>
         public static string FormatOutput(this IacTemplateOptions options, object value)
         {
             ArgumentNullException.ThrowIfNull(options);
             ArgumentNullException.ThrowIfNull(value);
 
-            switch (options.OutputFormat.ToLowerInvariant())
+            return options.OutputFormat.ToLowerInvariant() switch
             {
-                case "json":
-                    // Implement JSON formatting logic here
-                    return value.ToString();
-                default:
-                    return value.ToString();
+                "json" => FormatJson(value),
+                _ => value.ToString()
+            };
+        }
+
+        private static string FormatJson(object value)
+        {
+            if (value is null)
+            {
+                return "null";
             }
+
+            return value switch
+            {
+                string s => $"\"{EscapeJsonString(s)}\"",
+                bool b => b.ToString().ToLowerInvariant(),
+                int i => i.ToString(CultureInfo.InvariantCulture),
+                long l => l.ToString(CultureInfo.InvariantCulture),
+                double d => d.ToString(CultureInfo.InvariantCulture),
+                float f => f.ToString(CultureInfo.InvariantCulture),
+                decimal m => m.ToString(CultureInfo.InvariantCulture),
+                _ => value.ToString()
+            };
+        }
+
+        private static string EscapeJsonString(string input)
+        {
+            if (input is null)
+            {
+                return string.Empty;
+            }
+
+            return input
+                .Replace("\\", "\\\\")
+                .Replace("\"", "\\\"")
+                .Replace("\b", "\\b")
+                .Replace("\f", "\\f")
+                .Replace("\n", "\\n")
+                .Replace("\r", "\\r")
+                .Replace("\t", "\\t");
         }
     }
 }
