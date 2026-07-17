@@ -567,6 +567,86 @@ state.ShouldExit = true;
 Console.WriteLine($"Should exit: {state.ShouldExit}"); // Output: Should exit: True
 ```
 
+## EnumExtensionsTestsValidation
+
+The `EnumExtensionsTestsValidation` class provides validation utilities for testing enum extension methods in the Coolify CLI. It includes comprehensive validation methods for various enum types used throughout the application, helping to ensure that enum values are properly defined and within expected ranges. This class is particularly useful for unit testing scenarios where enum validation is required.
+
+Here's a realistic example of how to use the `EnumExtensionsTestsValidation` class to validate different enum types:
+
+```csharp
+// Create a validation helper instance
+var enumValidator = new EnumExtensionsTestsValidation();
+
+// Example 1: Validate DeploymentStatus enum values
+var deploymentStatus = DeploymentStatus.Deployed;
+var deploymentProblems = enumValidator.Validate(deploymentStatus);
+
+if (deploymentProblems.Count > 0)
+{
+    Console.WriteLine("DeploymentStatus validation failed:");
+    foreach (var problem in deploymentProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+else
+{
+    Console.WriteLine("DeploymentStatus is valid!");
+}
+
+// Example 2: Check if a DatabaseType is valid using IsValid method
+var dbType = DatabaseType.PostgreSQL;
+if (enumValidator.IsValid(dbType))
+{
+    Console.WriteLine($"DatabaseType {dbType} is valid");
+}
+else
+{
+    Console.WriteLine("DatabaseType is not valid");
+}
+
+// Example 3: Use EnsureValid to throw an exception if invalid
+try
+{
+    var invalidStatus = (DeploymentStatus)99; // Invalid value
+    enumValidator.EnsureValid(invalidStatus);
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation caught invalid enum: {ex.Message}");
+}
+
+// Example 4: Validate RuntimeEnvironment enum
+var runtimeEnv = RuntimeEnvironment.Docker;
+var runtimeProblems = enumValidator.Validate(runtimeEnv);
+if (runtimeProblems.Count == 0)
+{
+    Console.WriteLine($"RuntimeEnvironment {runtimeEnv} is valid");
+}
+
+// Example 5: Validate SeverityLevel enum
+var severity = SeverityLevel.Info;
+if (enumValidator.IsValid(severity))
+{
+    Console.WriteLine($"SeverityLevel {severity} passed validation");
+}
+
+// Example 6: Validate ScalingPolicy enum
+var scalingPolicy = ScalingPolicy.Auto;
+var scalingProblems = enumValidator.Validate(scalingPolicy);
+if (scalingProblems.Count == 0)
+{
+    Console.WriteLine($"ScalingPolicy {scalingPolicy} is valid");
+}
+
+// Example 7: Validate BackupStrategy enum
+var backupStrategy = BackupStrategy.Snapshot;
+if (enumValidator.IsValid(backupStrategy))
+{
+    Console.WriteLine($"BackupStrategy {backupStrategy} is valid");
+}
+```
+
 ## MemoryCacheProviderTests
 
 The `MemoryCacheProviderTests` class provides unit tests for the `MemoryCacheProvider` class, which handles in-memory caching with support for expiration, atomic operations, and factory-based value creation. These tests verify core CRUD operations, expiration handling, concurrency, and cache management to ensure that cached data is reliably stored, retrieved, and cleaned up as expected.
