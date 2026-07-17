@@ -68,22 +68,32 @@ public static class ResourceUsageExtensions
             : 0;
 
         var alertSeverityText = alertSeverity?.ToString() ?? "None";
-        return string.Create(CultureInfo.InvariantCulture, $$"""
-Resource Usage Diagnostic - {{usage.ApplicationName}} (ID: {{usage.ApplicationId}})
-Captured: {{usage.CapturedAt:u}}
-Alert Severity: {{alertSeverityText}}
+        var rxBytes = FormatBytes(usage.NetworkRxBytes);
+        var txBytes = FormatBytes(usage.NetworkTxBytes);
 
-Metrics:
-  CPU: {{usage.CpuPercent:F1}}%
-  Memory: {{usage.MemoryMb:F2}} MB / {{usage.MemoryLimitMb:F2}} MB ({{memoryPercent:F1}}%)
-  Threads: {{usage.ThreadCount}}
-  Open File Handles: {{usage.OpenFileHandles}}
-  Network:
-    RX: {{FormatBytes(usage.NetworkRxBytes)}}
-    TX: {{FormatBytes(usage.NetworkTxBytes)}}
-""");
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "Resource Usage Diagnostic - {0} (ID: {1}){2}Captured: {3:u}{2}Alert Severity: {4}{2}{2}Metrics:{2}CPU: {5:F1}%{2}Memory: {6:F2} MB / {7:F2} MB ({8:F1}%){2}Threads: {9}{2}Open File Handles: {10}{2}Network:{2}RX: {11}{2}TX: {12}",
+            usage.ApplicationName,
+            usage.ApplicationId,
+            Environment.NewLine,
+            usage.CapturedAt,
+            alertSeverityText,
+            usage.CpuPercent,
+            usage.MemoryMb,
+            usage.MemoryLimitMb,
+            memoryPercent,
+            usage.ThreadCount,
+            usage.OpenFileHandles,
+            rxBytes,
+            txBytes);
     }
 
+    /// <summary>
+    /// Formats a byte count as a human-readable string with appropriate units (B, KB, MB, GB).
+    /// </summary>
+    /// <param name="bytes">The number of bytes to format.</param>
+    /// <returns>A formatted string with the appropriate unit suffix.</returns>
     private static string FormatBytes(long bytes)
     {
         return bytes switch
