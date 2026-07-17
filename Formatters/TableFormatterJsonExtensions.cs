@@ -10,6 +10,10 @@ namespace CoolifyCli.Formatters;
 /// </summary>
 public static class TableFormatterJsonExtensions
 {
+    /// <summary>
+    /// Gets the default JSON serialization options used by the extension methods.
+    /// Uses camelCase property naming, ignores null values, and includes enum string conversion.
+    /// </summary>
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -21,9 +25,9 @@ public static class TableFormatterJsonExtensions
     /// <summary>
     /// Serializes the <see cref="TableFormatter"/> instance to a JSON string.
     /// </summary>
-    /// <param name="value">The table formatter to serialize.</param>
+    /// <param name="value">The table formatter to serialize. Cannot be null.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
-    /// <returns>A JSON string representation of the table formatter.</returns>
+    /// <returns>A JSON string representation of the <see cref="TableFormatter"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static string ToJson(this TableFormatter value, bool indented = false)
     {
@@ -39,8 +43,9 @@ public static class TableFormatterJsonExtensions
     /// <summary>
     /// Deserializes a JSON string to a <see cref="TableFormatter"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A <see cref="TableFormatter"/> instance, or null if deserialization fails.</returns>
+    /// <param name="json">The JSON string to deserialize. Cannot be null or empty.</param>
+    /// <returns>A <see cref="TableFormatter"/> instance if deserialization succeeds; otherwise, null.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static TableFormatter? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -58,9 +63,10 @@ public static class TableFormatterJsonExtensions
     /// <summary>
     /// Attempts to deserialize a JSON string to a <see cref="TableFormatter"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized <see cref="TableFormatter"/> instance if successful.</param>
+    /// <param name="json">The JSON string to deserialize. Cannot be null or empty.</param>
+    /// <param name="value">Receives the deserialized <see cref="TableFormatter"/> instance if successful; otherwise, null.</param>
     /// <returns>True if deserialization succeeds; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static bool TryFromJson(string json, out TableFormatter? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
