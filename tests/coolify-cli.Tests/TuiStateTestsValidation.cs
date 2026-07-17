@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using CoolifyCli.Models;
 
 namespace CoolifyCli.Tests;
@@ -21,17 +20,22 @@ public static class TuiStateTestsValidation
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = new List<string>();
+        if (value.ActiveView is not (TuiView.AppList or TuiView.AppDetail or TuiView.DbList or TuiView.LogStream or TuiView.Help))
+        {
+            return new[] { $"ActiveView must be a valid TuiView value, but was {value.ActiveView}." };
+        }
 
         if (value.SelectedIndex < 0)
         {
-            problems.Add($"SelectedIndex must be non-negative, but was {value.SelectedIndex}.");
+            return new[] { $"SelectedIndex must be non-negative, but was {value.SelectedIndex}." };
         }
 
         if (value.ScrollOffset < 0)
         {
-            problems.Add($"ScrollOffset must be non-negative, but was {value.ScrollOffset}.");
+            return new[] { $"ScrollOffset must be non-negative, but was {value.ScrollOffset}." };
         }
+
+        var problems = new List<string>();
 
         if (value.Applications is null)
         {
@@ -50,7 +54,7 @@ public static class TuiStateTestsValidation
 
         if (value.LastRefreshedAt == default)
         {
-            problems.Add("LastRefreshedAt must not be the default DateTime value.");
+            problems.Add("LastRefreshedAt must be set to a valid DateTime value.");
         }
 
         return problems.AsReadOnly();
@@ -61,10 +65,7 @@ public static class TuiStateTestsValidation
     /// </summary>
     /// <param name="value">The state to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
-    public static bool IsValid(this TuiState? value)
-    {
-        return value?.Validate().Count == 0;
-    }
+    public static bool IsValid(this TuiState? value) => value?.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="TuiState"/> instance is valid.
