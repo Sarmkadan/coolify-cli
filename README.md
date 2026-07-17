@@ -3487,3 +3487,20 @@ var criticalUsage = ResourceUsageTestsExtensions.WithUsage(
 );
 Console.WriteLine($"Critical severity: {ResourceUsageTestsExtensions.HasCriticalSeverity(criticalUsage)}"); // true
 ```
+
+## TemplateDiffFormatterJsonExtensions
+
+The TemplateDiffFormatterJsonExtensions class provides methods to convert TemplateDiff objects to and from JSON.
+
+Example usage:
+```csharp
+public static string ToJson
+public static string ToJson
+public static string ToJson
+public static TemplateDiffResult? FromJsonToDiffResult
+public static TemplateApplyResult? FromJsonToApplyResult
+public static TemplateValidationResult? FromJsonToValidationResult
+public static bool TryFromJson
+public static bool TryFromJson
+public static bool TryFromJson
+```
