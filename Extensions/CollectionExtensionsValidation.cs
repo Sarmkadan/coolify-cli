@@ -22,6 +22,14 @@ public static class CollectionExtensionsValidation
 
         var problems = new List<string>();
 
+        if (collection is ICollection collectionAsCollection)
+        {
+            if (collectionAsCollection.Count == 0)
+            {
+                problems.Add("Collection is empty.");
+            }
+        }
+
         return problems.AsReadOnly();
     }
 
@@ -36,6 +44,11 @@ public static class CollectionExtensionsValidation
         ArgumentNullException.ThrowIfNull(collection);
 
         var problems = new List<string>();
+
+        if (collection.Count == 0)
+        {
+            problems.Add("Collection is empty.");
+        }
 
         return problems.AsReadOnly();
     }
@@ -52,6 +65,11 @@ public static class CollectionExtensionsValidation
 
         var problems = new List<string>();
 
+        if (collection.Count == 0)
+        {
+            problems.Add("Collection is empty.");
+        }
+
         return problems.AsReadOnly();
     }
 
@@ -67,6 +85,11 @@ public static class CollectionExtensionsValidation
 
         var problems = new List<string>();
 
+        if (dictionary.Count == 0)
+        {
+            problems.Add("Dictionary is empty.");
+        }
+
         return problems.AsReadOnly();
     }
 
@@ -77,10 +100,16 @@ public static class CollectionExtensionsValidation
     /// <returns>List of human-readable problems, or empty list if valid</returns>
     /// <exception cref="ArgumentNullException">Thrown if dictionary is null</exception>
     public static IReadOnlyList<string> Validate<TKey, TValue>(this IDictionary<TKey, TValue>? dictionary)
+        where TKey : notnull
     {
         ArgumentNullException.ThrowIfNull(dictionary);
 
         var problems = new List<string>();
+
+        if (dictionary.Count == 0)
+        {
+            problems.Add("Dictionary is empty.");
+        }
 
         return problems.AsReadOnly();
     }
@@ -90,40 +119,28 @@ public static class CollectionExtensionsValidation
     /// </summary>
     /// <param name="collection">The collection to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this IEnumerable? collection)
-    {
-        return collection.Validate().Count == 0;
-    }
+    public static bool IsValid(this IEnumerable? collection) => collection.Validate().Count == 0;
 
     /// <summary>
     /// Checks if a collection is valid.
     /// </summary>
     /// <param name="collection">The collection to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this ICollection? collection)
-    {
-        return collection.Validate().Count == 0;
-    }
+    public static bool IsValid(this ICollection? collection) => collection.Validate().Count == 0;
 
     /// <summary>
     /// Checks if a collection is valid.
     /// </summary>
     /// <param name="collection">The collection to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this IReadOnlyCollection<string>? collection)
-    {
-        return collection.Validate().Count == 0;
-    }
+    public static bool IsValid(this IReadOnlyCollection<string>? collection) => collection.Validate().Count == 0;
 
     /// <summary>
     /// Checks if a dictionary is valid.
     /// </summary>
     /// <param name="dictionary">The dictionary to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this IDictionary? dictionary)
-    {
-        return dictionary.Validate().Count == 0;
-    }
+    public static bool IsValid(this IDictionary? dictionary) => dictionary.Validate().Count == 0;
 
     /// <summary>
     /// Checks if a dictionary is valid.
@@ -131,9 +148,8 @@ public static class CollectionExtensionsValidation
     /// <param name="dictionary">The dictionary to check</param>
     /// <returns>True if valid, false otherwise</returns>
     public static bool IsValid<TKey, TValue>(this IDictionary<TKey, TValue>? dictionary)
-    {
-        return dictionary.Validate().Count == 0;
-    }
+        where TKey : notnull
+        => dictionary.Validate().Count == 0;
 
     /// <summary>
     /// Ensures a collection is valid, throwing an exception if not.
@@ -218,6 +234,7 @@ public static class CollectionExtensionsValidation
     /// <exception cref="ArgumentNullException">Thrown if dictionary is null</exception>
     /// <exception cref="ArgumentException">Thrown if validation fails, listing all problems</exception>
     public static void EnsureValid<TKey, TValue>(this IDictionary<TKey, TValue>? dictionary)
+        where TKey : notnull
     {
         ArgumentNullException.ThrowIfNull(dictionary);
 
