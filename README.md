@@ -567,6 +567,48 @@ state.ShouldExit = true;
 Console.WriteLine($"Should exit: {state.ShouldExit}"); // Output: Should exit: True
 ```
 
+## TuiStateTestsExtensions
+
+The `TuiStateTestsExtensions` class provides extension methods for testing `TuiState` behavior in terminal user interface applications. It includes fluent methods for setting up test state with specific applications, selected indices, and scroll offsets, as well as assertion methods for verifying state expectations. These extensions simplify writing readable and maintainable tests for TUI navigation and selection logic.
+
+Here's a realistic example of how to use the `TuiStateTestsExtensions` class to test TUI state behavior:
+
+```csharp
+// Create test applications for a terminal UI
+var applications = new List<ApplicationDeployment>
+{
+    new() { Id = 1, Name = "web-storefront", Description = "Production web application" },
+    new() { Id = 2, Name = "api-gateway", Description = "API gateway service" },
+    new() { Id = 3, Name = "worker-queue", Description = "Background worker service" },
+    new() { Id = 4, Name = "cache-service", Description = "Redis cache layer" },
+    new() { Id = 5, Name = "auth-service", Description = "Authentication service" }
+};
+
+// Create a TUI state with test applications
+var state = new TuiStateTests().WithApplications(applications);
+
+// Set initial selected index
+state = state.WithSelectedIndex(0);
+state.SelectedIndexShouldBe(0);
+
+// Test navigation down
+state.MoveDownAndAssert(2, 2); // Move down 2 positions, should be at index 2
+
+// Test navigation up
+state.MoveUpAndAssert(1, 1); // Move up 1 position, should be at index 1
+
+// Test scroll offset
+state = state.WithScrollOffset(5);
+state.ScrollOffsetShouldBe(5);
+
+// Test selected application assertion
+state.SelectedAppShouldBe(2); // Verify application with ID 2 is selected
+
+// Test boundary conditions
+state.MoveDownAndAssert(10, 4); // Move down beyond bounds, should clamp to last index
+state.MoveUpAndAssert(10, 0); // Move up beyond bounds, should clamp to first index
+```
+
 ## EnumExtensionsTestsValidation
 
 The `EnumExtensionsTestsValidation` class provides validation utilities for testing enum extension methods in the Coolify CLI. It includes comprehensive validation methods for various enum types used throughout the application, helping to ensure that enum values are properly defined and within expected ranges. This class is particularly useful for unit testing scenarios where enum validation is required.
