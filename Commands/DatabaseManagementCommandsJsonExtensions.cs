@@ -41,7 +41,7 @@ public static class DatabaseManagementCommandsJsonExtensions
     /// Deserializes a JSON string into a <see cref="DatabaseManagementCommands"/>.
     /// </summary>
     /// <param name="json">The JSON string representing database management commands.</param>
-    /// <returns>The deserialized <see cref="DatabaseManagementCommands"/> instance, or null if the JSON is empty.</returns>
+    /// <returns>The deserialized <see cref="DatabaseManagementCommands"/> instance, or null if the JSON is invalid.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or whitespace.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static DatabaseManagementCommands? FromJson(string json)
@@ -57,6 +57,7 @@ public static class DatabaseManagementCommandsJsonExtensions
     /// <param name="json">The JSON string representing database management commands.</param>
     /// <param name="value">When this method returns, contains the deserialized <see cref="DatabaseManagementCommands"/> if the operation succeeded; otherwise, null.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or whitespace.</exception>
     public static bool TryFromJson(string json, out DatabaseManagementCommands? value)
     {
         value = null;
