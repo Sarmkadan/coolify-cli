@@ -1,7 +1,7 @@
 namespace CoolifyCli.Models;
 
 /// <summary>
-/// Extension methods for <see cref="DeploymentContext"/>.
+/// Extension methods for <see cref="DeploymentContext"/> that provide common deployment state checks and formatting.
 /// </summary>
 public static class DeploymentContextExtensions
 {
@@ -10,6 +10,7 @@ public static class DeploymentContextExtensions
     /// </summary>
     /// <param name="context">The deployment context.</param>
     /// <returns>True if the deployment has completed; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
     public static bool HasCompleted(this DeploymentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -21,7 +22,8 @@ public static class DeploymentContextExtensions
     /// Gets the duration of the deployment in a human-readable format.
     /// </summary>
     /// <param name="context">The deployment context.</param>
-    /// <returns>A string representing the duration of the deployment.</returns>
+    /// <returns>A string representing the duration of the deployment in format "Xh Ym Zs".</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
     public static string GetDurationString(this DeploymentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -39,6 +41,7 @@ public static class DeploymentContextExtensions
     /// </summary>
     /// <param name="context">The deployment context.</param>
     /// <returns>True if the deployment requires approval and has not been approved yet; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
     public static bool IsPendingApproval(this DeploymentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
