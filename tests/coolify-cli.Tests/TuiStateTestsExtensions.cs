@@ -31,8 +31,14 @@ public static class TuiStateTestsExtensions
     /// </summary>
     /// <param name="selectedIndex">The index to select.</param>
     /// <returns>A new <see cref="TuiState"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="selectedIndex"/> is negative.</exception>
     public static TuiState WithSelectedIndex(this TuiStateTests _, int selectedIndex)
     {
+        if (selectedIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(selectedIndex), "Selected index cannot be negative.");
+        }
+
         return new TuiState { SelectedIndex = selectedIndex };
     }
 
@@ -41,8 +47,14 @@ public static class TuiStateTestsExtensions
     /// </summary>
     /// <param name="scrollOffset">The scroll offset to set.</param>
     /// <returns>A new <see cref="TuiState"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="scrollOffset"/> is negative.</exception>
     public static TuiState WithScrollOffset(this TuiStateTests _, int scrollOffset)
     {
+        if (scrollOffset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(scrollOffset), "Scroll offset cannot be negative.");
+        }
+
         return new TuiState { ScrollOffset = scrollOffset };
     }
 
