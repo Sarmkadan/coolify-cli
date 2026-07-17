@@ -8,7 +8,14 @@ namespace CoolifyCli.Infrastructure;
 /// </summary>
 public static class CoolifyApiClientOptionsValidation
 {
+    /// <summary>
+    /// Minimum allowed timeout value in seconds (1 second).
+    /// </summary>
     private const int MinimumTimeoutSeconds = 1;
+
+    /// <summary>
+    /// Maximum allowed timeout value in seconds (1 hour = 3600 seconds).
+    /// </summary>
     private const int MaximumTimeoutSeconds = 3600; // 1 hour
 
     /// <summary>
@@ -36,12 +43,17 @@ public static class CoolifyApiClientOptionsValidation
     /// </summary>
     /// <param name="value">The options instance to check.</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this CoolifyApiClientOptions value)
     {
         try
         {
             _ = Validate(value);
             return true;
+        }
+        catch (ArgumentNullException)
+        {
+            return false;
         }
         catch (ArgumentException)
         {
@@ -71,13 +83,11 @@ public static class CoolifyApiClientOptionsValidation
 
     private static void ValidateTimeout(int timeoutSeconds, string propertyName, List<string> errors)
     {
-        if (timeoutSeconds < MinimumTimeoutSeconds)
+        if (timeoutSeconds is < MinimumTimeoutSeconds or > MaximumTimeoutSeconds)
         {
-            errors.Add($"{propertyName} must be at least {MinimumTimeoutSeconds} second(s), but was {timeoutSeconds}.");
-        }
-        else if (timeoutSeconds > MaximumTimeoutSeconds)
-        {
-            errors.Add($"{propertyName} must be at most {MaximumTimeoutSeconds} seconds (1 hour), but was {timeoutSeconds}.");
+            errors.Add(timeoutSeconds < MinimumTimeoutSeconds
+                ? $"{propertyName} must be at least {MinimumTimeoutSeconds} second(s), but was {timeoutSeconds}."
+                : $"{propertyName} must be at most {MaximumTimeoutSeconds} seconds (1 hour), but was {timeoutSeconds}.");
         }
     }
 }
