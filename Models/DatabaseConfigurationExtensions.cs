@@ -23,13 +23,23 @@ public static class DatabaseConfigurationExtensions
     /// Creates a connection string based on the database configuration.
     /// </summary>
     /// <param name="configuration">The database configuration to create a connection string for.</param>
-    /// <returns>A connection string.</returns>
+    /// <returns>A connection string appropriate for the database type.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="configuration"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if required connection properties are null or empty.</exception>
     public static string CreateConnectionString(this DatabaseConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        return $"Server={configuration.Host}:{configuration.Port};Database={configuration.DefaultDatabase};Username={configuration.RootUsername};Password={configuration.RootPassword};";
+        return configuration.Type switch
+        {
+            DatabaseType.PostgreSQL => $"Host={configuration.Host};Port={configuration.Port};Username={configuration.RootUsername};Password={configuration.RootPassword};Database={configuration.DefaultDatabase}",
+            DatabaseType.MySQL => $"server={configuration.Host};port={configuration.Port};uid={configuration.RootUsername};pwd={configuration.RootPassword};database={configuration.DefaultDatabase}",
+            DatabaseType.MongoDB => $"mongodb://{configuration.RootUsername}:{configuration.RootPassword}@{configuration.Host}:{configuration.Port}/{configuration.DefaultDatabase}",
+            DatabaseType.Redis => $"{configuration.Host}:{configuration.Port}",
+            DatabaseType.MariaDB => $"Server={configuration.Host};Port={configuration.Port};Database={configuration.DefaultDatabase};User Id={configuration.RootUsername};Password={configuration.RootPassword};",
+            DatabaseType.CouchDB => $"http://{configuration.RootUsername}:{configuration.RootPassword}@{configuration.Host}:{configuration.Port}",
+            _ => throw new InvalidOperationException($"Unsupported database type: {configuration.Type}")
+        };
     }
 
     /// <summary>
@@ -42,7 +52,6 @@ public static class DatabaseConfigurationExtensions
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        // For simplicity, assume a valid schedule is not empty and does not exceed 32 characters
-        return !string.IsNullOrEmpty(configuration.BackupSchedule) && configuration.BackupSchedule.Length <= 32;
+        return !string.IsNullOrWhiteSpace(configuration.BackupSchedule) && configuration.BackupSchedule.Length <= 32;
     }
 }
