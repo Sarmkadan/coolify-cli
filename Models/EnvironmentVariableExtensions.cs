@@ -1,5 +1,9 @@
 namespace CoolifyCli.Models;
 
+/// <summary>
+/// Provides extension methods for <see cref="EnvironmentVariable"/> to support common operations
+/// such as display formatting, sensitivity checking, and cloning.
+/// </summary>
 public static class EnvironmentVariableExtensions
 {
     /// <summary>
@@ -7,6 +11,7 @@ public static class EnvironmentVariableExtensions
     /// </summary>
     /// <param name="environmentVariable">The environment variable.</param>
     /// <returns>A string representation of the environment variable.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="environmentVariable"/> is <see langword="null"/>.</exception>
     public static string ToDisplayString(this EnvironmentVariable environmentVariable)
     {
         ArgumentNullException.ThrowIfNull(environmentVariable);
@@ -19,6 +24,7 @@ public static class EnvironmentVariableExtensions
     /// </summary>
     /// <param name="environmentVariable">The environment variable.</param>
     /// <returns>True if the environment variable is sensitive; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="environmentVariable"/> is <see langword="null"/>.</exception>
     public static bool IsSensitive(this EnvironmentVariable environmentVariable)
     {
         ArgumentNullException.ThrowIfNull(environmentVariable);
@@ -27,21 +33,17 @@ public static class EnvironmentVariableExtensions
     }
 
     /// <summary>
-    /// Creates a new environment variable with the same properties as the original, but with a new <see cref="EnvironmentVariable.Id"/>.
+    /// Creates a new environment variable with the same properties as the original.
     /// </summary>
     /// <param name="environmentVariable">The environment variable to clone.</param>
     /// <returns>A new environment variable with the same properties as the original.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="environmentVariable"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the environment variable's <see cref="EnvironmentVariable.Clone"/> method returns null.</exception>
     public static EnvironmentVariable CreateCopy(this EnvironmentVariable environmentVariable)
     {
         ArgumentNullException.ThrowIfNull(environmentVariable);
 
         var copy = environmentVariable.Clone();
-        if (copy == null)
-        {
-            throw new InvalidOperationException("Failed to create a copy of the environment variable.");
-        }
-
-        return copy;
+        return copy ?? throw new InvalidOperationException("Failed to create a copy of the environment variable.");
     }
 }
