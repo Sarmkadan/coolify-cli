@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace CoolifyCli.Services;
 
 /// <summary>
-/// Provides System.Text.Json serialization and deserialization extensions for <see cref="CoolifyApiClient"/>.
+/// Provides System.Text.Json serialization and deserialization extensions for <see cref="CoolifyApiClient"/> instances.
 /// </summary>
 public static class CoolifyApiClientJsonExtensions
 {
@@ -15,7 +15,7 @@ public static class CoolifyApiClientJsonExtensions
     };
 
     /// <summary>
-    /// Serializes a <see cref="CoolifyApiClient"/> instance to a JSON string.
+    /// Serializes a <see cref="CoolifyApiClient"/> instance to a JSON string using camelCase property naming.
     /// </summary>
     /// <param name="value">The <see cref="CoolifyApiClient"/> instance to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
@@ -26,10 +26,7 @@ public static class CoolifyApiClientJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true,
-            }
+            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
             : _jsonSerializerOptions;
 
         return JsonSerializer.Serialize(value, options);
