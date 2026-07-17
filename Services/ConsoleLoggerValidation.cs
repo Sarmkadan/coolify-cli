@@ -17,13 +17,9 @@ public static class ConsoleLoggerValidation
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = new List<string>();
-
-        // ConsoleLogger has no public properties to validate
-        // The validation is primarily about the instance itself being non-null
-        // and the constructor parameters being valid (handled by the constructor)
-
-        return problems.AsReadOnly();
+        // ConsoleLogger has no state to validate - it's always valid as long as it's not null
+        // The constructor parameters are validated by the constructor itself
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -31,17 +27,10 @@ public static class ConsoleLoggerValidation
     /// </summary>
     /// <param name="value">The logger instance to check.</param>
     /// <returns>True if the logger is valid; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this ConsoleLogger? value)
     {
-        try
-        {
-            _ = value.Validate();
-            return true;
-        }
-        catch (ArgumentNullException)
-        {
-            return false;
-        }
+        return value is not null;
     }
 
     /// <summary>
@@ -52,12 +41,5 @@ public static class ConsoleLoggerValidation
     public static void EnsureValid(this ConsoleLogger? value)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var problems = value.Validate();
-        if (problems.Count > 0)
-        {
-            throw new ArgumentException(
-                $"ConsoleLogger is not valid. Problems: {string.Join(", ", problems)}");
-        }
     }
 }
