@@ -3050,3 +3050,58 @@ formatter.WritePanel("Remember to update your DNS records to point to the new de
 // Display the formatted content
 Console.WriteLine(formatter.ToString());
 ```
+
+## ResourceUsageTestsExtensions
+
+The `ResourceUsageTestsExtensions` class provides extension methods for creating and manipulating `ResourceUsage` instances in test scenarios. It includes helper methods for building resource usage snapshots with specific configurations, generating realistic load scenarios, and checking alert severity conditions. These extensions are particularly useful for testing resource monitoring, alerting systems, and deployment validation logic.
+
+Here's a realistic example of how to use the `ResourceUsageTestsExtensions` methods:
+
+```csharp
+// Create a basic resource usage snapshot with default values
+var usage = ResourceUsageTestsExtensions.WithUsage();
+Console.WriteLine($"Default CPU: {usage.CpuPercent}%");
+Console.WriteLine($"Default Memory: {usage.MemoryMb} MB");
+
+// Create a resource usage snapshot for a specific application
+var appUsage = ResourceUsageTestsExtensions.WithUsage(applicationId: 42, applicationName: "web-storefront");
+Console.WriteLine($"Application: {appUsage.ApplicationName} (ID: {appUsage.ApplicationId})");
+
+// Create a resource usage snapshot with custom CPU and memory values
+var highLoad = ResourceUsageTestsExtensions.WithUsage(cpuPercent: 85.5, memoryMb: 1536);
+Console.WriteLine($"High load - CPU: {highLoad.CpuPercent}%, Memory: {highLoad.MemoryMb} MB");
+
+// Create a resource usage snapshot with application context
+var appWithContext = ResourceUsageTestsExtensions.WithApplication(
+    applicationId: 43,
+    applicationName: "api-service",
+    cpuPercent: 45.2,
+    memoryMb: 768,
+    memoryLimitMb: 1024
+);
+Console.WriteLine($"API Service - CPU: {appWithContext.CpuPercent}%, Memory: {appWithContext.MemoryPercent:F1}%");
+
+// Generate a realistic load scenario with multiple resource usage snapshots
+var loadScenario = ResourceUsageTestsExtensions.GenerateLoadScenario(
+    applicationCount: 3,
+    baseCpu: 30.0,
+    baseMemory: 512
+);
+Console.WriteLine($"Generated load scenario with {loadScenario.Count} resource usage snapshots");
+
+// Check if resource usage has normal severity (no alerts)
+var normalUsage = ResourceUsageTestsExtensions.WithUsage(cpuPercent: 42.0, memoryMb: 800);
+Console.WriteLine($"Normal severity: {ResourceUsageTestsExtensions.HasNormalSeverity(normalUsage)}"); // true
+
+// Check if resource usage has warning severity (CPU > 80%)
+var warningUsage = ResourceUsageTestsExtensions.WithUsage(cpuPercent: 85.0, memoryMb: 1200);
+Console.WriteLine($"Warning severity: {ResourceUsageTestsExtensions.HasWarningSeverity(warningUsage)}"); // true
+
+// Check if resource usage has critical severity (Memory > 90% of limit)
+var criticalUsage = ResourceUsageTestsExtensions.WithUsage(
+    cpuPercent: 60.0,
+    memoryMb: 1900,
+    memoryLimitMb: 2048
+);
+Console.WriteLine($"Critical severity: {ResourceUsageTestsExtensions.HasCriticalSeverity(criticalUsage)}"); // true
+```
