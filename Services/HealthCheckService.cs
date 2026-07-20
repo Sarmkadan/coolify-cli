@@ -184,6 +184,90 @@ public class HealthCheckService
     }
 
     /// <summary>
+    /// Gets a comprehensive health summary for all applications.
+    /// Returns aggregate statistics including total services, healthy, unhealthy, unknown, and list of unhealthy services.
+    /// </summary>
+    /// <returns>Health summary with aggregate data.</returns>
+    public async Task<ApiResponse<HealthSummary>> GetHealthSummaryAsync()
+    {
+        _logger.Info("Fetching comprehensive health summary");
+
+        var summary = new HealthSummary();
+
+        try
+        {
+            // Get all applications first
+            var appsResponse = await _apiClient.GetAsync<List<ApplicationDeployment>>("/api/v1/applications");
+
+            if (appsResponse.Success && appsResponse.Data is not null)
+            {
+                summary.TotalServices = appsResponse.Data.Count;
+
+                // Check health for each application
+                var healthChecks = new List<Task<ApiResponse<ServiceHealth>>>();
+                foreach (var app in appsResponse.Data)
+                {
+                    healthChecks.Add(CheckApplicationHealthAsync(app.Id));
+                }
+
+                var healthResults = await Task.WhenAll(healthChecks);
+
+                foreach (var healthResult in healthResults)
+                {
+                    if (healthResult.Success && healthResult.Data is not null)
+                    {
+                        summary.HealthyCount += healthResult.Data.Status == HealthStatus.Healthy ? 1 : 0;
+                        summary.UnhealthyCount += healthResult.Data.Status == HealthStatus.Unhealthy ? 1 : 0;
+                        summary.DegradedCount += healthResult.Data.Status == HealthStatus.Degraded ? 1 : 0;
+                        summary.CriticalCount += healthResult.Data.Status == HealthStatus.Critical ? 1 : 0;
+                        summary.UnknownCount += healthResult.Data.Status == HealthStatus.Unknown ? 1 : 0;
+
+                        if (!healthResult.Data.IsHealthy())
+                        {
+                            summary.UnhealthyServiceNames.Add(healthResult.Data.ServiceId);
+                        }
+                    }
+                }
+
+                // Calculate summary statistics
+                summary.HealthyPercentage = summary.TotalServices > 0
+                    ? Math.Round((double)summary.HealthyCount / summary.TotalServices * 100, 1)
+                    : 0;
+
+                summary.UnhealthyPercentage = summary.TotalServices > 0
+                    ? Math.Round((double)summary.UnhealthyCount / summary.TotalServices * 100, 1)
+                    : 0;
+
+                summary.DegradedPercentage = summary.TotalServices > 0
+                    ? Math.Round((double)summary.DegradedCount / summary.TotalServices * 100, 1)
+                    : 0;
+
+                summary.CriticalPercentage = summary.TotalServices > 0
+                    ? Math.Round((double)summary.CriticalCount / summary.TotalServices * 100, 1)
+                    : 0;
+
+                summary.UnknownPercentage = summary.TotalServices > 0
+                    ? Math.Round((double)summary.UnknownCount / summary.TotalServices * 100, 1)
+                    : 0;
+
+                _logger.Info($"Health summary generated: {summary.TotalServices} total, {summary.HealthyCount} healthy, {summary.UnhealthyServiceNames.Count} unhealthy");
+            }
+            else
+            {
+                _logger.Warn("Failed to retrieve applications for health summary");
+                return ApiResponse<HealthSummary>.ErrorResponse(new List<string> {"Failed to retrieve applications"}, 404);
+            }
+
+            return ApiResponse<HealthSummary>.SuccessResponse(summary, "Health summary retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Exception during health summary generation");
+            return ApiResponse<HealthSummary>.ErrorResponse(new List<string> {$"Health summary error: {ex.Message}"}, 500);
+        }
+    }
+
+    /// <summary>
     /// Monitors an application continuously and logs health changes.
     /// </summary>
     /// <param name="applicationId">The application ID.</param>
