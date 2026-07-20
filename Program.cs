@@ -1,5 +1,6 @@
 #nullable enable
 using CoolifyCli.Commands;
+using CoolifyCli.Formatters;
 using CoolifyCli.Infrastructure;
 using CoolifyCli.Models;
 using CoolifyCli.Services;
@@ -614,15 +615,35 @@ healthCommand.SetAction(async (parseResult, ct) =>
         {
             Console.WriteLine("✓ Connected to Coolify API");
             var healthService = new HealthCheckService(apiClient, logger);
-            var result = await healthService.GetSystemHealthAsync();
+            var result = await healthService.GetHealthSummaryAsync();
 
-            if (result.Success)
+            if (result.Success && result.Data is not null)
             {
-                Console.WriteLine("✓ System health check passed");
+                var summary = result.Data;
+                var formatter = new TableFormatter(TableStyle.Bordered);
+
+                Console.WriteLine("\nHealth Summary:");
+                Console.WriteLine(formatter.Format(summary));
+
+                if (summary.UnhealthyServiceNames.Count > 0)
+                {
+                    Console.WriteLine($"\nUnhealthy Services ({summary.UnhealthyServiceNames.Count}):");
+                    foreach (var service in summary.UnhealthyServiceNames)
+                    {
+                        Console.WriteLine($"  - {service}");
+                    }
+                }
+
+                var status = summary.IsOverallHealthy() ? "✓ Overall health is good" : "⚠ Attention required";
+                Console.WriteLine($"\n{status}");
             }
             else
             {
-                Console.WriteLine("✗ System health check failed");
+                Console.WriteLine("✗ Failed to retrieve health summary");
+                if (!string.IsNullOrEmpty(result.Message))
+                {
+                    Console.WriteLine($"Error: {result.Message}");
+                }
             }
         }
         else
