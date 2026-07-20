@@ -305,4 +305,185 @@ public class MonitoringCommands : CommandBase
 
         return alertsCmd;
     }
+
+    /// <summary>
+    /// Creates command to watch deployment status in real-time until terminal state is reached.
+    /// Polls the API at specified intervals and displays status transitions with timestamps.
+    /// </summary>
+    public Command CreateDeployWatchCommand()
+    {
+        var deployCmd = new Command("watch", "Watch deployment status by deployment ID");
+        var deploymentIdArg = new Argument<string>("id")
+        {
+            Description = "Deployment ID to monitor",
+            Arity = ArgumentArity.ExactlyOne
+        };
+        var intervalOption = new Option<int>("--interval", ["-i"])
+        {
+            Description = "Polling interval in seconds",
+            DefaultValueFactory = _ => 2
+        };
+        var timeoutOption = new Option<int>("--timeout", ["-t"])
+        {
+            Description = "Maximum watch duration in seconds",
+            DefaultValueFactory = _ => 300
+        };
+
+        deployCmd.Add(deploymentIdArg);
+        deployCmd.Add(intervalOption);
+        deployCmd.Add(timeoutOption);
+
+        deployCmd.SetAction(async (parseResult, ct) =>
+        {
+            var deploymentId = parseResult.GetValue(deploymentIdArg);
+            var interval = parseResult.GetValue(intervalOption);
+            var timeout = parseResult.GetValue(timeoutOption);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(deploymentId))
+                {
+                    throw new ValidationException("Deployment ID is required");
+                }
+
+                if (interval < 1)
+                {
+                    throw new ValidationException("Interval must be at least 1 second");
+                }
+
+                if (timeout < 1)
+                {
+                    throw new ValidationException("Timeout must be at least 1 second");
+                }
+
+                Logger.Info($"Starting deployment watch for deployment {deploymentId} (interval={interval}s, timeout={timeout}s)");
+
+                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
+                var cancellationToken = cts.Token;
+
+                Console.WriteLine($"\n👀 Monitoring deployment {deploymentId}...\n");
+                Console.WriteLine($"[Status] [Timestamp] [Details]");
+                Console.WriteLine(new string('-', 80));
+
+                var lastStatus = DeploymentStatus.Pending;
+                var startTime = DateTime.UtcNow;
+                var deploymentCompleted = false;
+
+                while (!cancellationToken.IsCancellationRequested && !deploymentCompleted)
+                {
+                    try
+                    {
+                        var service = new ApplicationService(ApiClient, Logger);
+                        var response = await service.GetDeploymentStatusAsync(deploymentId);
+
+                        if (response.Success && response.Data is not null)
+                        {
+                            var deployment = response.Data;
+                            var currentStatus = deployment.TargetStatus;
+
+                            if (currentStatus != lastStatus)
+                            {
+                                var elapsed = DateTime.UtcNow - startTime;
+                                var statusSymbol = currentStatus switch
+                                {
+                                    DeploymentStatus.Deployed => "✅",
+                                    DeploymentStatus.Failed => "❌",
+                                    DeploymentStatus.Rollback => "🔄",
+                                    DeploymentStatus.Maintenance => "⚠️",
+                                    DeploymentStatus.Stopped => "⏹️",
+                                    _ => "📊"
+                                };
+
+                                var statusColor = currentStatus switch
+                                {
+                                    DeploymentStatus.Deployed => "green",
+                                    DeploymentStatus.Failed => "red",
+                                    DeploymentStatus.Rollback => "yellow",
+                                    DeploymentStatus.Maintenance => "cyan",
+                                    DeploymentStatus.Stopped => "gray",
+                                    _ => "white"
+                                };
+
+                                Console.WriteLine($"[{statusSymbol}] [{DateTime.UtcNow:HH:mm:ss}] Status: {currentStatus}");
+
+                                if (!string.IsNullOrEmpty(deployment.Application.Name))
+                                {
+                                    Console.WriteLine($"      Application: {deployment.Application.Name}");
+                                }
+
+                                if (!string.IsNullOrEmpty(deployment.Application.Description))
+                                {
+                                    Console.WriteLine($"      Description: {deployment.Application.Description}");
+                                }
+
+                                if (deployment.StartedAt != default)
+                                {
+                                    Console.WriteLine($"      Started: {deployment.StartedAt:yyyy-MM-dd HH:mm:ss} UTC");
+                                }
+
+                                if (deployment.CompletedAt.HasValue)
+                                {
+                                    Console.WriteLine($"      Completed: {deployment.CompletedAt.Value:yyyy-MM-dd HH:mm:ss} UTC");
+                                    Console.WriteLine($"      Duration: {deployment.GetDuration().TotalSeconds:F1}s");
+                                }
+
+					if (deployment.DeploymentLogs.Count > 0 && deployment.DeploymentLogs.Any(l => l.Level == LogLevel.Error || l.Level == LogLevel.Fatal))
+					{
+						var errorLogs = deployment.DeploymentLogs.Where(l => l.Level == LogLevel.Error || l.Level == LogLevel.Fatal).ToList();
+						if (errorLogs.Count == 1)
+						{
+								Console.WriteLine($"      Error: {errorLogs[0].Message}");
+						}
+						else
+						{
+								Console.WriteLine($"      Errors: {errorLogs.Count} error(s) occurred");
+						}
+					}
+
+                                Console.WriteLine();
+                                lastStatus = currentStatus;
+
+                                if (currentStatus is DeploymentStatus.Deployed or DeploymentStatus.Failed or DeploymentStatus.Rollback or DeploymentStatus.Stopped)
+                                {
+                                    deploymentCompleted = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            WriteError($"Failed to retrieve deployment status: {response.Message}");
+                            break;
+                        }
+                    }
+                    catch (Exception ex) when (ex is not ValidationException)
+                    {
+                        WriteError($"Error polling deployment status: {ex.Message}");
+                        break;
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(interval), cancellationToken);
+                }
+
+                if (!deploymentCompleted)
+                {
+                    WriteError($"Deployment watch timed out after {timeout} seconds");
+                }
+            }
+            catch (ValidationException ex)
+            {
+                WriteError(ex.Message);
+            }
+            catch (OperationCanceledException)
+            {
+                WriteError($"Deployment watch cancelled");
+            }
+            catch (Exception ex)
+            {
+                WriteError($"Unexpected error: {ex.Message}");
+            }
+        });
+
+        return deployCmd;
+    }
 }
