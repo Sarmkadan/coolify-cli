@@ -25,7 +25,8 @@
     <Compile Include="../../Extensions/CollectionExtensions.cs" />
     <Compile Include="../../Extensions/DateTimeExtensions.cs" />
     <Compile Include="../../Extensions/EnumExtensions.cs" />
-    <Compile Include="../../Utilities/ValidationHelper.cs" />
+    <Compile Include="../../Utilities/ConfigurationHelper.cs" />
+<Compile Include="../../Utilities/ValidationHelper.cs" />
     <Compile Include="../../Models/Enums.cs" />
     <Compile Include="../../Models/ApplicationDeployment.cs" />
     <Compile Include="../../Models/ApiResponse.cs" />
