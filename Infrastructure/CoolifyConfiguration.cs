@@ -10,6 +10,7 @@ public class CoolifyConfiguration
     public string? ApiKey { get; set; }
     public int RequestTimeoutSeconds { get; set; } = 30;
     public bool VerboseLogging { get; set; } = false;
+public bool QuietLogging { get; set; } = false;
     public string DefaultEnvironment { get; set; } = "production";
     public bool AutoRetry { get; set; } = true;
     public int MaxRetries { get; set; } = 3;
@@ -59,6 +60,7 @@ public class CoolifyConfiguration
             ApiKey = Environment.GetEnvironmentVariable("COOLIFY_API_KEY"),
             RequestTimeoutSeconds = int.TryParse(Environment.GetEnvironmentVariable("COOLIFY_TIMEOUT"), out var timeout) ? timeout : 30,
             VerboseLogging = bool.TryParse(Environment.GetEnvironmentVariable("COOLIFY_VERBOSE"), out var verbose) && verbose,
+QuietLogging = bool.TryParse(Environment.GetEnvironmentVariable("COOLIFY_QUIET"), out var quiet) && quiet,
             DefaultEnvironment = Environment.GetEnvironmentVariable("COOLIFY_ENVIRONMENT") ?? "production",
             AutoRetry = !bool.TryParse(Environment.GetEnvironmentVariable("COOLIFY_NO_RETRY"), out var noRetry) || !noRetry,
             MaxRetries = int.TryParse(Environment.GetEnvironmentVariable("COOLIFY_MAX_RETRIES"), out var retries) ? retries : 3

@@ -26,7 +26,13 @@ bool colorOutput = !Console.IsOutputRedirected
     && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR"))
     && !args.Contains("--no-color");
 
-var logger = new ConsoleLogger(config.VerboseLogging, colorOutput);
+// Check for --quiet flag
+bool quietMode = args.Contains("--quiet");
+
+// Update config with quiet mode setting
+config.QuietLogging = quietMode;
+
+var logger = new ConsoleLogger(config.VerboseLogging, colorOutput, quietMode);
 var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(config.RequestTimeoutSeconds) };
 var apiClient = new CoolifyApiClient(httpClient, config.ApiUrl, config.ApiKey!);
 
@@ -36,6 +42,7 @@ logger.Debug($"API URL: {config.ApiUrl}");
 // Root command
 var rootCommand = new RootCommand("Coolify CLI - Manage Coolify infrastructure from the terminal");
 rootCommand.Add(new Option<bool>("--verbose", ["-v"]) { Description = "Enable verbose logging" });
+rootCommand.Add(new Option<bool>("--quiet", ["-q"]) { Description = "Suppress informational output, show only errors and primary results" });
 rootCommand.Add(new Option<bool>("--no-color") { Description = "Disable color output (also auto-disabled when stdout is not a TTY)" });
 
 // Application commands
