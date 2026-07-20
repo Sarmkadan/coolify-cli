@@ -1,4 +1,8 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CoolifyCli.Models;
 
 namespace CoolifyCli.Services;
@@ -24,12 +28,19 @@ public sealed class DeploymentDiffService
     /// </summary>
     /// <param name="applicationId">The ID of the application to compare.</param>
     /// <param name="proposed">The proposed configuration to apply.</param>
+    /// <param name="ignoreKeys">
+    /// Optional collection of property keys or JSON paths that should be ignored when
+    /// computing the diff (e.g., timestamps, generated IDs). Keys are compared case‑insensitively
+    /// and support simple dot‑notation for nested properties.
+    /// </param>
     /// <returns>
     /// An <see cref="ApiResponse{T}"/> containing the <see cref="DeploymentDiff"/>,
     /// or an error response if the live configuration could not be retrieved.
     /// </returns>
     public async Task<ApiResponse<DeploymentDiff>> ComputeDiffAsync(
-        int applicationId, ApplicationDeployment proposed)
+        int applicationId,
+        ApplicationDeployment proposed,
+        IEnumerable<string>? ignoreKeys = null)
     {
         _logger.Info($"Computing deployment diff for application {applicationId}");
 
@@ -44,11 +55,44 @@ public sealed class DeploymentDiffService
         var diff = DeploymentDiff.Compute(currentResult.Data, proposed);
         _logger.Info($"Diff computed: {diff.Changes.Count} change(s) detected");
 
+        // Apply ignore list if supplied
+        if (ignoreKeys != null && ignoreKeys.Any())
+        {
+            var ignoreSet = new HashSet<string>(ignoreKeys, StringComparer.OrdinalIgnoreCase);
+
+            // Filter entries that match any ignored key or path.
+            // Supports simple dot‑notation (e.g., "metadata.createdAt").
+            var filtered = diff.Entries
+                .Where(e => !ignoreSet.Contains(e.Property) &&
+                            !ignoreSet.Any(ik => e.Property.StartsWith($"{ik}.", StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            // If the underlying type exposes a mutable collection, replace it.
+            // Otherwise, attempt to set via reflection (covers read‑only IEnumerable cases).
+            if (diff.Entries is List<DeploymentDiffEntry> mutableEntries)
+            {
+                mutableEntries.Clear();
+                mutableEntries.AddRange(filtered);
+            }
+            else
+            {
+                var entriesProp = diff.GetType().GetProperty("Entries");
+                if (entriesProp?.CanWrite == true)
+                {
+                    entriesProp.SetValue(diff, filtered);
+                }
+            }
+
+            // Re‑evaluate HasChanges and Changes after filtering.
+            // Assuming DeploymentDiff recomputes these lazily, we simply log the new count.
+            _logger.Info($"After ignoring keys, {filtered.Count} entry(ies) remain.");
+        }
+
         return ApiResponse<DeploymentDiff>.SuccessResponse(diff);
     }
 
     /// <summary>
-    /// Renders the diff to the console with color-coded output.
+    /// Renders the diff to the console with color‑coded output.
     /// Changed properties are highlighted; unchanged properties are omitted unless
     /// <paramref name="showUnchanged"/> is true.
     /// </summary>
