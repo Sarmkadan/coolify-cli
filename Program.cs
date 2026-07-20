@@ -667,6 +667,15 @@ rootCommand.Add(tuiCmds.CreateTuiCommand());
 var resourceMonitorCmds = new ResourceMonitorCommands(apiClient, logger, config);
 rootCommand.Add(resourceMonitorCmds.CreateResourcesCommand());
 
+    // Monitoring commands (metrics, logs, alerts, deploy watch)
+    var monitoringCmds = new MonitoringCommands(apiClient, logger, config);
+    var monitoringCommand = new Command("monitor", "Monitoring and observability commands");
+    monitoringCommand.Add(monitoringCmds.CreateMetricsCommand());
+    monitoringCommand.Add(monitoringCmds.CreateLogStreamCommand());
+    monitoringCommand.Add(monitoringCmds.CreateAlertsCommand());
+    monitoringCommand.Add(monitoringCmds.CreateDeployWatchCommand());
+    rootCommand.Add(monitoringCommand);
+
 // Infrastructure-as-code commands (iac apply | validate | diff | export | init)
 var iacCommand = InfrastructureCommands.CreateIacCommand(
     new ApplicationService(apiClient, logger),

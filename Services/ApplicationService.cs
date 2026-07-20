@@ -266,4 +266,28 @@ public sealed class ApplicationService
 
         return response;
     }
+
+    /// <summary>
+    /// Retrieves the status of a specific deployment by deployment ID.
+    /// </summary>
+    /// <param name="deploymentId">The deployment ID to monitor.</param>
+    /// <returns>Deployment context with current status.</returns>
+    public async Task<ApiResponse<DeploymentContext>> GetDeploymentStatusAsync(string deploymentId)
+    {
+        if (string.IsNullOrWhiteSpace(deploymentId))
+        {
+            _logger.Error("Deployment ID is required");
+            return ApiResponse<DeploymentContext>.ErrorResponse("Deployment ID is required", 400);
+        }
+
+        _logger.Info($"Fetching status for deployment {deploymentId}");
+        var response = await _apiClient.GetAsync<DeploymentContext>($"{Constants.Api.ApplicationsEndpoint}/deployments/{deploymentId}");
+
+        if (response.Success)
+            _logger.Info($"Retrieved deployment status for {deploymentId}");
+        else
+            _logger.Error($"Failed to retrieve deployment status: {response.Message}");
+
+        return response;
+    }
 }
