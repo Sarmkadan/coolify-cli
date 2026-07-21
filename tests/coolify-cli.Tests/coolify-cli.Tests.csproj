@@ -1,54 +1,64 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>CoolifiCli</RootNamespace>
-  </PropertyGroup>
+<PropertyGroup>
+<TargetFramework>net10.0</TargetFramework>
+<IsPackable>false</IsPackable>
+<Nullable>enable</Nullable>
+<ImplicitUsings>enable</ImplicitUsings>
+<RootNamespace>CoolifiCli</RootNamespace>
+<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="xunit" Version="2.9.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="7.0.0" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-  </ItemGroup>
+<ItemGroup>
+<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+<PackageReference Include="xunit" Version="2.9.0" />
+<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+<PrivateAssets>all</PrivateAssets>
+</PackageReference>
+<PackageReference Include="FluentAssertions" Version="7.0.0" />
+<PackageReference Include="Moq" Version="4.20.72" />
+<PackageReference Include="YamlDotNet" Version="16.3.0" />
+</ItemGroup>
 
-  <!-- Include only the source files under test, avoiding main project's broken dependencies -->
-  <ItemGroup>
-    <Compile Include="../../Extensions/StringExtensions.cs" />
-    <Compile Include="../../Extensions/CollectionExtensions.cs" />
-    <Compile Include="../../Extensions/DateTimeExtensions.cs" />
-    <Compile Include="../../Extensions/EnumExtensions.cs" />
-    <Compile Include="../../Utilities/ConfigurationHelper.cs" />
+<!-- Include only the source files under test, avoiding main project's broken dependencies -->
+<ItemGroup>
+<Compile Include="../../Extensions/StringExtensions.cs" />
+<Compile Include="../../Extensions/CollectionExtensions.cs" />
+<Compile Include="../../Extensions/DateTimeExtensions.cs" />
+<Compile Include="../../Extensions/EnumExtensions.cs" />
+<Compile Include="../../Utilities/ConfigurationHelper.cs" />
 <Compile Include="../../Utilities/ValidationHelper.cs" />
-    <Compile Include="../../Models/Enums.cs" />
-    <Compile Include="../../Models/ApplicationDeployment.cs" />
-    <Compile Include="../../Models/ApiResponse.cs" />
-    <Compile Include="../../Models/DatabaseConfiguration.cs" />
-    <Compile Include="../../Models/ServiceHealth.cs" />
-    <Compile Include="../../Models/TuiState.cs" />
-    <Compile Include="../../Models/DeploymentDiff.cs" />
-    <Compile Include="../../Models/ResourceUsage.cs" />
-    <Compile Include="../../Models/EnvironmentVariable.cs" />
-    <Compile Include="../../Caching/ICacheProvider.cs" />
-    <Compile Include="../../Caching/MemoryCacheProvider.cs" />
-    <Compile Include="../../Infrastructure/Constants.cs" />
-    <Compile Include="../../Services/ApplicationService.cs" />
-    <Compile Include="../../Services/ILogger.cs" />
-    <Compile Include="../../Services/CoolifyApiClient.cs" />
-    <Compile Include="../../Infrastructure/CoolifyApiClientOptions.cs" />
-    <Compile Include="../../Infrastructure/CoolifyConfiguration.cs" />
-    <Compile Include="../../Infrastructure/CoolifyExceptions.cs" />
-    <Compile Include="../../Models/DeploymentContext.cs" />
-    <Compile Include="../../Models/LogEntry.cs" />
-    <Compile Include="../../Formatters/TableFormatter.cs" />
-    <Compile Include="../../Formatters/JsonFormatter.cs" />
-  </ItemGroup>
+<Compile Include="../../Models/Enums.cs" />
+<Compile Include="../../Models/ApplicationDeployment.cs" />
+<Compile Include="../../Models/ApiResponse.cs" />
+<Compile Include="../../Models/DatabaseConfiguration.cs" />
+<Compile Include="../../Models/ServiceHealth.cs" />
+<Compile Include="../../Models/TuiState.cs" />
+<Compile Include="../../Models/DeploymentDiff.cs" />
+<Compile Include="../../Models/ResourceUsage.cs" />
+<Compile Include="../../Models/EnvironmentVariable.cs" />
+<Compile Include="../../Caching/ICacheProvider.cs" />
+<Compile Include="../../Caching/MemoryCacheProvider.cs" />
+<Compile Include="../../Infrastructure/Constants.cs" />
+<Compile Include="../../Infrastructure/CoolifyApiClientOptions.cs" />
+<Compile Include="../../Infrastructure/CoolifyConfiguration.cs" />
+<Compile Include="../../Infrastructure/CoolifyExceptions.cs" />
+<Compile Include="../../Infrastructure/IacTemplateOptions.cs" />
+<Compile Include="../../Services/ApplicationService.cs" />
+<Compile Include="../../Services/ILogger.cs" />
+<Compile Include="../../Services/CoolifyApiClient.cs" />
+<Compile Include="../../Models/DeploymentContext.cs" />
+<Compile Include="../../Models/LogEntry.cs" />
+<Compile Include="../../Formatters/TableFormatter.cs" />
+<Compile Include="../../Formatters/JsonFormatter.cs" />
+<Compile Include="../../Formatters/TemplateDiffFormatter.cs" />
+<Compile Include="../../Formatters/TemplateDiffFormatterJsonExtensions.cs" />
+</ItemGroup>
+
+<!-- Include remaining Models files -->
+<ItemGroup>
+<Compile Include="../../Models/IacTemplate.cs" />
+</ItemGroup>
 
 </Project>
