@@ -47,6 +47,8 @@
     <Compile Include="../../Infrastructure/CoolifyExceptions.cs" />
     <Compile Include="../../Models/DeploymentContext.cs" />
     <Compile Include="../../Models/LogEntry.cs" />
+    <Compile Include="../../Formatters/TableFormatter.cs" />
+    <Compile Include="../../Formatters/JsonFormatter.cs" />
   </ItemGroup>
 
 </Project>
