@@ -48,12 +48,14 @@
 <Compile Include="../../Services/ApplicationService.cs" />
 <Compile Include="../../Services/ILogger.cs" />
 <Compile Include="../../Services/CoolifyApiClient.cs" />
+<Compile Include="../../Services/EnvironmentVariableService.cs" />
 <Compile Include="../../Models/DeploymentContext.cs" />
 <Compile Include="../../Models/LogEntry.cs" />
 <Compile Include="../../Formatters/TableFormatter.cs" />
 <Compile Include="../../Formatters/JsonFormatter.cs" />
 <Compile Include="../../Formatters/TemplateDiffFormatter.cs" />
 <Compile Include="../../Formatters/TemplateDiffFormatterJsonExtensions.cs" />
+<Compile Include="EnvironmentVariableServiceTests.cs" />
 </ItemGroup>
 
 <!-- Include remaining Models files -->
