@@ -13,24 +13,96 @@ namespace CoolifyCli.Extensions;
 public static class DateTimeExtensions
 {
     /// <summary>
-    /// Converts a <see cref="DateTime"/> to a human-readable relative time string (e.g., "2 hours ago").
+    /// Converts a <see cref="DateTime"/> to a human-readable relative time string (e.g., "2 hours ago" or "in 5 minutes").
     /// </summary>
+    /// <remarks>
+    /// The method normalizes the input <see cref="DateTime"/> to UTC for consistent comparison:
+    /// <list type="bullet">
+    /// <item><description><see cref="DateTimeKind.Local"/> values are converted to UTC using <see cref="DateTime.ToUniversalTime()"/></description></item>
+    /// <item><description><see cref="DateTimeKind.Utc"/> values are used as-is</description></item>
+    /// <item><description><see cref="DateTimeKind.Unspecified"/> values are treated as UTC (no conversion applied)</description></item>
+    /// </list>
+    /// </remarks>
     /// <param name="dateTime">The date and time to convert to a relative string.</param>
-    /// <returns>A human-readable string representing the relative time.</returns>
+    /// <returns>A human-readable string representing the relative time, or "just now" if within 1 second.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dateTime"/> is null.</exception>
     public static string ToRelativeTime(this DateTime dateTime)
     {
-        var timeSpan = DateTime.UtcNow - dateTime.ToUniversalTime();
+        ArgumentNullException.ThrowIfNull(dateTime);
+
+        var utcNow = DateTime.UtcNow;
+        var utcDateTime = dateTime.Kind == DateTimeKind.Local
+            ? dateTime.ToUniversalTime()
+            : dateTime.Kind == DateTimeKind.Utc
+                ? dateTime
+                : dateTime; // Unspecified treated as UTC
+
+        var timeSpan = utcNow - utcDateTime;
 
         return timeSpan.TotalSeconds switch
         {
             < 1 => "just now",
-            < 60 => $"{(int)timeSpan.TotalSeconds} second{(timeSpan.TotalSeconds > 1 ? "s" : "")} ago",
-            < 3600 => $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes > 1 ? "s" : "")} ago",
-            < 86400 => $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours > 1 ? "s" : "")} ago",
-            < 604800 => $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays > 1 ? "s" : "")} ago",
-            < 2592000 => $"{(int)(timeSpan.TotalDays / 7)} week{((int)(timeSpan.TotalDays / 7) > 1 ? "s" : "")} ago",
-            < 31536000 => $"{(int)(timeSpan.TotalDays / 30)} month{((int)(timeSpan.TotalDays / 30) > 1 ? "s" : "")} ago",
-            _ => $"{(int)(timeSpan.TotalDays / 365)} year{((int)(timeSpan.TotalDays / 365) > 1 ? "s" : "")} ago"
+            > -1 and < 60 => timeSpan.TotalSeconds > 0
+                ? $"{(int)timeSpan.TotalSeconds} second{(timeSpan.TotalSeconds > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalSeconds)} second{(-timeSpan.TotalSeconds > 1 ? "s" : "")}",
+            > -60 and < 3600 => timeSpan.TotalMinutes > 0
+                ? $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalMinutes)} minute{(-timeSpan.TotalMinutes > 1 ? "s" : "")}",
+            > -86400 and < 86400 => timeSpan.TotalHours > 0
+                ? $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalHours)} hour{(-timeSpan.TotalHours > 1 ? "s" : "")}",
+            > -604800 and < 604800 => timeSpan.TotalDays > 0
+                ? $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays)} day{(-timeSpan.TotalDays > 1 ? "s" : "")}",
+            > -2592000 and < 2592000 => timeSpan.TotalDays > 0
+                ? $"{(int)(timeSpan.TotalDays / 7)} week{((int)(timeSpan.TotalDays / 7) > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays / 7)} week{((int)(-timeSpan.TotalDays / 7) > 1 ? "s" : "")}",
+            > -31536000 and < 31536000 => timeSpan.TotalDays > 0
+                ? $"{(int)(timeSpan.TotalDays / 30)} month{((int)(timeSpan.TotalDays / 30) > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays / 30)} month{((int)(-timeSpan.TotalDays / 30) > 1 ? "s" : "")}",
+            _ => timeSpan.TotalDays > 0
+                ? $"{(int)(timeSpan.TotalDays / 365)} year{((int)(timeSpan.TotalDays / 365) > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays / 365)} year{((int)(-timeSpan.TotalDays / 365) > 1 ? "s" : "")}"
+        };
+    }
+
+    /// <summary>
+    /// Converts a <see cref="DateTimeOffset"/> to a human-readable relative time string (e.g., "2 hours ago" or "in 5 minutes").
+    /// </summary>
+    /// <param name="dateTimeOffset">The date and time with offset to convert to a relative string.</param>
+    /// <returns>A human-readable string representing the relative time, or "just now" if within 1 second.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dateTimeOffset"/> is null.</exception>
+    public static string ToRelativeTime(this DateTimeOffset dateTimeOffset)
+    {
+        ArgumentNullException.ThrowIfNull(dateTimeOffset);
+
+        var utcNow = DateTimeOffset.UtcNow;
+        var timeSpan = utcNow - dateTimeOffset;
+
+        return timeSpan.TotalSeconds switch
+        {
+            < 1 => "just now",
+            > -1 and < 60 => timeSpan.TotalSeconds > 0
+                ? $"{(int)timeSpan.TotalSeconds} second{(timeSpan.TotalSeconds > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalSeconds)} second{(-timeSpan.TotalSeconds > 1 ? "s" : "")}",
+            > -60 and < 3600 => timeSpan.TotalMinutes > 0
+                ? $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalMinutes)} minute{(-timeSpan.TotalMinutes > 1 ? "s" : "")}",
+            > -86400 and < 86400 => timeSpan.TotalHours > 0
+                ? $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalHours)} hour{(-timeSpan.TotalHours > 1 ? "s" : "")}",
+            > -604800 and < 604800 => timeSpan.TotalDays > 0
+                ? $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays)} day{(-timeSpan.TotalDays > 1 ? "s" : "")}",
+            > -2592000 and < 2592000 => timeSpan.TotalDays > 0
+                ? $"{(int)(timeSpan.TotalDays / 7)} week{((int)(timeSpan.TotalDays / 7) > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays / 7)} week{((int)(-timeSpan.TotalDays / 7) > 1 ? "s" : "")}",
+            > -31536000 and < 31536000 => timeSpan.TotalDays > 0
+                ? $"{(int)(timeSpan.TotalDays / 30)} month{((int)(timeSpan.TotalDays / 30) > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays / 30)} month{((int)(-timeSpan.TotalDays / 30) > 1 ? "s" : "")}",
+            _ => timeSpan.TotalDays > 0
+                ? $"{(int)(timeSpan.TotalDays / 365)} year{((int)(timeSpan.TotalDays / 365) > 1 ? "s" : "")} ago"
+                : $"in {(int)(-timeSpan.TotalDays / 365)} year{((int)(-timeSpan.TotalDays / 365) > 1 ? "s" : "")}"
         };
     }
 

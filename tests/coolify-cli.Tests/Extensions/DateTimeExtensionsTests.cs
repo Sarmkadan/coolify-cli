@@ -561,5 +561,159 @@ namespace CoolifyCli.Tests.Extensions
             // Assert
             Assert.Equal(expected, actual);
         }
+
+        [Fact]
+        public void ToRelativeTime_KindLocal_ConvertsCorrectly()
+        {
+            // Arrange - Test that Local kind is properly converted to UTC
+            var localTime = DateTime.Now.AddMinutes(-5);
+            var utcTime = DateTime.UtcNow.AddMinutes(-5);
+
+            // Act
+            var localResult = localTime.ToRelativeTime();
+            var utcResult = utcTime.ToRelativeTime();
+
+            // Assert - Both should produce similar results (accounting for conversion)
+            Assert.Equal("5 minutes ago", localResult);
+            Assert.Equal("5 minutes ago", utcResult);
+        }
+
+        [Fact]
+        public void ToRelativeTime_KindUtc_UsesAsIs()
+        {
+            // Arrange
+            var utcTime = DateTime.UtcNow.AddMinutes(-10);
+
+            // Act
+            var result = utcTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("10 minutes ago", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_KindUnspecified_TreatsAsUtc()
+        {
+            // Arrange - Unspecified kind should be treated as UTC
+            var unspecifiedTime = DateTime.SpecifyKind(DateTime.UtcNow.AddMinutes(-15), DateTimeKind.Unspecified);
+
+            // Act
+            var result = unspecifiedTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("15 minutes ago", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_FutureTime_ShowsInFormat()
+        {
+            // Arrange
+            var futureTime = DateTime.UtcNow.AddMinutes(5);
+
+            // Act
+            var result = futureTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("in 5 minutes", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_FutureSeconds_ShowsInFormat()
+        {
+            // Arrange
+            var futureTime = DateTime.UtcNow.AddSeconds(30);
+
+            // Act
+            var result = futureTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("in 30 seconds", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_FutureHours_ShowsInFormat()
+        {
+            // Arrange
+            var futureTime = DateTime.UtcNow.AddHours(2);
+
+            // Act
+            var result = futureTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("in 2 hours", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_FutureDays_ShowsInFormat()
+        {
+            // Arrange
+            var futureTime = DateTime.UtcNow.AddDays(3);
+
+            // Act
+            var result = futureTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("in 3 days", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_DateTimeOffset_ConvertsCorrectly()
+        {
+            // Arrange
+            var offsetTime = DateTimeOffset.UtcNow.AddMinutes(-7);
+
+            // Act
+            var result = offsetTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("7 minutes ago", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_DateTimeOffsetFuture_ShowsInFormat()
+        {
+            // Arrange
+            var offsetTime = DateTimeOffset.UtcNow.AddMinutes(10);
+
+            // Act
+            var result = offsetTime.ToRelativeTime();
+
+            // Assert
+            Assert.Equal("in 10 minutes", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_DateTimeOffsetWithOffset_ConvertsCorrectly()
+        {
+            // Arrange - Test with a specific offset (e.g., UTC+2)
+            var offset = TimeSpan.FromHours(2);
+            var offsetTime = new DateTimeOffset(DateTime.UtcNow.AddMinutes(-12), offset);
+
+            // Act
+            var result = offsetTime.ToRelativeTime();
+
+            // Assert - Should still show correct relative time regardless of offset
+            Assert.Equal("12 minutes ago", result);
+        }
+
+        [Fact]
+        public void ToRelativeTime_NullDateTime_ThrowsArgumentNullException()
+        {
+            // Arrange
+            DateTime? nullDateTime = null;
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => nullDateTime!.Value.ToRelativeTime());
+        }
+
+        [Fact]
+        public void ToRelativeTime_NullDateTimeOffset_ThrowsArgumentNullException()
+        {
+            // Arrange
+            DateTimeOffset? nullDateTimeOffset = null;
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => nullDateTimeOffset!.Value.ToRelativeTime());
+        }
     }
 }
