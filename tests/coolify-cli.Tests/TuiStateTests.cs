@@ -3,6 +3,8 @@ using CoolifyCli.Models;
 using FluentAssertions;
 using Xunit;
 
+namespace CoolifyCli.Tests;
+
 /// <summary>
 /// Tests for the TuiState class.
 /// </summary>

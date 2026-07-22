@@ -62,6 +62,8 @@
 <Compile Include="ApiResponseTests.cs" />
 <Compile Include="ApiResponseExtensionsTests.cs" />
 <Compile Include="EnvironmentVariableServiceTests.cs" />
+<Compile Include="TuiStateTests.cs" />
+<Compile Include="TuiStateConcurrencyTests.cs" />
 </ItemGroup>
 
 <!-- Include remaining Models files -->
