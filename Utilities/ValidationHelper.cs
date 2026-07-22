@@ -12,7 +12,7 @@ public static class ValidationHelper
     /// <summary>
     /// Validates that a value is a positive integer ID.
     /// </summary>
-    public static bool IsValidId(int value)
+    public static bool IsValidId(int? value)
     {
         return value > 0;
     }
