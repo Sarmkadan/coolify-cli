@@ -130,8 +130,8 @@ public static class TuiStateTestsExtensions
             throw new ArgumentOutOfRangeException(nameof(moveCount), "Move count cannot be negative.");
         }
 
-        state.MoveDown(moveCount);
-        state.SelectedIndexShouldBe(expectedIndex);
+        var updatedState = state.MoveDown(moveCount);
+        updatedState.SelectedIndexShouldBe(expectedIndex);
     }
 
     /// <summary>
@@ -150,10 +150,11 @@ public static class TuiStateTestsExtensions
             throw new ArgumentOutOfRangeException(nameof(moveCount), "Move count cannot be negative.");
         }
 
+        var currentState = state;
         for (var i = 0; i < moveCount; i++)
         {
-            state.MoveUp();
+            currentState = currentState.MoveUp();
         }
-        state.SelectedIndexShouldBe(expectedIndex);
+        currentState.SelectedIndexShouldBe(expectedIndex);
     }
 }

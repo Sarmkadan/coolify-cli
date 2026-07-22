@@ -16,139 +16,167 @@ public enum TuiView
 }
 
 /// <summary>
-/// Encapsulates the mutable state of the interactive TUI session.
-/// Tracks navigation position, selected resources, and active view.
+/// Immutable snapshot of the TUI state at a point in time.
 /// </summary>
-public class TuiState
+/// <param name="ActiveView">The currently active view panel.</param>
+/// <param name="SelectedIndex">The zero-based index of the highlighted row in the current list.</param>
+/// <param name="ScrollOffset">The zero-based scroll offset for lists taller than the terminal.</param>
+/// <param name="SelectedAppId">The ID of the currently selected application, or null if none selected.</param>
+/// <param name="Applications">The list of applications loaded into the TUI.</param>
+/// <param name="Databases">The list of databases loaded into the TUI.</param>
+/// <param name="StatusMessage">A status message displayed in the footer bar.</param>
+/// <param name="IsRefreshing">A value indicating whether a background refresh is in progress.</param>
+/// <param name="LastRefreshedAt">The timestamp of the last successful data refresh.</param>
+/// <param name="ShouldExit">A value indicating whether the TUI should exit on the next tick.</param>
+public record TuiState(
+    TuiView ActiveView = TuiView.AppList,
+    int SelectedIndex = 0,
+    int ScrollOffset = 0,
+    int? SelectedAppId = null,
+    List<ApplicationDeployment> Applications = null!,
+    List<DatabaseConfiguration> Databases = null!,
+    string StatusMessage = "",
+    bool IsRefreshing = false,
+    DateTime LastRefreshedAt = default,
+    bool ShouldExit = false)
 {
-    private readonly object _lock = new object();
-    /// <summary>Gets or sets the currently active view panel.</summary>
-    public TuiView ActiveView
+    /// <summary>
+    /// Initializes a new immutable TuiState with default values.
+    /// </summary>
+    public TuiState()
+        : this(
+            ActiveView: TuiView.AppList,
+            SelectedIndex: 0,
+            ScrollOffset: 0,
+            SelectedAppId: null,
+            Applications: new List<ApplicationDeployment>(),
+            Databases: new List<DatabaseConfiguration>(),
+            StatusMessage: string.Empty,
+            IsRefreshing: false,
+            LastRefreshedAt: DateTime.MinValue,
+            ShouldExit: false)
     {
-        get { lock (_lock) return _activeView; }
-        set { lock (_lock) _activeView = value; }
     }
-    private TuiView _activeView = TuiView.AppList;
 
-    /// <summary>Gets or sets the zero-based index of the highlighted row in the current list.</summary>
-    public int SelectedIndex
-    {
-        get { lock (_lock) return _selectedIndex; }
-        set { lock (_lock) _selectedIndex = value; }
-    }
-    private int _selectedIndex = 0;
+    /// <summary>
+    /// Creates a new state with the specified ActiveView.
+    /// </summary>
+    /// <param name="activeView">The view to set as active.</param>
+    /// <returns>A new TuiState instance with the updated ActiveView.</returns>
+    public TuiState WithActiveView(TuiView activeView) =>
+        this with { ActiveView = activeView };
 
-    /// <summary>Gets or sets the zero-based scroll offset for lists taller than the terminal.</summary>
-    public int ScrollOffset
-    {
-        get { lock (_lock) return _scrollOffset; }
-        set { lock (_lock) _scrollOffset = value; }
-    }
-    private int _scrollOffset = 0;
+    /// <summary>
+    /// Creates a new state with the specified SelectedIndex.
+    /// </summary>
+    /// <param name="selectedIndex">The index to set as selected.</param>
+    /// <returns>A new TuiState instance with the updated SelectedIndex.</returns>
+    public TuiState WithSelectedIndex(int selectedIndex) =>
+        this with { SelectedIndex = selectedIndex };
 
-    /// <summary>Gets or sets the ID of the currently selected application, or null if none selected.</summary>
-    public int? SelectedAppId
-    {
-        get { lock (_lock) return _selectedAppId; }
-        set { lock (_lock) _selectedAppId = value; }
-    }
-    private int? _selectedAppId;
+    /// <summary>
+    /// Creates a new state with the specified ScrollOffset.
+    /// </summary>
+    /// <param name="scrollOffset">The scroll offset to set.</param>
+    /// <returns>A new TuiState instance with the updated ScrollOffset.</returns>
+    public TuiState WithScrollOffset(int scrollOffset) =>
+        this with { ScrollOffset = scrollOffset };
 
-    /// <summary>Gets or sets the list of applications loaded into the TUI.</summary>
-    public List<ApplicationDeployment> Applications
-    {
-        get { lock (_lock) return _applications; }
-        set { lock (_lock) _applications = value; }
-    }
-    private List<ApplicationDeployment> _applications = new();
+    /// <summary>
+    /// Creates a new state with the specified SelectedAppId.
+    /// </summary>
+    /// <param name="selectedAppId">The application ID to select, or null to deselect.</param>
+    /// <returns>A new TuiState instance with the updated SelectedAppId.</returns>
+    public TuiState WithSelectedAppId(int? selectedAppId) =>
+        this with { SelectedAppId = selectedAppId };
 
-    /// <summary>Gets or sets the list of databases loaded into the TUI.</summary>
-    public List<DatabaseConfiguration> Databases
-    {
-        get { lock (_lock) return _databases; }
-        set { lock (_lock) _databases = value; }
-    }
-    private List<DatabaseConfiguration> _databases = new();
+    /// <summary>
+    /// Creates a new state with the specified Applications list.
+    /// </summary>
+    /// <param name="applications">The applications list to set.</param>
+    /// <returns>A new TuiState instance with the updated Applications list.</returns>
+    public TuiState WithApplications(List<ApplicationDeployment> applications) =>
+        this with { Applications = applications };
 
-    /// <summary>Gets or sets a status message displayed in the footer bar.</summary>
-    public string StatusMessage
-    {
-        get { lock (_lock) return _statusMessage; }
-        set { lock (_lock) _statusMessage = value; }
-    }
-    private string _statusMessage = string.Empty;
+    /// <summary>
+    /// Creates a new state with the specified Databases list.
+    /// </summary>
+    /// <param name="databases">The databases list to set.</param>
+    /// <returns>A new TuiState instance with the updated Databases list.</returns>
+    public TuiState WithDatabases(List<DatabaseConfiguration> databases) =>
+        this with { Databases = databases };
 
-    /// <summary>Gets or sets a value indicating whether a background refresh is in progress.</summary>
-    public bool IsRefreshing
-    {
-        get { lock (_lock) return _isRefreshing; }
-        set { lock (_lock) _isRefreshing = value; }
-    }
-    private bool _isRefreshing = false;
+    /// <summary>
+    /// Creates a new state with the specified StatusMessage.
+    /// </summary>
+    /// <param name="statusMessage">The status message to set.</param>
+    /// <returns>A new TuiState instance with the updated StatusMessage.</returns>
+    public TuiState WithStatusMessage(string statusMessage) =>
+        this with { StatusMessage = statusMessage };
 
-    /// <summary>Gets or sets the timestamp of the last successful data refresh.</summary>
-    public DateTime LastRefreshedAt
-    {
-        get { lock (_lock) return _lastRefreshedAt; }
-        set { lock (_lock) _lastRefreshedAt = value; }
-    }
-    private DateTime _lastRefreshedAt = DateTime.MinValue;
+    /// <summary>
+    /// Creates a new state with the specified IsRefreshing flag.
+    /// </summary>
+    /// <param name="isRefreshing">The refreshing flag to set.</param>
+    /// <returns>A new TuiState instance with the updated IsRefreshing flag.</returns>
+    public TuiState WithIsRefreshing(bool isRefreshing) =>
+        this with { IsRefreshing = isRefreshing };
 
-    /// <summary>Gets or sets a value indicating whether the TUI should exit on the next tick.</summary>
-    public bool ShouldExit
-    {
-        get { lock (_lock) return _shouldExit; }
-        set { lock (_lock) _shouldExit = value; }
-    }
-    private bool _shouldExit = false;
+    /// <summary>
+    /// Creates a new state with the specified LastRefreshedAt timestamp.
+    /// </summary>
+    /// <param name="lastRefreshedAt">The timestamp to set.</param>
+    /// <returns>A new TuiState instance with the updated LastRefreshedAt timestamp.</returns>
+    public TuiState WithLastRefreshedAt(DateTime lastRefreshedAt) =>
+        this with { LastRefreshedAt = lastRefreshedAt };
+
+    /// <summary>
+    /// Creates a new state with the specified ShouldExit flag.
+    /// </summary>
+    /// <param name="shouldExit">The exit flag to set.</param>
+    /// <returns>A new TuiState instance with the updated ShouldExit flag.</returns>
+    public TuiState WithShouldExit(bool shouldExit) =>
+        this with { ShouldExit = shouldExit };
 
     /// <summary>
     /// Moves the selection cursor down by one row, clamped to the list size.
     /// </summary>
     /// <param name="listSize">Total number of items in the current list.</param>
-    public void MoveDown(int listSize)
+    /// <returns>A new TuiState instance with updated selection.</returns>
+    public TuiState MoveDown(int listSize)
     {
-        lock (_lock)
-        {
-            if (listSize == 0) return;
-            _selectedIndex = Math.Min(_selectedIndex + 1, listSize - 1);
-        }
+        if (listSize == 0)
+            return this;
+
+        var newIndex = Math.Min(SelectedIndex + 1, listSize - 1);
+        return this with { SelectedIndex = newIndex };
     }
 
     /// <summary>
     /// Moves the selection cursor up by one row, clamped to zero.
     /// </summary>
-    public void MoveUp()
+    /// <returns>A new TuiState instance with updated selection.</returns>
+    public TuiState MoveUp()
     {
-        lock (_lock)
-        {
-            _selectedIndex = Math.Max(_selectedIndex - 1, 0);
-        }
+        var newIndex = Math.Max(SelectedIndex - 1, 0);
+        return this with { SelectedIndex = newIndex };
     }
 
     /// <summary>
     /// Resets the selection cursor and scroll offset to the top of the list.
     /// </summary>
-    public void ResetSelection()
-    {
-        lock (_lock)
-        {
-            _selectedIndex = 0;
-            _scrollOffset = 0;
-        }
-    }
+    /// <returns>A new TuiState instance with reset selection.</returns>
+    public TuiState ResetSelection() =>
+        this with { SelectedIndex = 0, ScrollOffset = 0 };
 
     /// <summary>
     /// Returns the application at the current selection index, or null if the list is empty.
     /// </summary>
     public ApplicationDeployment? GetSelectedApp()
     {
-        lock (_lock)
-        {
-            if (_applications.Count == 0 || _selectedIndex < 0 || _selectedIndex >= _applications.Count)
-                return null;
-            return _applications[_selectedIndex];
-        }
+        if (Applications.Count == 0 || SelectedIndex < 0 || SelectedIndex >= Applications.Count)
+            return null;
+        return Applications[SelectedIndex];
     }
 
     /// <summary>
@@ -159,20 +187,19 @@ public class TuiState
     /// <returns>Slice of items that should be rendered.</returns>
     public IReadOnlyList<ApplicationDeployment> GetVisibleApps(int visibleRows)
     {
-        lock (_lock)
-        {
-            if (visibleRows <= 0 || _applications.Count == 0)
-                return Array.Empty<ApplicationDeployment>();
+        if (visibleRows <= 0 || Applications.Count == 0)
+            return Array.Empty<ApplicationDeployment>();
 
-            if (_selectedIndex < _scrollOffset)
-                _scrollOffset = _selectedIndex;
-            else if (_selectedIndex >= _scrollOffset + visibleRows)
-                _scrollOffset = _selectedIndex - visibleRows + 1;
+        var newScrollOffset = ScrollOffset;
+        if (SelectedIndex < newScrollOffset)
+            newScrollOffset = SelectedIndex;
+        else if (SelectedIndex >= newScrollOffset + visibleRows)
+            newScrollOffset = SelectedIndex - visibleRows + 1;
 
-            return _applications
-                .Skip(_scrollOffset)
-                .Take(visibleRows)
-                .ToList();
-        }
+        return Applications
+            .Skip(newScrollOffset)
+            .Take(visibleRows)
+            .ToList()
+            .AsReadOnly();
     }
 }

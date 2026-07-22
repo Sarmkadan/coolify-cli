@@ -26,9 +26,9 @@ public class TuiStateTests
             }
         };
 
-        state.MoveDown(state.Applications.Count);
+        var updatedState = state.MoveDown(state.Applications.Count);
 
-        state.SelectedIndex.Should().Be(1);
+        updatedState.SelectedIndex.Should().Be(1);
     }
 
     /// <summary>
@@ -47,9 +47,9 @@ public class TuiStateTests
             SelectedIndex = 1
         };
 
-        state.MoveDown(state.Applications.Count);
+        var updatedState = state.MoveDown(state.Applications.Count);
 
-        state.SelectedIndex.Should().Be(1);
+        updatedState.SelectedIndex.Should().Be(1);
     }
 
     /// <summary>
@@ -60,9 +60,9 @@ public class TuiStateTests
     {
         var state = new TuiState { SelectedIndex = 2 };
 
-        state.MoveUp();
+        var updatedState = state.MoveUp();
 
-        state.SelectedIndex.Should().Be(1);
+        updatedState.SelectedIndex.Should().Be(1);
     }
 
     /// <summary>
@@ -73,9 +73,9 @@ public class TuiStateTests
     {
         var state = new TuiState { SelectedIndex = 0 };
 
-        state.MoveUp();
+        var updatedState = state.MoveUp();
 
-        state.SelectedIndex.Should().Be(0);
+        updatedState.SelectedIndex.Should().Be(0);
     }
 
     /// <summary>
@@ -123,10 +123,10 @@ public class TuiStateTests
     {
         var state = new TuiState { SelectedIndex = 5, ScrollOffset = 3 };
 
-        state.ResetSelection();
+        var updatedState = state.ResetSelection();
 
-        state.SelectedIndex.Should().Be(0);
-        state.ScrollOffset.Should().Be(0);
+        updatedState.SelectedIndex.Should().Be(0);
+        updatedState.ScrollOffset.Should().Be(0);
     }
 
     /// <summary>
