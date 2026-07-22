@@ -32,6 +32,7 @@
 <Compile Include="../../Models/Enums.cs" />
 <Compile Include="../../Models/ApplicationDeployment.cs" />
 <Compile Include="../../Models/ApiResponse.cs" />
+<Compile Include="../../Models/ApiResponseExtensions.cs" />
 <Compile Include="../../Models/DatabaseConfiguration.cs" />
 <Compile Include="../../Models/ServiceHealth.cs" />
 <Compile Include="../../Models/TuiState.cs" />
@@ -58,6 +59,8 @@
 <Compile Include="../../Formatters/CsvFormatter.cs" />
 <Compile Include="JsonFormatterTests.cs" />
 <Compile Include="CsvFormatterTests.cs" />
+<Compile Include="ApiResponseTests.cs" />
+<Compile Include="ApiResponseExtensionsTests.cs" />
 <Compile Include="EnvironmentVariableServiceTests.cs" />
 </ItemGroup>
 
