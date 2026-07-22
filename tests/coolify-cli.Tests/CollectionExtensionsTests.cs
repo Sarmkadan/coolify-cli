@@ -1,291 +1,351 @@
-#nullable enable
+groups[2].Should().BeEquivalentTo(new[] { 20 });
+}
 
-using CoolifyCli.Extensions;
-using FluentAssertions;
-using Xunit;
-
-using CoolifyCollectionExtensions = CoolifyCli.Extensions.CollectionExtensions;
-
-namespace CoolifyCli.Tests;
+// ---- Partition ------------------------------------------------------------
 
 /// <summary>
-/// Provides unit tests for the <see cref="CoolifyCli.Extensions.CollectionExtensions"/> class.
-/// Tests various extension methods for collections including batching, filtering, and transformation operations.
+/// Tests that <see cref="CollectionExtensions.Partition{T}(IEnumerable{T},int)"/> splits a collection into equal-sized partitions when the collection size is an exact multiple of the partition size.
 /// </summary>
-public class CollectionExtensionsTests
+[Fact]
+public void Partition_WithExactMultiple_ProducesEqualSizedPartitions()
 {
-    // ---- IsNullOrEmpty -------------------------------------------------------
+    var items = Enumerable.Range(1, 6).ToList();
 
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}?.IsNullOrEmpty()"/> returns true when the collection is null.
-    /// </summary>
-    [Fact]
-    public void IsNullOrEmpty_WithNullCollection_ReturnsTrue()
+    var partitions = items.Partition(2);
+
+    partitions.Should().HaveCount(3);
+    partitions.Should().AllSatisfy(p => p.Should().HaveCount(2));
+    partitions[0].Should().BeEquivalentTo(new[] { 1, 2 });
+    partitions[1].Should().BeEquivalentTo(new[] { 3, 4 });
+    partitions[2].Should().BeEquivalentTo(new[] { 5, 6 });
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Partition{T}(IEnumerable{T},int)"/> splits a collection into partitions where the last partition contains any remaining items when the collection size is not an exact multiple of the partition size.
+/// </summary>
+[Fact]
+public void Partition_WithRemainder_LastPartitionContainsLeftoverItems()
+{
+    var items = Enumerable.Range(1, 5).ToList();
+
+    var partitions = items.Partition(2);
+
+    partitions.Should().HaveCount(3);
+    partitions[0].Should().BeEquivalentTo(new[] { 1, 2 });
+    partitions[1].Should().BeEquivalentTo(new[] { 3, 4 });
+    partitions[2].Should().BeEquivalentTo(new[] { 5 });
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Partition{T}(IEnumerable{T},int)"/> throws an <see cref="ArgumentException"/> when the partition size is zero.
+/// </summary>
+[Fact]
+public void Partition_WithZeroSize_ThrowsArgumentException()
+{
+    var items = new[] { 1, 2, 3 };
+
+    var act = () => items.Partition(0);
+
+    act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*greater than '0'*");
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Partition{T}(IEnumerable{T},int)"/> returns an empty list when the source collection is empty.
+/// </summary>
+[Fact]
+public void Partition_WithEmptySource_ReturnsEmptyList()
+{
+    var partitions = Array.Empty<int>().Partition(3);
+
+    partitions.Should().BeEmpty();
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Partition{T}(IEnumerable{T},int)"/> works correctly with a single element.
+/// </summary>
+[Fact]
+public void Partition_WithSingleElement_ReturnsSinglePartition()
+{
+    var items = new[] { 42 };
+
+    var partitions = items.Partition(5);
+
+    partitions.Should().HaveCount(1);
+    partitions[0].Should().BeEquivalentTo(new[] { 42 });
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Partition{T}(IEnumerable{T},int)"/> works correctly with a large collection.
+/// </summary>
+[Fact]
+public void Partition_WithLargeCollection_ProducesCorrectPartitions()
+{
+    var items = Enumerable.Range(1, 1000).ToList();
+
+    var partitions = items.Partition(100);
+
+    partitions.Should().HaveCount(10);
+    partitions.Should().AllSatisfy(p => p.Should().HaveCount(100));
+    partitions[0].Should().BeEquivalentTo(Enumerable.Range(1, 100).ToList());
+    partitions[9].Should().BeEquivalentTo(Enumerable.Range(901, 100).ToList());
+}
+
+// ---- SkipWhile ---------------------------------------------------------------
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.SkipWhile{T}(IEnumerable{T},Func{T,bool})"/> skips elements while the predicate is true and returns remaining elements.
+/// </summary>
+[Fact]
+public void SkipWhile_SkipsInitialMatchingElements_ReturnsRemaining()
+{
+    var numbers = new[] { 1, 2, 3, 4, 5, 1, 2 };
+
+    var result = numbers.SkipWhile(n => n < 4).ToList();
+
+    result.Should().BeEquivalentTo(new[] { 4, 5, 1, 2 });
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.SkipWhile{T}(IEnumerable{T},Func{T,bool})"/> returns all elements when the first element doesn't match the predicate.
+/// </summary>
+[Fact]
+public void SkipWhile_FirstElementDoesNotMatch_ReturnsAllElements()
+{
+    var numbers = new[] { 5, 4, 3, 2, 1 };
+
+    var result = numbers.SkipWhile(n => n > 10).ToList();
+
+    result.Should().BeEquivalentTo(new[] { 5, 4, 3, 2, 1 });
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.SkipWhile{T}(IEnumerable{T},Func{T,bool})"/> returns an empty sequence when all elements match the predicate.
+/// </summary>
+[Fact]
+public void SkipWhile_AllElementsMatch_ReturnsEmpty()
+{
+    var numbers = new[] { 1, 2, 3 };
+
+    var result = numbers.SkipWhile(n => n > 0).ToList();
+
+    result.Should().BeEmpty();
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.SkipWhile{T}(IEnumerable{T},Func{T,bool})"/> works correctly with a single element that doesn't match the predicate.
+/// </summary>
+[Fact]
+public void SkipWhile_SingleElementDoesNotMatch_ReturnsSingleElement()
+{
+    var numbers = new[] { 42 };
+
+    var result = numbers.SkipWhile(n => n > 100).ToList();
+
+    result.Should().BeEquivalentTo(new[] { 42 });
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.SkipWhile{T}(IEnumerable{T},Func{T,bool})"/> throws an <see cref="ArgumentNullException"/> when the source is null.
+/// </summary>
+[Fact]
+public void SkipWhile_WithNullSource_ThrowsArgumentNullException()
+{
+    var act = () => ((IEnumerable<int>)null!).SkipWhile(n => n > 0).ToList();
+
+    act.Should().Throw<ArgumentNullException>();
+}
+
+// ---- GetAtIndexOrDefault --------------------------------------------------
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.GetAtIndexOrDefault{T}(IEnumerable{T},int,T?)"/> returns the element at the specified index when it exists.
+/// </summary>
+[Fact]
+public void GetAtIndexOrDefault_WithValidIndex_ReturnsElement()
+{
+    var items = new[] { "a", "b", "c", "d" };
+
+    var result = items.GetAtIndexOrDefault(2);
+
+    result.Should().Be("c");
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.GetAtIndexOrDefault{T}(IEnumerable{T},int,T?)"/> returns the default value when the index is out of range.
+/// </summary>
+[Fact]
+public void GetAtIndexOrDefault_WithOutOfRangeIndex_ReturnsDefault()
+{
+    var items = new[] { "a", "b", "c" };
+
+    var result = items.GetAtIndexOrDefault(10);
+
+    result.Should().BeNull();
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.GetAtIndexOrDefault{T}(IEnumerable{T},int,T?)"/> returns the specified default value when the index is out of range.
+/// </summary>
+[Fact]
+public void GetAtIndexOrDefault_WithCustomDefaultValue_ReturnsCustomDefault()
+{
+    var items = new[] { 1, 2, 3 };
+
+    var result = items.GetAtIndexOrDefault(100, -1);
+
+    result.Should().Be(-1);
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.GetAtIndexOrDefault{T}(IEnumerable{T},int,T?)"/> works correctly with a single element.
+/// </summary>
+[Fact]
+public void GetAtIndexOrDefault_WithSingleElement_ReturnsElementOrDefault()
+{
+    var items = new[] { "only" };
+
+    var result = items.GetAtIndexOrDefault(0);
+    result.Should().Be("only");
+
+    var outOfRange = items.GetAtIndexOrDefault(5);
+    outOfRange.Should().BeNull();
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.GetAtIndexOrDefault{T}(IEnumerable{T},int,T?)"/> throws an <see cref="ArgumentNullException"/> when the source is null.
+/// </summary>
+[Fact]
+public void GetAtIndexOrDefault_WithNullSource_ThrowsArgumentNullException()
+{
+    var act = () => ((IEnumerable<string>)null!).GetAtIndexOrDefault(0);
+
+    act.Should().Throw<ArgumentNullException>();
+}
+
+// ---- Shuffle ---------------------------------------------------------------
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Shuffle{T}(IEnumerable{T})"/> returns a new list containing all elements.
+/// </summary>
+[Fact]
+public void Shuffle_ReturnsAllElements()
+{
+    var items = new[] { 1, 2, 3, 4, 5 };
+
+    var shuffled = items.Shuffle().ToList();
+
+    shuffled.Should().HaveCount(5);
+    shuffled.Should().Contain(items);
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Shuffle{T}(IEnumerable{T})"/> returns a different order on subsequent calls for the same input.
+/// </summary>
+[Fact]
+public void Shuffle_ProducesDifferentOrderings()
+{
+    var items = Enumerable.Range(1, 100).ToList();
+
+    var first = items.Shuffle().ToList();
+    var second = items.Shuffle().ToList();
+
+    first.Should().NotEqual(second);
+    first.Should().BeEquivalentTo(items);
+    second.Should().BeEquivalentTo(items);
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Shuffle{T}(IEnumerable{T})"/> works correctly with a single element.
+/// </summary>
+[Fact]
+public void Shuffle_WithSingleElement_ReturnsSameSingleElement()
+{
+    var items = new[] { 42 };
+
+    var shuffled = items.Shuffle().ToList();
+
+    shuffled.Should().HaveCount(1);
+    shuffled[0].Should().Be(42);
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Shuffle{T}(IEnumerable{T})"/> throws an <see cref="ArgumentNullException"/> when the source is null.
+/// </summary>
+[Fact]
+public void Shuffle_WithNullSource_ThrowsArgumentNullException()
+{
+    var act = () => ((IEnumerable<int>)null!).Shuffle().ToList();
+
+    act.Should().Throw<ArgumentNullException>();
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.Shuffle{T}(IEnumerable{T})"/> works correctly with an empty collection.
+/// </summary>
+[Fact]
+public void Shuffle_WithEmptyCollection_ReturnsEmpty()
+{
+    var items = Array.Empty<int>();
+
+    var shuffled = items.Shuffle().ToList();
+
+    shuffled.Should().BeEmpty();
+}
+
+// ---- ToKeyValueString ----------------------------------------------------
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.ToKeyValueString{TKey,TValue}(Dictionary{TKey,TValue})/> with multiple entries produces a comma-separated string of key=value pairs.
+/// </summary>
+[Fact]
+public void ToKeyValueString_WithMultipleEntries_ProducesCommaSeparatedPairs()
+{
+    var dict = new Dictionary<string, int>
     {
-        IEnumerable<int>? collection = null;
-        collection.IsNullOrEmpty().Should().BeTrue();
-    }
+        { "key1", 100 },
+        { "key2", 200 },
+        { "key3", 300 }
+    };
 
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}.IsNullOrEmpty()"/> returns true when the collection is empty.
-    /// </summary>
-    [Fact]
-    public void IsNullOrEmpty_WithEmptyCollection_ReturnsTrue()
+    var result = dict.ToKeyValueString();
+
+    result.Should().Contain("key1=100");
+    result.Should().Contain("key2=200");
+    result.Should().Contain("key3=300");
+    result.Should().Contain(", ");
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.ToKeyValueString{TKey,TValue}(Dictionary{TKey,TValue})/> with an empty dictionary returns an empty string.
+/// </summary>
+[Fact]
+public void ToKeyValueString_WithEmptyDictionary_ReturnsEmptyString()
+{
+    var dict = new Dictionary<string, string>();
+
+    var result = dict.ToKeyValueString();
+
+    result.Should().BeEmpty();
+}
+
+/// <summary>
+/// Tests that <see cref="CollectionExtensions.ToKeyValueString{TKey,TValue}(Dictionary{TKey,TValue})/> handles various value types correctly.
+/// </summary>
+[Fact]
+public void ToKeyValueString_WithDifferentValueTypes_FormatsCorrectly()
+{
+    var dict = new Dictionary<string, object>
     {
-        new List<string>().IsNullOrEmpty().Should().BeTrue();
-    }
+        { "string", "value" },
+        { "int", 42 },
+        { "bool", true },
+        { "null", null }
+    };
 
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}.IsNullOrEmpty()"/> returns false when the collection contains elements.
-    /// </summary>
-    [Fact]
-    public void IsNullOrEmpty_WithNonEmptyCollection_ReturnsFalse()
-    {
-        new[] { 1, 2, 3 }.IsNullOrEmpty().Should().BeFalse();
-    }
+    var result = dict.ToKeyValueString();
 
-    // ---- Batch ---------------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> splits a collection into equal-sized batches when the collection size is an exact multiple of the batch size.
-    /// </summary>
-    [Fact]
-    public void Batch_WithExactMultiple_ProducesEqualSizedBatches()
-    {
-        var items = Enumerable.Range(1, 6).ToList();
-
-        var batches = items.Batch(2).ToList();
-
-        batches.Should().HaveCount(3);
-        batches.Should().AllSatisfy(b => b.Should().HaveCount(2));
-    }
-
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> splits a collection into batches where the last batch contains any remaining items when the collection size is not an exact multiple of the batch size.
-    /// </summary>
-    [Fact]
-    public void Batch_WithRemainder_LastBatchContainsLeftoverItems()
-    {
-        var items = Enumerable.Range(1, 5).ToList();
-
-        var batches = items.Batch(2).ToList();
-
-        batches.Should().HaveCount(3);
-        batches.Last().Should().HaveCount(1);
-    }
-
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> throws an <see cref="ArgumentException"/> when the batch size is zero.
-    /// </summary>
-    [Fact]
-    public void Batch_WithZeroSize_ThrowsArgumentException()
-    {
-        var items = new[] { 1, 2, 3 };
-
-        var act = () => items.Batch(0).ToList();
-
-        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*greater than '0'*");
-    }
-
-    /// <summary>
-    /// Tests that <see cref="IEnumerable{T}.Batch(int)"/> returns an empty sequence when the source collection is empty.
-    /// </summary>
-    [Fact]
-    public void Batch_WithEmptySource_ProducesNoBatches()
-    {
-        var batches = Array.Empty<int>().Batch(3).ToList();
-
-        batches.Should().BeEmpty();
-    }
-
-    // ---- DistinctBy ----------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.DistinctBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> removes duplicates based on a key selector function.
-    /// </summary>
-    [Fact]
-    public void DistinctBy_RemovesDuplicatesBasedOnKeySelector()
-    {
-        var items = new[] { "apple", "apricot", "banana", "blueberry" };
-
-        // Call via the extension explicitly to avoid ambiguity with Linq's built-in DistinctBy
-        var result = CoolifyCollectionExtensions.DistinctBy(items, s => s[0]).ToList();
-
-        result.Should().HaveCount(2);
-        result.Should().Contain("apple").And.Contain("banana");
-    }
-
-    // ---- Split ---------------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.Split{T}(IEnumerable{T},Func{T,bool})"/> partitions items into two collections based on a predicate.
-    /// </summary>
-    [Fact]
-    public void Split_PartitionsItemsByPredicate()
-    {
-        var numbers = Enumerable.Range(1, 6).ToList();
-
-        var (evens, odds) = numbers.Split(n => n % 2 == 0);
-
-        evens.Should().BeEquivalentTo(new[] { 2, 4, 6 });
-        odds.Should().BeEquivalentTo(new[] { 1, 3, 5 });
-    }
-
-    // ---- Flatten -------------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.Flatten{T}(IEnumerable{IEnumerable{T}})"/> combines nested collections into a single flattened sequence.
-    /// </summary>
-    [Fact]
-    public void Flatten_CombinesNestedCollectionsIntoSingleSequence()
-    {
-        var nested = new List<List<int>>
-        {
-            new() { 1, 2 },
-            new() { 3 },
-            new() { 4, 5, 6 }
-        };
-
-        var result = nested.Flatten().ToList();
-
-        result.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6 });
-    }
-
-    // ---- MaxBy / MinBy -------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.MaxBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> returns the item with the largest key value according to the key selector function.
-    /// </summary>
-    [Fact]
-    public void MaxBy_ReturnsItemWithLargestKeyValue()
-    {
-        var words = new[] { "cat", "elephant", "dog" };
-
-        // Call via the extension explicitly to avoid ambiguity with Linq's built-in MaxBy
-        var longest = CoolifyCollectionExtensions.MaxBy(words, w => w.Length);
-
-        longest.Should().Be("elephant");
-    }
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.MinBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> returns the item with the smallest key value according to the key selector function.
-    /// </summary>
-    [Fact]
-    public void MinBy_ReturnsItemWithSmallestKeyValue()
-    {
-        var words = new[] { "cat", "elephant", "dog" };
-
-        // Call via the extension explicitly to avoid ambiguity with Linq's built-in MinBy
-        var shortest = CoolifyCollectionExtensions.MinBy(words, w => w.Length);
-
-        shortest.Should().Be("cat");
-    }
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.MaxBy{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/> returns null when the source collection is empty.
-    /// </summary>
-    [Fact]
-    public void MaxBy_WithEmptyCollection_ReturnsDefault()
-    {
-        var result = CoolifyCollectionExtensions.MaxBy(Array.Empty<string>(), s => s.Length);
-
-        result.Should().BeNull();
-    }
-
-    // ---- WhereNotNull --------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.WhereNotNull{T}(IEnumerable{T?})"/> filters out null references from the collection.
-    /// </summary>
-    [Fact]
-    public void WhereNotNull_FiltersOutNullReferences()
-    {
-        var items = new string?[] { "a", null, "b", null, "c" };
-
-        var result = items.WhereNotNull().ToList();
-
-        result.Should().BeEquivalentTo(new[] { "a", "b", "c" });
-    }
-
-    // ---- Merge ---------------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.Merge{TKey,TValue}(IDictionary{TKey,TValue},IDictionary{TKey,TValue})"/> merges two dictionaries, with values from the second dictionary overwriting values from the first dictionary for keys that exist in both.
-    /// </summary>
-    [Fact]
-    public void Merge_SecondDictionaryValuesOverwriteFirst()
-    {
-        var first = new Dictionary<string, int> { { "a", 1 }, { "b", 2 } };
-        var second = new Dictionary<string, int> { { "b", 99 }, { "c", 3 } };
-
-        var merged = first.Merge(second);
-
-        merged["a"].Should().Be(1);
-        merged["b"].Should().Be(99);
-        merged["c"].Should().Be(3);
-    }
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.Merge{TKey,TValue}(IDictionary{TKey,TValue},IDictionary{TKey,TValue})"/> does not modify the original dictionaries when merging.
-    /// </summary>
-    [Fact]
-    public void Merge_DoesNotModifyOriginalDictionaries()
-    {
-        var first = new Dictionary<string, int> { { "a", 1 } };
-        var second = new Dictionary<string, int> { { "a", 2 } };
-
-        first.Merge(second);
-
-        first["a"].Should().Be(1);
-    }
-
-    // ---- ToQueryString -------------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.ToQueryString(IDictionary{string,string})"/> with multiple entries produces an ampersand-separated query string with key-value pairs.
-    /// </summary>
-    [Fact]
-    public void ToQueryString_WithMultipleEntries_ProducesAmpersandSeparatedPairs()
-    {
-        var dict = new Dictionary<string, string>
-        {
-            { "env", "prod" },
-            { "region", "us-east-1" }
-        };
-
-        var qs = dict.ToQueryString();
-
-        qs.Should().Contain("env=prod");
-        qs.Should().Contain("region=us-east-1");
-        qs.Should().Contain("&");
-    }
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.ToQueryString(IDictionary{string,string})"/> with an empty dictionary returns an empty string.
-    /// </summary>
-    [Fact]
-    public void ToQueryString_WithEmptyDictionary_ReturnsEmptyString()
-    {
-        var dict = new Dictionary<string, string>();
-
-        dict.ToQueryString().Should().BeEmpty();
-    }
-
-    // ---- GroupConsecutive ----------------------------------------------------
-
-    /// <summary>
-    /// Tests that <see cref="CollectionExtensions.GroupConsecutive{T}(IEnumerable{T},Func{T,T,bool})"/> groups adjacent items that satisfy a consecutive condition into separate collections.
-    /// </summary>
-    [Fact]
-    public void GroupConsecutive_GroupsAdjacentItemsMeetingCondition()
-    {
-        var numbers = new[] { 1, 2, 3, 10, 11, 20 };
-
-        var groups = numbers.GroupConsecutive((a, b) => b - a <= 1).ToList();
-
-        groups.Should().HaveCount(3);
-        groups[0].Should().BeEquivalentTo(new[] { 1, 2, 3 });
-        groups[1].Should().BeEquivalentTo(new[] { 10, 11 });
-        groups[2].Should().BeEquivalentTo(new[] { 20 });
-    }
+    result.Should().Contain("string=value");
+    result.Should().Contain("int=42");
+    result.Should().Contain("bool=True");
+    result.Should().Contain("null=");
 }
