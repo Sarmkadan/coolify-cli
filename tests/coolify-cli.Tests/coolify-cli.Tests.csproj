@@ -56,6 +56,7 @@
 <Compile Include="../../Formatters/TemplateDiffFormatter.cs" />
 <Compile Include="../../Formatters/TemplateDiffFormatterJsonExtensions.cs" />
 <Compile Include="../../Formatters/CsvFormatter.cs" />
+<Compile Include="JsonFormatterTests.cs" />
 <Compile Include="CsvFormatterTests.cs" />
 <Compile Include="EnvironmentVariableServiceTests.cs" />
 </ItemGroup>
