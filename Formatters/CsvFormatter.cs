@@ -14,6 +14,16 @@ public class CsvFormatter : IOutputFormatter
     private readonly bool _includeHeader;
     private readonly List<string>? _selectedFields;
 
+    /// <summary>
+    /// Gets the file extension for CSV output.
+    /// </summary>
+    public string FileExtension => "csv";
+
+    /// <summary>
+    /// Gets the MIME type for CSV output.
+    /// </summary>
+    public string MimeType => "text/csv";
+
     public CsvFormatter(char delimiter = ',', bool includeHeader = true, List<string>? selectedFields = null)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(delimiter, '\0');
@@ -42,6 +52,7 @@ public class CsvFormatter : IOutputFormatter
     /// <summary>
     /// Formats a single object as a CSV line.
     /// </summary>
+    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
     public string Format(object? data)
     {
         if (data is null)
@@ -56,8 +67,11 @@ public class CsvFormatter : IOutputFormatter
     /// <summary>
     /// Formats a collection of objects as CSV with header row.
     /// </summary>
-    public string FormatCollection<T>(IEnumerable<T> items)
+    /// <exception cref="ArgumentNullException">Thrown when items is null.</exception>
+    public string FormatCollection<T>(IEnumerable<T>? items)
     {
+        ArgumentNullException.ThrowIfNull(items);
+
         var itemsList = items.ToList();
         if (itemsList.Count == 0)
             return string.Empty;
@@ -85,9 +99,12 @@ public class CsvFormatter : IOutputFormatter
     /// <summary>
     /// Formats a dictionary as a CSV line.
     /// </summary>
-    public string FormatDictionary(Dictionary<string, object?> data)
+    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
+    public string FormatDictionary(Dictionary<string, object?>? data)
     {
-        if (data is null || data.Count == 0)
+        ArgumentNullException.ThrowIfNull(data);
+
+        if (data.Count == 0)
             return string.Empty;
 
         var sb = new StringBuilder();

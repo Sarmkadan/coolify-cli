@@ -16,6 +16,16 @@ public class JsonFormatter : IOutputFormatter
     private readonly List<string>? _includeFields;
     private readonly List<string>? _excludeFields;
 
+    /// <summary>
+    /// Gets the file extension for JSON output.
+    /// </summary>
+    public string FileExtension => "json";
+
+    /// <summary>
+    /// Gets the MIME type for JSON output.
+    /// </summary>
+    public string MimeType => "application/json";
+
     public JsonFormatter(bool prettyPrint = false, List<string>? includeFields = null, List<string>? excludeFields = null)
     {
         _prettyPrint = prettyPrint;
@@ -26,7 +36,9 @@ public class JsonFormatter : IOutputFormatter
         {
             WriteIndented = prettyPrint,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
     }
 
@@ -45,9 +57,12 @@ public class JsonFormatter : IOutputFormatter
     /// <summary>
     /// Formats a collection of objects as JSON array.
     /// </summary>
-    public string FormatCollection<T>(IEnumerable<T> items)
+    /// <exception cref="ArgumentNullException">Thrown when items is null.</exception>
+    public string FormatCollection<T>(IEnumerable<T>? items)
     {
-        if (items is null)
+        ArgumentNullException.ThrowIfNull(items);
+
+        if (!items.Any())
             return "[]";
 
         var json = JsonSerializer.Serialize(items.ToList(), _options);
@@ -57,9 +72,12 @@ public class JsonFormatter : IOutputFormatter
     /// <summary>
     /// Formats a key-value dictionary as JSON object.
     /// </summary>
-    public string FormatDictionary(Dictionary<string, object?> data)
+    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
+    public string FormatDictionary(Dictionary<string, object?>? data)
     {
-        if (data is null || data.Count == 0)
+        ArgumentNullException.ThrowIfNull(data);
+
+        if (data.Count == 0)
             return "{}";
 
         var json = JsonSerializer.Serialize(data, _options);
@@ -200,22 +218,43 @@ public class JsonFormatter : IOutputFormatter
 }
 
 /// <summary>
-/// Interface for output formatters (JSON, CSV, Table, etc.).
+/// Contract for output formatters that convert data to various text formats.
+/// Provides consistent null handling, culture-invariant formatting, and RFC-compliant CSV escaping.
 /// </summary>
 public interface IOutputFormatter
 {
     /// <summary>
-    /// Formats a single object.
+    /// Formats a single object as a string in the target format.
     /// </summary>
+    /// <param name="data">The data to format (can be null).</param>
+    /// <returns>Formatted string representation of the data.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when data is null and the formatter doesn't support null values.</exception>
     string Format(object? data);
 
     /// <summary>
-    /// Formats a collection of items.
+    /// Formats a collection of items as a string in the target format.
     /// </summary>
-    string FormatCollection<T>(IEnumerable<T> items);
+    /// <typeparam name="T">The type of items in the collection.</typeparam>
+    /// <param name="items">The collection to format (can be null or empty).</param>
+    /// <returns>Formatted string representation of the collection.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when items is null.</exception>
+    string FormatCollection<T>(IEnumerable<T>? items);
 
     /// <summary>
-    /// Formats a dictionary of key-value pairs.
+    /// Formats a dictionary of key-value pairs as a string in the target format.
     /// </summary>
-    string FormatDictionary(Dictionary<string, object?> data);
+    /// <param name="data">The dictionary to format (can be null or empty).</param>
+    /// <returns>Formatted string representation of the dictionary.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
+    string FormatDictionary(Dictionary<string, object?>? data);
+
+    /// <summary>
+    /// Gets the file extension for this output format.
+    /// </summary>
+    string FileExtension { get; }
+
+    /// <summary>
+    /// Gets the MIME type for this output format.
+    /// </summary>
+    string MimeType { get; }
 }
