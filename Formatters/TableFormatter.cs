@@ -13,6 +13,16 @@ public class TableFormatter : IOutputFormatter
     private readonly TableStyle _style;
     private readonly List<string>? _columnNames;
 
+    /// <summary>
+    /// Gets the file extension for table output.
+    /// </summary>
+    public string FileExtension => "txt";
+
+    /// <summary>
+    /// Gets the MIME type for table output.
+    /// </summary>
+    public string MimeType => "text/plain";
+
     public TableFormatter(TableStyle style = TableStyle.Simple, List<string>? columnNames = null)
     {
         _style = style;
@@ -22,6 +32,7 @@ public class TableFormatter : IOutputFormatter
     /// <summary>
     /// Formats a single object as a single-row table.
     /// </summary>
+    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
     public string Format(object? data)
     {
         if (data is null)
@@ -40,8 +51,11 @@ public class TableFormatter : IOutputFormatter
     /// <summary>
     /// Formats a collection of objects as a multi-row table.
     /// </summary>
-    public string FormatCollection<T>(IEnumerable<T> items)
+    /// <exception cref="ArgumentNullException">Thrown when items is null.</exception>
+    public string FormatCollection<T>(IEnumerable<T>? items)
     {
+        ArgumentNullException.ThrowIfNull(items);
+
         var itemsList = items.ToList();
         if (itemsList.Count == 0)
             return "No data to display.";
@@ -64,9 +78,12 @@ public class TableFormatter : IOutputFormatter
     /// <summary>
     /// Formats a dictionary as a two-column key-value table.
     /// </summary>
-    public string FormatDictionary(Dictionary<string, object?> data)
+    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
+    public string FormatDictionary(Dictionary<string, object?>? data)
     {
-        if (data is null || data.Count == 0)
+        ArgumentNullException.ThrowIfNull(data);
+
+        if (data.Count == 0)
             return "No data to display.";
 
         var rows = new List<List<string>>
