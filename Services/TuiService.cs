@@ -29,21 +29,20 @@ public class TuiService
     /// <param name="cancellationToken">Token used to cancel the loop from outside.</param>
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
-        var state = new TuiState();
-
         Console.CursorVisible = false;
         Console.Clear();
 
-        await RefreshDataAsync(state);
+        await RefreshDataAsync();
 
-        while (!state.ShouldExit && !cancellationToken.IsCancellationRequested)
+        while (!TuiStateFactory.GetCurrentState().ShouldExit && !cancellationToken.IsCancellationRequested)
         {
+            var state = TuiStateFactory.GetCurrentState();
             Render(state);
 
             if (Console.KeyAvailable)
             {
                 var key = Console.ReadKey(intercept: true);
-                await HandleKeyAsync(key, state, cancellationToken);
+                await HandleKeyAsync(key, cancellationToken);
             }
             else
             {
@@ -55,87 +54,91 @@ public class TuiService
         Console.Clear();
     }
 
-    private async Task RefreshDataAsync(TuiState state)
+    private async Task RefreshDataAsync()
     {
-        state.IsRefreshing = true;
-        state.StatusMessage = "Refreshing…";
+        TuiStateFactory.Update(state => state
+            .WithIsRefreshing(true)
+            .WithStatusMessage("Refreshing…"));
+
+        var state = TuiStateFactory.GetCurrentState();
         Render(state);
 
         var appResult = await _appService.GetAllApplicationsAsync();
-        if (appResult.Success && appResult.Data is not null)
-            state.Applications = appResult.Data;
-
         var dbResult = await _dbService.GetAllDatabasesAsync();
-        if (dbResult.Success && dbResult.Data is not null)
-            state.Databases = dbResult.Data;
 
-        state.IsRefreshing = false;
-        state.LastRefreshedAt = DateTime.UtcNow;
-        state.StatusMessage = $"Last refreshed: {state.LastRefreshedAt:HH:mm:ss}";
+        TuiStateFactory.Update(state => state
+            .WithIsRefreshing(false)
+            .WithLastRefreshedAt(DateTime.UtcNow)
+            .WithStatusMessage($"Last refreshed: {DateTime.UtcNow:HH:mm:ss}")
+            .WithApplications(appResult.Success && appResult.Data is not null ? appResult.Data : new List<ApplicationDeployment>())
+            .WithDatabases(dbResult.Success && dbResult.Data is not null ? dbResult.Data : new List<DatabaseConfiguration>()));
     }
 
-    private async Task HandleKeyAsync(ConsoleKeyInfo key, TuiState state, CancellationToken ct)
+    private async Task HandleKeyAsync(ConsoleKeyInfo key, CancellationToken ct)
     {
         switch (key.Key)
         {
             case ConsoleKey.Q:
-                state.ShouldExit = true;
+                TuiStateFactory.Update(state => state.WithShouldExit(true));
                 break;
 
             case ConsoleKey.DownArrow:
             case ConsoleKey.J:
-                int listSize = state.ActiveView == TuiView.AppList
-                    ? state.Applications.Count
-                    : state.Databases.Count;
-                state.MoveDown(listSize);
+                var stateForDown = TuiStateFactory.GetCurrentState();
+                int listSize = stateForDown.ActiveView == TuiView.AppList
+                    ? stateForDown.Applications.Count
+                    : stateForDown.Databases.Count;
+                TuiStateFactory.Update(state => state.MoveDown(listSize));
                 break;
 
             case ConsoleKey.UpArrow:
             case ConsoleKey.K:
-                state.MoveUp();
+                TuiStateFactory.Update(state => state.MoveUp());
                 break;
 
             case ConsoleKey.Enter:
-                if (state.ActiveView == TuiView.AppList)
+                var stateForEnter = TuiStateFactory.GetCurrentState();
+                if (stateForEnter.ActiveView == TuiView.AppList)
                 {
-                    var selected = state.GetSelectedApp();
+                    var selected = stateForEnter.GetSelectedApp();
                     if (selected is not null)
                     {
-                        state.SelectedAppId = selected.Id;
-                        state.ActiveView = TuiView.AppDetail;
+                        TuiStateFactory.Update(state => state
+                            .WithSelectedAppId(selected.Id)
+                            .WithActiveView(TuiView.AppDetail));
                     }
                 }
                 break;
 
             case ConsoleKey.Escape:
             case ConsoleKey.Backspace:
-                state.ActiveView = TuiView.AppList;
-                state.SelectedAppId = null;
-                state.ResetSelection();
+                TuiStateFactory.Update(state => state
+                    .WithActiveView(TuiView.AppList)
+                    .WithSelectedAppId(null)
+                    .ResetSelection());
                 break;
 
             case ConsoleKey.D:
-                if (state.ActiveView == TuiView.DbList)
-                {
-                    state.ActiveView = TuiView.AppList;
-                    state.ResetSelection();
-                }
-                else
-                {
-                    state.ActiveView = TuiView.DbList;
-                    state.ResetSelection();
-                }
+                var stateForD = TuiStateFactory.GetCurrentState();
+                TuiStateFactory.Update(state => stateForD.ActiveView == TuiView.DbList
+                    ? state
+                        .WithActiveView(TuiView.AppList)
+                        .ResetSelection()
+                    : state
+                        .WithActiveView(TuiView.DbList)
+                        .ResetSelection());
                 break;
 
             case ConsoleKey.R:
-                await RefreshDataAsync(state);
+                await RefreshDataAsync();
                 break;
 
             case ConsoleKey.H:
             case ConsoleKey.F1:
-                state.ActiveView = state.ActiveView == TuiView.Help
-                    ? TuiView.AppList
-                    : TuiView.Help;
+                var stateForH = TuiStateFactory.GetCurrentState();
+                TuiStateFactory.Update(state => stateForH.ActiveView == TuiView.Help
+                    ? state.WithActiveView(TuiView.AppList)
+                    : state.WithActiveView(TuiView.Help));
                 break;
         }
     }
