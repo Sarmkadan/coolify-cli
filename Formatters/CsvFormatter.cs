@@ -65,6 +65,35 @@ public class CsvFormatter : IOutputFormatter
     }
 
     /// <summary>
+    /// Formats a collection of objects as CSV with header row and streams directly to the writer.
+    /// </summary>
+    /// <typeparam name="T">The type of objects to format</typeparam>
+    /// <param name="items">The collection of items to format</param>
+    /// <param name="writer">The text writer to write the CSV output to</param>
+    /// <exception cref="ArgumentNullException">Thrown when items or writer is null.</exception>
+    public void Format<T>(IEnumerable<T> items, TextWriter writer)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(writer);
+
+        var properties = GetProperties(typeof(T));
+
+        // Write header row if requested
+        if (_includeHeader)
+        {
+            var headers = properties.Select(p => EscapeCsvField(p.Name));
+            writer.WriteLine(CombineValues(headers));
+        }
+
+        // Write data rows - stream each row as we process it
+        foreach (var item in items)
+        {
+            var values = properties.Select(p => FormatValue(p.GetValue(item)));
+            writer.WriteLine(CombineValues(values));
+        }
+    }
+
+    /// <summary>
     /// Formats a collection of objects as CSV with header row.
     /// </summary>
     /// <exception cref="ArgumentNullException">Thrown when items is null.</exception>
@@ -76,24 +105,9 @@ public class CsvFormatter : IOutputFormatter
         if (itemsList.Count == 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
-        var properties = GetProperties(typeof(T));
-
-        // Write header row if requested
-        if (_includeHeader)
-        {
-            var headers = properties.Select(p => EscapeCsvField(p.Name));
-            sb.AppendLine(CombineValues(headers));
-        }
-
-        // Write data rows
-        foreach (var item in itemsList)
-        {
-            var values = properties.Select(p => FormatValue(p.GetValue(item)));
-            sb.AppendLine(CombineValues(values));
-        }
-
-        return sb.ToString().TrimEnd();
+        using var writer = new StringWriter();
+        Format(itemsList, writer);
+        return writer.ToString().TrimEnd();
     }
 
     /// <summary>
@@ -107,18 +121,30 @@ public class CsvFormatter : IOutputFormatter
         if (data.Count == 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
+        using var writer = new StringWriter();
+        FormatDictionary(data, writer);
+        return writer.ToString().TrimEnd();
+    }
 
-        if (_includeHeader)
+    /// <summary>
+    /// Formats a dictionary as CSV and streams directly to the writer.
+    /// </summary>
+    /// <param name="data">The dictionary to format</param>
+    /// <param name="writer">The text writer to write the CSV output to</param>
+    /// <exception cref="ArgumentNullException">Thrown when data or writer is null.</exception>
+    public void FormatDictionary(Dictionary<string, object?> data, TextWriter writer)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(writer);
+
+        if (_includeHeader && data.Count > 0)
         {
             var headers = data.Keys.Select(k => EscapeCsvField(k));
-            sb.AppendLine(CombineValues(headers));
+            writer.WriteLine(CombineValues(headers));
         }
 
         var values = data.Values.Select(FormatValue);
-        sb.Append(CombineValues(values));
-
-        return sb.ToString();
+        writer.Write(CombineValues(values));
     }
 
     /// <summary>
@@ -197,7 +223,7 @@ public class CsvFormatter : IOutputFormatter
             return string.Empty;
 
         // Quote field if it contains delimiter, quotes, or newlines
-        if (field.Contains(_delimiter) || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))
+        if (field.Contains(_delimiter) || field.Contains('\"') || field.Contains('\n') || field.Contains('\r'))
         {
             return $"\"{field.Replace("\"", "\"\"")}\"";
         }
