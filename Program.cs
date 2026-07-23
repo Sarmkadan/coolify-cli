@@ -33,8 +33,18 @@ bool quietMode = args.Contains("--quiet");
 config.QuietLogging = quietMode;
 
 var logger = new ConsoleLogger(config.VerboseLogging, colorOutput, quietMode);
-var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(config.RequestTimeoutSeconds) };
-var apiClient = new CoolifyApiClient(httpClient, config.ApiUrl, config.ApiKey!);
+// Retry + circuit breaker around all Coolify API calls; per-attempt timeout is
+// separate from the per-operation timeouts enforced by CoolifyApiClient.
+var resilienceOptions = new ResilienceOptions
+{
+    AttemptTimeout = TimeSpan.FromSeconds(config.RequestTimeoutSeconds)
+};
+var httpClient = new HttpClient(new ResilientHttpHandler(new SocketsHttpHandler(), resilienceOptions))
+{
+    Timeout = TimeSpan.FromSeconds(config.RequestTimeoutSeconds)
+};
+var apiClient = new CoolifyApiClient(httpClient, config.ApiUrl, config.ApiKey!,
+    CoolifyApiClientOptions.FromConfiguration(config));
 
 logger.Info($"Coolify CLI v{Constants.ApplicationVersion}");
 logger.Debug($"API URL: {config.ApiUrl}");
