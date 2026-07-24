@@ -405,14 +405,17 @@ var envAppIdArg = new Argument<int>("id") { Description = "Application ID" };
 
 var envListCommand = new Command("list", "List all environment variables for an application");
 var envListAppIdArg = new Argument<int>("id") { Description = "Application ID" };
+var revealOption = new Option<bool>("--reveal", ["-r"]) { Description = "Show actual secret values (use with caution)" };
 envListCommand.Add(envListAppIdArg);
+envListCommand.Add(revealOption);
 envListCommand.SetAction(async (parseResult, ct) =>
 {
     var appId = parseResult.GetValue(envListAppIdArg);
+            var revealSecrets = parseResult.GetValue(revealOption);
     try
     {
         var envService = new EnvironmentVariableService(apiClient, logger);
-        var result = await envService.GetApplicationVariablesAsync(appId.ToString());
+        var result = await envService.GetApplicationVariablesAsync(appId.ToString(), revealSecrets);
 
         if (result.Success && result.Data is not null)
         {

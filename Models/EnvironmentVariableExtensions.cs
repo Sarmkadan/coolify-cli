@@ -21,6 +21,9 @@ public static class EnvironmentVariableExtensions
 
     /// <summary>
     /// Checks if the environment variable is sensitive (i.e., its value should not be logged).
+    /// A variable is considered sensitive when explicitly flagged via
+    /// <see cref="EnvironmentVariable.IsSecret"/>, or when its display value is masked because
+    /// the key matches a common secret naming pattern.
     /// </summary>
     /// <param name="environmentVariable">The environment variable.</param>
     /// <returns>True if the environment variable is sensitive; otherwise, false.</returns>
@@ -29,7 +32,8 @@ public static class EnvironmentVariableExtensions
     {
         ArgumentNullException.ThrowIfNull(environmentVariable);
 
-        return environmentVariable.IsSecret;
+        return environmentVariable.IsSecret ||
+            environmentVariable.GetDisplayValue() != environmentVariable.Value;
     }
 
     /// <summary>
