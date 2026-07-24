@@ -21,6 +21,25 @@ public class EnvironmentVariable
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// Key substrings (case-insensitive) that indicate a variable likely holds a secret
+    /// even when the API has not explicitly flagged it via <see cref="IsSecret"/>.
+    /// </summary>
+    private static readonly string[] SensitiveKeyPatterns =
+    [
+        "SECRET", "TOKEN", "PASSWORD", "KEY", "CREDENTIAL"
+    ];
+
+    /// <summary>
+    /// Determines whether <see cref="Key"/> matches a naming pattern commonly used for secrets
+    /// (e.g. contains SECRET, TOKEN, PASSWORD, KEY, or CREDENTIAL), regardless of the
+    /// explicit <see cref="IsSecret"/> flag.
+    /// </summary>
+    /// <returns>True if the key name looks like it holds a secret value.</returns>
+    private bool HasSensitiveKeyPattern() =>
+        !string.IsNullOrWhiteSpace(Key) &&
+        SensitiveKeyPatterns.Any(pattern => Key.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
     /// Validates the environment variable key and value.
     /// </summary>
     /// <returns>Collection of validation error messages.</returns>
@@ -63,13 +82,15 @@ public class EnvironmentVariable
     }
 
     /// <summary>
-    /// Gets the display value, masking secrets if requested.
+    /// Gets the display value, masking secrets if requested. A variable is masked when it is
+    /// explicitly flagged via <see cref="IsSecret"/> or when its <see cref="Key"/> matches a
+    /// common secret naming pattern (SECRET, TOKEN, PASSWORD, KEY, CREDENTIAL).
     /// </summary>
     /// <param name="maskSecrets">Whether to mask secret values.</param>
     /// <returns>Display value for the variable.</returns>
     public string GetDisplayValue(bool maskSecrets = true)
     {
-        if (!IsSecret || !maskSecrets)
+        if (!maskSecrets || (!IsSecret && !HasSensitiveKeyPattern()))
             return Value;
 
         return Value.Length > 4 ? $"***{Value.Substring(Value.Length - 4)}" : "***";
