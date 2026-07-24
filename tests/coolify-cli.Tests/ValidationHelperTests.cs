@@ -14,7 +14,7 @@ public class ValidationHelperTests
     /// Verifies that <see cref="ValidationHelper.IsValidId(int)"/> correctly identifies valid and invalid integer IDs.
     /// </summary>
     /// <param name="id">The integer ID to validate.</param>
-    /// <param name="expected">The expected boolean result.</param>
+    /// <param name="expected">The expected validation result.</param>
     [Theory]
     [InlineData(1, true)]
     [InlineData(100, true)]
@@ -22,14 +22,15 @@ public class ValidationHelperTests
     [InlineData(-5, false)]
     public void IsValidId_WithVariousInputs_ReturnsExpectedResult(int id, bool expected)
     {
-        ValidationHelper.IsValidId(id).Should().Be(expected);
+        var result = ValidationHelper.IsValidId(id);
+        result.IsValid.Should().Be(expected);
     }
 
     /// <summary>
     /// Verifies that <see cref="ValidationHelper.IsValidEmail(string)"/> correctly validates email addresses.
     /// </summary>
     /// <param name="email">The email address string to validate.</param>
-    /// <param name="expected">The expected boolean result.</param>
+    /// <param name="expected">The expected validation result.</param>
     [Theory]
     [InlineData("test@example.com", true)]
     [InlineData("user.name+tag@sub.domain.org", true)]
@@ -38,14 +39,15 @@ public class ValidationHelperTests
     [InlineData("", false)]
     public void IsValidEmail_WithVariousAddresses_ReturnsExpectedResult(string email, bool expected)
     {
-        ValidationHelper.IsValidEmail(email).Should().Be(expected);
+        var result = ValidationHelper.IsValidEmail(email);
+        result.IsValid.Should().Be(expected);
     }
 
     /// <summary>
     /// Verifies that <see cref="ValidationHelper.IsValidPort(string)"/> correctly validates port numbers.
     /// </summary>
     /// <param name="port">The port string to validate.</param>
-    /// <param name="expected">The expected boolean result.</param>
+    /// <param name="expected">The expected validation result.</param>
     [Theory]
     [InlineData("1", true)]
     [InlineData("8080", true)]
@@ -55,14 +57,15 @@ public class ValidationHelperTests
     [InlineData("abc", false)]
     public void IsValidPort_WithBoundaryAndInvalidValues_ReturnsExpectedResult(string port, bool expected)
     {
-        ValidationHelper.IsValidPort(port).Should().Be(expected);
+        var result = ValidationHelper.IsValidPort(port);
+        result.IsValid.Should().Be(expected);
     }
 
     /// <summary>
     /// Verifies that <see cref="ValidationHelper.IsValidSemanticVersion(string)"/> correctly validates semantic version strings.
     /// </summary>
     /// <param name="version">The semantic version string to validate.</param>
-    /// <param name="expected">The expected boolean result.</param>
+    /// <param name="expected">The expected validation result.</param>
     [Theory]
     [InlineData("1.0.0", true)]
     [InlineData("2.1.0-beta", true)]
@@ -73,7 +76,8 @@ public class ValidationHelperTests
     public void IsValidSemanticVersion_WithVariousVersionStrings_ReturnsExpectedResult(
         string version, bool expected)
     {
-        ValidationHelper.IsValidSemanticVersion(version).Should().Be(expected);
+        var result = ValidationHelper.IsValidSemanticVersion(version);
+        result.IsValid.Should().Be(expected);
     }
 
     /// <summary>
@@ -86,7 +90,8 @@ public class ValidationHelperTests
         var hash = "a3f1b8c2d4e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3";
 
         // Act & Assert
-        ValidationHelper.IsValidCommitHash(hash).Should().BeTrue();
+        var result = ValidationHelper.IsValidCommitHash(hash);
+        result.IsValid.Should().BeTrue();
     }
 
     /// <summary>
@@ -95,7 +100,8 @@ public class ValidationHelperTests
     [Fact]
     public void IsValidDatabaseName_WithNameStartingWithDigit_ReturnsFalse()
     {
-        ValidationHelper.IsValidDatabaseName("123_invalid_db").Should().BeFalse();
+        var result = ValidationHelper.IsValidDatabaseName("123_invalid_db");
+        result.IsValid.Should().BeFalse();
     }
 
     /// <summary>
@@ -105,6 +111,38 @@ public class ValidationHelperTests
     public void IsValidResourceName_WithTrailingHyphen_ReturnsFalse()
     {
         // Resource names must not end with a hyphen per naming conventions
-        ValidationHelper.IsValidResourceName("my-app-").Should().BeFalse();
+        var result = ValidationHelper.IsValidResourceName("my-app-");
+        result.IsValid.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="ValidationHelper.IsValidUrl(string)"/> correctly validates various URL formats.
+    /// </summary>
+    [Theory]
+    [InlineData("http://localhost:8000", true)]
+    [InlineData("https://example.com", true)]
+    [InlineData("http://192.168.1.1:8080", true)]
+    [InlineData("ftp://example.com", false)]
+    [InlineData("example.com", false)]
+    [InlineData("", false)]
+    public void IsValidUrl_WithVariousFormats_ReturnsExpectedResult(string url, bool expected)
+    {
+        var result = ValidationHelper.IsValidUrl(url);
+        result.IsValid.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="ValidationHelper.IsValidHostname(string)"/> supports single-label hostnames.
+    /// </summary>
+    [Theory]
+    [InlineData("localhost", true)]
+    [InlineData("myhost", true)]
+    [InlineData("example.com", true)]
+    [InlineData("sub.example.com", true)]
+    [InlineData("invalid_host", false)]
+    public void IsValidHostname_WithSingleLabelAndDomainNames_ReturnsExpectedResult(string hostname, bool expected)
+    {
+        var result = ValidationHelper.IsValidHostname(hostname);
+        result.IsValid.Should().Be(expected);
     }
 }
