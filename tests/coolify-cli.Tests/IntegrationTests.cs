@@ -77,11 +77,11 @@ public class IntegrationTests
         var rawCommit = "a3f1b8c2d4e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3";
         var rawVersion = "3.14.1-rc1";
 
-        ValidationHelper.IsValidResourceName(rawName).Should().BeTrue();
-        ValidationHelper.IsValidEmail(rawEmail).Should().BeTrue();
-        ValidationHelper.IsValidPort(rawPort).Should().BeTrue();
-        ValidationHelper.IsValidCommitHash(rawCommit).Should().BeTrue();
-        ValidationHelper.IsValidSemanticVersion(rawVersion).Should().BeTrue();
+        ValidationHelper.IsValidResourceName(rawName).IsValid.Should().BeTrue();
+        ValidationHelper.IsValidEmail(rawEmail).IsValid.Should().BeTrue();
+        ValidationHelper.IsValidPort(rawPort).IsValid.Should().BeTrue();
+        ValidationHelper.IsValidCommitHash(rawCommit).IsValid.Should().BeTrue();
+        ValidationHelper.IsValidSemanticVersion(rawVersion).IsValid.Should().BeTrue();
 
         // Combine with string extensions
         rawName.ToPascalCase().Should().Be("MyApiService");
@@ -140,7 +140,7 @@ public class IntegrationTests
         displayNames.Should().Contain("PaymentWorker");
 
         // Filter services whose names are valid resource names
-        var (valid, invalid) = services.ToList().Split(ValidationHelper.IsValidResourceName);
+        var (valid, invalid) = services.ToList().Split(x => ValidationHelper.IsValidResourceName(x).IsValid);
         valid.Should().HaveCount(6);
         invalid.Should().BeEmpty();
     }
