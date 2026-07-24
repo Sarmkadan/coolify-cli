@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using CoolifyCli.Http;
 using CoolifyCli.Infrastructure;
 using CoolifyCli.Models;
 
@@ -13,6 +14,10 @@ namespace CoolifyCli.Services;
 /// <summary>
 /// Core HTTP client for Coolify API communication.
 /// Handles authentication, request serialization, and error handling.
+/// Every request is wrapped in a <see cref="ResiliencePolicy"/> that retries transient
+/// failures (408/429/5xx and connection errors) with exponential backoff and jitter, and
+/// trips a circuit breaker after repeated consecutive failures so a Coolify outage does
+/// not turn into a pile of hanging requests.
 /// </summary>
 public class CoolifyApiClient
 {
@@ -25,6 +30,7 @@ public class CoolifyApiClient
     private readonly string _apiKey;
     private readonly string _baseUrl;
     private readonly CoolifyApiClientOptions _options;
+    private readonly ResiliencePolicy _resilience;
 
     public CoolifyApiClient(HttpClient httpClient, string baseUrl, string apiKey,
         CoolifyApiClientOptions? options = null)
@@ -33,6 +39,7 @@ public class CoolifyApiClient
         _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
         _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
         _options = options ?? new CoolifyApiClientOptions();
+        _resilience = new ResiliencePolicy(failureThreshold: 5, breakDuration: TimeSpan.FromSeconds(30));
 
         // Disable the global HttpClient timeout; per-method CancellationTokenSources control timing.
         _httpClient.Timeout = Timeout.InfiniteTimeSpan;
@@ -48,30 +55,14 @@ public class CoolifyApiClient
     /// <typeparam name="T">Response data type.</typeparam>
     /// <param name="endpoint">API endpoint path.</param>
     /// <returns>API response with data.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="endpoint"/> is null or empty.</exception>
     public async Task<ApiResponse<T>> GetAsync<T>(string endpoint)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.GetTimeoutSeconds));
-        try
-        {
-            using var response = await _httpClient.GetAsync(endpoint, cts.Token);
-            return await ProcessResponse<T>(response);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode.HasValue)
-            {
-                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
-            }
-            return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
-        }
-        catch (TaskCanceledException)
-        {
-            return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
-        }
-        catch (OperationCanceledException)
-        {
-            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(endpoint);
+
+        return await ExecuteWithResilienceAsync<T>(
+            TimeSpan.FromSeconds(_options.GetTimeoutSeconds),
+            token => _httpClient.GetAsync(endpoint, token));
     }
 
     /// <summary>
@@ -82,30 +73,16 @@ public class CoolifyApiClient
     /// <param name="endpoint">API endpoint path.</param>
     /// <param name="content">Request body content.</param>
     /// <returns>API response with data.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="endpoint"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="content"/> is null.</exception>
     public async Task<ApiResponse<T>> PostAsync<T>(string endpoint, object content)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.PostTimeoutSeconds));
-        try
-        {
-            using var response = await _httpClient.PostAsJsonAsync(endpoint, content, cts.Token);
-            return await ProcessResponse<T>(response);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode.HasValue)
-            {
-                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
-            }
-            return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
-        }
-        catch (TaskCanceledException)
-        {
-            return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
-        }
-        catch (OperationCanceledException)
-        {
-            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(endpoint);
+        ArgumentNullException.ThrowIfNull(content);
+
+        return await ExecuteWithResilienceAsync<T>(
+            TimeSpan.FromSeconds(_options.PostTimeoutSeconds),
+            token => _httpClient.PostAsJsonAsync(endpoint, content, token));
     }
 
     /// <summary>
@@ -116,30 +93,16 @@ public class CoolifyApiClient
     /// <param name="endpoint">API endpoint path.</param>
     /// <param name="content">Request body content.</param>
     /// <returns>API response with data.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="endpoint"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="content"/> is null.</exception>
     public async Task<ApiResponse<T>> PutAsync<T>(string endpoint, object content)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.PutTimeoutSeconds));
-        try
-        {
-            using var response = await _httpClient.PutAsJsonAsync(endpoint, content, cts.Token);
-            return await ProcessResponse<T>(response);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode.HasValue)
-            {
-                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
-            }
-            return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
-        }
-        catch (TaskCanceledException)
-        {
-            return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
-        }
-        catch (OperationCanceledException)
-        {
-            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(endpoint);
+        ArgumentNullException.ThrowIfNull(content);
+
+        return await ExecuteWithResilienceAsync<T>(
+            TimeSpan.FromSeconds(_options.PutTimeoutSeconds),
+            token => _httpClient.PutAsJsonAsync(endpoint, content, token));
     }
 
     /// <summary>
@@ -149,30 +112,71 @@ public class CoolifyApiClient
     /// <typeparam name="T">Response data type.</typeparam>
     /// <param name="endpoint">API endpoint path.</param>
     /// <returns>API response with data.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="endpoint"/> is null or empty.</exception>
     public async Task<ApiResponse<T>> DeleteAsync<T>(string endpoint)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.DeleteTimeoutSeconds));
-        try
-        {
-            using var response = await _httpClient.DeleteAsync(endpoint, cts.Token);
-            return await ProcessResponse<T>(response);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode.HasValue)
+        ArgumentException.ThrowIfNullOrEmpty(endpoint);
+
+        return await ExecuteWithResilienceAsync<T>(
+            TimeSpan.FromSeconds(_options.DeleteTimeoutSeconds),
+            token => _httpClient.DeleteAsync(endpoint, token));
+    }
+
+    /// <summary>
+    /// Runs a single HTTP call through the <see cref="ResiliencePolicy"/>: retries on
+    /// 408/429/5xx responses and <see cref="HttpRequestException"/> with exponential
+    /// backoff and jitter (honouring <c>Retry-After</c> on 429), applies
+    /// <paramref name="perRequestTimeout"/> to each individual attempt, and enforces the
+    /// circuit breaker across calls made through this client instance.
+    /// </summary>
+    /// <typeparam name="T">Response data type.</typeparam>
+    /// <param name="perRequestTimeout">Timeout applied to each attempt.</param>
+    /// <param name="send">Issues one HTTP attempt given the attempt's cancellation token.</param>
+    /// <returns>The deserialized API response, or a clear unreachable error after retries/circuit-breaker rejection.</returns>
+    private async Task<ApiResponse<T>> ExecuteWithResilienceAsync<T>(
+        TimeSpan perRequestTimeout,
+        Func<CancellationToken, Task<HttpResponseMessage>> send)
+    {
+        return await _resilience.ExecuteAsync(
+            async token =>
             {
-                return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", (int)ex.StatusCode.Value);
-            }
-            return ApiResponse<T>.ErrorResponse($"HTTP request failed: {ex.Message}", 500);
-        }
-        catch (TaskCanceledException)
+                using var response = await send(token);
+                var processed = await ProcessResponse<T>(response);
+
+                return ResiliencePolicy.IsRetryableStatusCode(response.StatusCode)
+                    ? ResilientOutcome<ApiResponse<T>>.Retry(processed, GetRetryAfter(response))
+                    : ResilientOutcome<ApiResponse<T>>.Final(processed);
+            },
+            perRequestTimeout,
+            reason => ApiResponse<T>.ErrorResponse(reason, 503));
+    }
+
+    /// <summary>
+    /// Extracts the server-requested delay from a <c>Retry-After</c> header, supporting
+    /// both the delta-seconds and HTTP-date forms.
+    /// </summary>
+    /// <param name="response">The HTTP response to inspect.</param>
+    /// <returns>The requested delay, or <c>null</c> when no valid <c>Retry-After</c> header is present.</returns>
+    private static TimeSpan? GetRetryAfter(HttpResponseMessage response)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        if (retryAfter is null)
         {
-            return ApiResponse<T>.ErrorResponse("Request timeout exceeded.", 408);
+            return null;
         }
-        catch (OperationCanceledException)
+
+        if (retryAfter.Delta.HasValue)
         {
-            return ApiResponse<T>.ErrorResponse("Operation was canceled.", 499);
+            return retryAfter.Delta.Value;
         }
+
+        if (retryAfter.Date.HasValue)
+        {
+            var delay = retryAfter.Date.Value - DateTimeOffset.UtcNow;
+            return delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
+        }
+
+        return null;
     }
 
     /// <summary>
