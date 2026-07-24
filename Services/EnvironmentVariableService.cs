@@ -444,8 +444,15 @@ public sealed class SecretMasker
 
                         if (valueLength > 0)
                         {
-                            var maskedValue = MaskSecret(message.Substring(valueStart, valueLength), true, key);
-                            masked = message.Substring(0, valueStart) + maskedValue + message.Substring(valueEnd);
+                            // Only mask up to the next value boundary (comma, semicolon, or
+                            // whitespace) so trailing unrelated text in the message survives
+                            // untouched instead of being swallowed into the mask.
+                            var boundaryIndex = message.IndexOfAny([',', ';', '\n', '\r'], valueStart);
+                            var actualValueEnd = boundaryIndex >= 0 ? boundaryIndex : valueEnd;
+                            var actualValueLength = actualValueEnd - valueStart;
+
+                            var maskedValue = MaskSecret(message.Substring(valueStart, actualValueLength), true, key);
+                            masked = message.Substring(0, valueStart) + maskedValue + message.Substring(actualValueEnd);
                             return masked;
                         }
                     }
