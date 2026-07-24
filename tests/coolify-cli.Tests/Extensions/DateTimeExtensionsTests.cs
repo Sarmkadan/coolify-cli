@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using CoolifyCli.Extensions;
 using Xunit;
 
 namespace CoolifyCli.Tests.Extensions
@@ -714,6 +716,111 @@ namespace CoolifyCli.Tests.Extensions
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => nullDateTimeOffset!.Value.ToRelativeTime());
+        }
+
+        [Fact]
+        public void AddBusinessDays_ZeroDays_ReturnsSameDate()
+        {
+            // Arrange - start on a Saturday, which is not itself a business day
+            var saturday = new DateTime(2022, 6, 4);
+
+            // Act
+            var actual = saturday.AddBusinessDays(0);
+
+            // Assert
+            Assert.Equal(saturday, actual);
+        }
+
+        [Fact]
+        public void AddBusinessDays_StartOnSaturday_NegativeThreeDays_WalksBackward()
+        {
+            // Arrange - Saturday June 4, 2022; stepping back 3 business days should
+            // skip the weekend entirely and land on Wednesday June 1, 2022
+            // (Fri Jun 3, Thu Jun 2, Wed Jun 1)
+            var saturday = new DateTime(2022, 6, 4);
+            var expected = new DateTime(2022, 6, 1);
+
+            // Act
+            var actual = saturday.AddBusinessDays(-3);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void AddBusinessDays_StartOnSaturday_PositiveThreeDays_WalksForward()
+        {
+            // Arrange - Saturday June 4, 2022; stepping forward 3 business days should
+            // skip the weekend and land on Wednesday June 8, 2022
+            // (Mon Jun 6, Tue Jun 7, Wed Jun 8)
+            var saturday = new DateTime(2022, 6, 4);
+            var expected = new DateTime(2022, 6, 8);
+
+            // Act
+            var actual = saturday.AddBusinessDays(3);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void AddBusinessDays_WithHolidayProvider_SkipsHolidays()
+        {
+            // Arrange - Wednesday June 1, 2022; June 2 is a holiday, so adding 1
+            // business day should skip both the holiday and land past it
+            var start = new DateTime(2022, 6, 1);
+            var holidayProvider = new FixedHolidayProvider(new[] { new DateTime(2022, 6, 2) });
+            var expected = new DateTime(2022, 6, 3);
+
+            // Act
+            var actual = start.AddBusinessDays(1, holidayProvider);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void BusinessDaysBetween_WithHolidayProvider_ExcludesHolidays()
+        {
+            // Arrange - Monday June 6 through Friday June 10, 2022, with Wednesday
+            // June 8 marked as a holiday
+            var startDate = new DateTime(2022, 6, 6);
+            var endDate = new DateTime(2022, 6, 10);
+            var holidayProvider = new FixedHolidayProvider(new[] { new DateTime(2022, 6, 8) });
+            var expected = 4;
+
+            // Act
+            var actual = startDate.BusinessDaysBetween(endDate, holidayProvider);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void IsBusinessDay_ReturnsFalse_ForWeekend()
+        {
+            // Arrange
+            var saturday = new DateTime(2022, 6, 4);
+
+            // Act
+            var actual = saturday.IsBusinessDay();
+
+            // Assert
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void IsBusinessDay_ReturnsFalse_ForHoliday()
+        {
+            // Arrange
+            var wednesday = new DateTime(2022, 6, 1);
+            var holidayProvider = new FixedHolidayProvider(new[] { wednesday });
+
+            // Act
+            var actual = wednesday.IsBusinessDay(holidayProvider);
+
+            // Assert
+            Assert.False(actual);
         }
     }
 }

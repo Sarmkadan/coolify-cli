@@ -7,6 +7,61 @@ using System.Globalization;
 namespace CoolifyCli.Extensions;
 
 /// <summary>
+/// Supplies holiday information for business-day calculations. Implementations decide
+/// which calendar dates are treated as non-working days in addition to weekends.
+/// </summary>
+public interface IHolidayProvider
+{
+    /// <summary>
+    /// Determines whether the given date is a holiday and should be skipped by
+    /// business-day calculations.
+    /// </summary>
+    /// <param name="date">The date to check. Only the date component is considered.</param>
+    /// <returns><see langword="true"/> if <paramref name="date"/> is a holiday; otherwise, <see langword="false"/>.</returns>
+    bool IsHoliday(DateTime date);
+}
+
+/// <summary>
+/// An <see cref="IHolidayProvider"/> that never reports a holiday. Used as the default
+/// when no holiday calendar is supplied, so business-day calculations only skip weekends.
+/// </summary>
+public sealed class NoHolidayProvider : IHolidayProvider
+{
+    /// <summary>
+    /// Gets the shared singleton instance of <see cref="NoHolidayProvider"/>.
+    /// </summary>
+    public static NoHolidayProvider Instance { get; } = new();
+
+    /// <inheritdoc />
+    public bool IsHoliday(DateTime date) => false;
+}
+
+/// <summary>
+/// An <see cref="IHolidayProvider"/> backed by a fixed set of holiday dates.
+/// </summary>
+public sealed class FixedHolidayProvider : IHolidayProvider
+{
+    private readonly HashSet<DateTime> _holidays;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="FixedHolidayProvider"/> with the given holiday dates.
+    /// </summary>
+    /// <param name="holidays">The collection of holiday dates. Only the date component of each value is used.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="holidays"/> is null.</exception>
+    public FixedHolidayProvider(IEnumerable<DateTime> holidays)
+    {
+        ArgumentNullException.ThrowIfNull(holidays);
+
+        _holidays = new HashSet<DateTime>();
+        foreach (var holiday in holidays)
+            _holidays.Add(holiday.Date);
+    }
+
+    /// <inheritdoc />
+    public bool IsHoliday(DateTime date) => _holidays.Contains(date.Date);
+}
+
+/// <summary>
 /// Extension methods for <see cref="DateTime"/> and <see cref="TimeSpan"/> manipulation.
 /// Provides utilities for formatting, relative time calculations, and date arithmetic.
 /// </summary>
@@ -254,24 +309,86 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="startDate">The start date of the range.</param>
     /// <param name="endDate">The end date of the range.</param>
-    /// <returns>The number of business days (Monday-Friday) between the two dates, inclusive.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the date range is invalid.</exception>
-    public static int BusinessDaysBetween(this DateTime startDate, DateTime endDate)
+    /// <param name="holidayProvider">
+    /// An optional <see cref="IHolidayProvider"/> whose holiday dates are also excluded from the count.
+    /// When omitted, only weekends (Saturday and Sunday) are excluded.
+    /// </param>
+    /// <returns>The number of business days (Monday-Friday, excluding holidays) between the two dates, inclusive of both boundaries.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="startDate"/> is later than <paramref name="endDate"/>.</exception>
+    public static int BusinessDaysBetween(this DateTime startDate, DateTime endDate, IHolidayProvider? holidayProvider = null)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(startDate, endDate);
 
+        var holidays = holidayProvider ?? NoHolidayProvider.Instance;
         var businessDays = 0;
-        var current = startDate;
+        var current = startDate.Date;
+        var last = endDate.Date;
 
-        while (current <= endDate)
+        while (current <= last)
         {
-            if (current.DayOfWeek != DayOfWeek.Saturday && current.DayOfWeek != DayOfWeek.Sunday)
+            if (current.IsBusinessDay(holidays))
                 businessDays++;
 
             current = current.AddDays(1);
         }
 
         return businessDays;
+    }
+
+    /// <summary>
+    /// Determines whether the given date is a business day: not a weekend and not reported as a holiday.
+    /// </summary>
+    /// <param name="date">The date to check.</param>
+    /// <param name="holidayProvider">
+    /// An optional <see cref="IHolidayProvider"/> used to exclude holidays. When omitted, only weekends are excluded.
+    /// </param>
+    /// <returns><see langword="true"/> if <paramref name="date"/> is a weekday and not a holiday; otherwise, <see langword="false"/>.</returns>
+    public static bool IsBusinessDay(this DateTime date, IHolidayProvider? holidayProvider = null)
+    {
+        var holidays = holidayProvider ?? NoHolidayProvider.Instance;
+
+        return date.DayOfWeek != DayOfWeek.Saturday
+            && date.DayOfWeek != DayOfWeek.Sunday
+            && !holidays.IsHoliday(date);
+    }
+
+    /// <summary>
+    /// Adds (or subtracts, for negative values) a number of business days to a <see cref="DateTime"/>,
+    /// skipping weekends and any holidays reported by <paramref name="holidayProvider"/>.
+    /// </summary>
+    /// <remarks>
+    /// Semantics:
+    /// <list type="bullet">
+    /// <item><description><paramref name="businessDays"/> of 0 returns <paramref name="date"/> unchanged, even if it falls on a weekend or holiday.</description></item>
+    /// <item><description>Positive values walk forward in time; negative values walk backward. Weekends/holidays are never counted as a step, so the start date itself is never counted as one of the stepped days.</description></item>
+    /// <item><description>The starting date's own weekend/holiday status does not affect the count of days walked - only the days landed on while stepping are checked.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="date">The date to offset.</param>
+    /// <param name="businessDays">The number of business days to add. Negative values move backward in time.</param>
+    /// <param name="holidayProvider">
+    /// An optional <see cref="IHolidayProvider"/> whose holiday dates are also skipped.
+    /// When omitted, only weekends (Saturday and Sunday) are skipped.
+    /// </param>
+    /// <returns>The resulting <see cref="DateTime"/>, offset by the requested number of business days.</returns>
+    public static DateTime AddBusinessDays(this DateTime date, int businessDays, IHolidayProvider? holidayProvider = null)
+    {
+        if (businessDays == 0)
+            return date;
+
+        var holidays = holidayProvider ?? NoHolidayProvider.Instance;
+        var direction = Math.Sign(businessDays);
+        var remaining = Math.Abs(businessDays);
+        var current = date;
+
+        while (remaining > 0)
+        {
+            current = current.AddDays(direction);
+            if (current.IsBusinessDay(holidays))
+                remaining--;
+        }
+
+        return current;
     }
 
     /// <summary>
