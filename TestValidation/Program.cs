@@ -393,6 +393,7 @@ var appCommand = new Command("app", "Manage applications")
     appDeployCommand,
     advancedCmds.CreateRestartCommand(),
     advancedCmds.CreateSetEnvCommand(),
+    advancedCmds.CreateListEnvCommand(),
     advancedCmds.CreateScaleCommand(),
     advancedCmds.CreateRollbackCommand(),
     diffCmds.CreateDiffCommand(),

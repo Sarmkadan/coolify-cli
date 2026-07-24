@@ -170,6 +170,69 @@ public sealed class AdvancedAppCommands : CommandBase
     }
 
     /// <summary>
+    /// Creates command to list environment variables for an application. Secret values are
+    /// masked by default (e.g. "abcd****"); pass <c>--reveal</c> to print them in plain text.
+    /// </summary>
+    /// <returns>The configured "list-env" command.</returns>
+    public Command CreateListEnvCommand()
+    {
+        var listEnvCmd = new Command("list-env", "List environment variables for an application");
+        var appIdArg = new Argument<int>("id") { Description = "Application ID" };
+        var revealOption = new Option<bool>("--reveal") { Description = "Show actual secret values instead of masked placeholders" };
+
+        listEnvCmd.Add(appIdArg);
+        listEnvCmd.Add(revealOption);
+
+        listEnvCmd.SetAction(async (parseResult, ct) =>
+        {
+            await HandleListEnvAsync(parseResult.GetValue(appIdArg), parseResult.GetValue(revealOption));
+        });
+
+        return listEnvCmd;
+    }
+
+    /// <summary>
+    /// Fetches and prints the environment variables for an application, masking secret values
+    /// unless the caller explicitly requests they be revealed.
+    /// </summary>
+    /// <param name="appId">The application ID.</param>
+    /// <param name="reveal">Whether to print actual secret values instead of masked placeholders.</param>
+    /// <exception cref="ValidationException">Thrown when <paramref name="appId"/> is not a positive value.</exception>
+    private async Task HandleListEnvAsync(int appId, bool reveal)
+    {
+        try
+        {
+            ValidatePositiveId(appId);
+            Logger.Info($"Listing environment variables for application {appId} (reveal={reveal})");
+
+            var result = await _envVarService.GetApplicationVariablesAsync(appId.ToString(), reveal);
+
+            if (!result.Success || result.Data is null)
+            {
+                WriteError(result.Message ?? "Failed to retrieve environment variables");
+                return;
+            }
+
+            if (result.Data.Count == 0)
+            {
+                WriteWarning("No environment variables found");
+                return;
+            }
+
+            // GetApplicationVariablesAsync already masked (or revealed) each value according
+            // to the requested reveal flag, so print it as-is without masking a second time.
+            foreach (var variable in result.Data)
+            {
+                Console.WriteLine($"{variable.Key}={variable.Value}");
+            }
+        }
+        catch (ValidationException ex)
+        {
+            WriteError(ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Creates command to scale application instances or resources. Validates requested resources
     /// against available capacity before applying scale operation.
     /// </summary>
