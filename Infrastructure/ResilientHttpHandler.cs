@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using CoolifyCli.Services;
 
 namespace CoolifyCli.Infrastructure;
 
@@ -18,6 +19,7 @@ namespace CoolifyCli.Infrastructure;
 public sealed class ResilientHttpHandler : DelegatingHandler
 {
     private readonly ResilienceOptions _options;
+    private readonly ILogger? _logger;
     private readonly object _circuitLock = new();
 
     private int _consecutiveFailures;
@@ -29,10 +31,17 @@ public sealed class ResilientHttpHandler : DelegatingHandler
     /// </summary>
     /// <param name="innerHandler">Handler that performs the actual network I/O.</param>
     /// <param name="options">Resilience settings; defaults are used when null.</param>
+    /// <param name="logger">Optional logger for retry diagnostics.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="innerHandler"/> is null.</exception>
-    public ResilientHttpHandler(HttpMessageHandler innerHandler, ResilienceOptions? options = null)
+    public ResilientHttpHandler(
+        HttpMessageHandler innerHandler,
+        ResilienceOptions? options = null,
+        ILogger? logger = null)
         : base(innerHandler ?? throw new ArgumentNullException(nameof(innerHandler)))
-        => _options = options ?? new ResilienceOptions();
+    {
+        _options = options ?? new ResilienceOptions();
+        _logger = logger;
+    }
 
     /// <summary>
     /// Sends the request, retrying transient failures up to the configured attempt count.
@@ -56,6 +65,7 @@ public sealed class ResilientHttpHandler : DelegatingHandler
         ThrowIfCircuitOpen();
 
         Exception? lastException = null;
+        string endpoint = request.RequestUri?.AbsolutePath ?? "unknown";
 
         for (int attempt = 1; attempt <= _options.MaxAttempts; attempt++)
         {
@@ -68,6 +78,13 @@ public sealed class ResilientHttpHandler : DelegatingHandler
                 if (!IsTransientStatus(response.StatusCode))
                 {
                     OnSuccess();
+                    if (attempt > 1)
+                    {
+                        _logger?.Debug(
+                            $"http-retry-success attempt={attempt}/{_options.MaxAttempts} " +
+                            $"status={(int)response.StatusCode} endpoint={endpoint}");
+                    }
+
                     return response;
                 }
 
@@ -75,12 +92,18 @@ public sealed class ResilientHttpHandler : DelegatingHandler
 
                 if (attempt == _options.MaxAttempts)
                 {
+                    _logger?.Error(
+                        $"http-failure attempt={attempt}/{_options.MaxAttempts} " +
+                        $"status={(int)response.StatusCode} delay=0ms endpoint={endpoint}");
                     // Out of retries: surface the transient status to the caller,
                     // which maps it to a structured API error response.
                     return response;
                 }
 
                 var delay = ComputeDelay(attempt, response);
+                _logger?.Warn(
+                    $"http-retry attempt={attempt + 1}/{_options.MaxAttempts} " +
+                    $"status={(int)response.StatusCode} delay={delay.TotalMilliseconds:0}ms endpoint={endpoint}");
                 response.Dispose();
                 await Task.Delay(delay, cancellationToken);
             }
@@ -91,7 +114,11 @@ public sealed class ResilientHttpHandler : DelegatingHandler
 
                 if (attempt < _options.MaxAttempts)
                 {
-                    await Task.Delay(ComputeDelay(attempt, response: null), cancellationToken);
+                    var delay = ComputeDelay(attempt, response: null);
+                    _logger?.Warn(
+                        $"http-retry attempt={attempt + 1}/{_options.MaxAttempts} " +
+                        $"status=network-error delay={delay.TotalMilliseconds:0}ms endpoint={endpoint}");
+                    await Task.Delay(delay, cancellationToken);
                 }
             }
             catch (TimeoutException ex)
@@ -101,11 +128,19 @@ public sealed class ResilientHttpHandler : DelegatingHandler
 
                 if (attempt < _options.MaxAttempts)
                 {
-                    await Task.Delay(ComputeDelay(attempt, response: null), cancellationToken);
+                    var delay = ComputeDelay(attempt, response: null);
+                    _logger?.Warn(
+                        $"http-retry attempt={attempt + 1}/{_options.MaxAttempts} " +
+                        $"status=timeout delay={delay.TotalMilliseconds:0}ms endpoint={endpoint}");
+                    await Task.Delay(delay, cancellationToken);
                 }
             }
         }
 
+        string finalStatus = lastException is TimeoutException ? "timeout" : "network-error";
+        _logger?.Error(
+            $"http-failure attempt={_options.MaxAttempts}/{_options.MaxAttempts} " +
+            $"status={finalStatus} delay=0ms endpoint={endpoint}");
         throw new HttpRequestException(
             $"Coolify API unreachable, retried {_options.MaxAttempts}x: {lastException?.Message}",
             lastException);
