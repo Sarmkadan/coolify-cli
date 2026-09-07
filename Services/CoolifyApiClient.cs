@@ -97,9 +97,11 @@ public class CoolifyApiClient
     {
         ArgumentException.ThrowIfNullOrEmpty(endpoint);
 
-        return await ExecuteWithResilienceAsync<T>(
-            TimeSpan.FromSeconds(_options.GetTimeoutSeconds),
-            token => _httpClient.GetAsync(endpoint, token));
+        return await SendAsync<T>(
+            HttpMethod.Get,
+            endpoint,
+            null,
+            TimeSpan.FromSeconds(_options.GetTimeoutSeconds));
     }
 
     /// <summary>
@@ -117,9 +119,11 @@ public class CoolifyApiClient
         ArgumentException.ThrowIfNullOrEmpty(endpoint);
         ArgumentNullException.ThrowIfNull(content);
 
-        return await ExecuteWithResilienceAsync<T>(
-            TimeSpan.FromSeconds(_options.PostTimeoutSeconds),
-            token => _httpClient.PostAsJsonAsync(endpoint, content, token));
+        return await SendAsync<T>(
+            HttpMethod.Post,
+            endpoint,
+            content,
+            TimeSpan.FromSeconds(_options.PostTimeoutSeconds));
     }
 
     /// <summary>
@@ -137,9 +141,11 @@ public class CoolifyApiClient
         ArgumentException.ThrowIfNullOrEmpty(endpoint);
         ArgumentNullException.ThrowIfNull(content);
 
-        return await ExecuteWithResilienceAsync<T>(
-            TimeSpan.FromSeconds(_options.PutTimeoutSeconds),
-            token => _httpClient.PutAsJsonAsync(endpoint, content, token));
+        return await SendAsync<T>(
+            HttpMethod.Put,
+            endpoint,
+            content,
+            TimeSpan.FromSeconds(_options.PutTimeoutSeconds));
     }
 
     /// <summary>
@@ -154,9 +160,35 @@ public class CoolifyApiClient
     {
         ArgumentException.ThrowIfNullOrEmpty(endpoint);
 
+        return await SendAsync<T>(
+            HttpMethod.Delete,
+            endpoint,
+            null,
+            TimeSpan.FromSeconds(_options.DeleteTimeoutSeconds));
+    }
+
+    /// <summary>
+    /// Sends an HTTP request through the resilience policy with centralized error handling.
+    /// </summary>
+    /// <typeparam name="T">Response data type.</typeparam>
+    /// <param name="method">HTTP method to use.</param>
+    /// <param name="endpoint">API endpoint path.</param>
+    /// <param name="content">Request body content (can be null).</param>
+    /// <param name="timeout">Timeout for the request.</param>
+    /// <returns>API response with data.</returns>
+    private async Task<ApiResponse<T>> SendAsync<T>(HttpMethod method, string endpoint, object? content, TimeSpan timeout)
+    {
         return await ExecuteWithResilienceAsync<T>(
-            TimeSpan.FromSeconds(_options.DeleteTimeoutSeconds),
-            token => _httpClient.DeleteAsync(endpoint, token));
+            timeout,
+            token =>
+            {
+                var request = new HttpRequestMessage(method, endpoint);
+                if (content != null)
+                {
+                    request.Content = JsonContent.Create(content);
+                }
+                return _httpClient.SendAsync(request, token);
+            });
     }
 
     /// <summary>
