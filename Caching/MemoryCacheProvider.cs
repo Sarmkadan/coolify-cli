@@ -6,16 +6,31 @@ namespace CoolifyCli.Caching;
 
 /// <summary>
 /// In-memory cache provider implementation using ConcurrentDictionary.
-/// Supports TTL-based expiration and automatic cleanup of expired entries.
+/// Supports TTL-based expiration, automatic cleanup of expired entries, and
+/// least-recently-used eviction when the configured entry limit is exceeded.
 /// Thread-safe for concurrent access.
 /// </summary>
 public class MemoryCacheProvider : ICacheProvider, IDisposable
 {
     private readonly ConcurrentDictionary<string, CacheEntry> _cache = new();
     private readonly Timer? _cleanupTimer;
+    private readonly object _evictionLock = new();
+    private readonly int _maxEntries;
+    private int _evictions;
 
-    public MemoryCacheProvider(TimeSpan? cleanupInterval = null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class.
+    /// </summary>
+    /// <param name="cleanupInterval">The interval at which expired entries are removed.</param>
+    /// <param name="maxEntries">The maximum number of entries retained in the cache.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="maxEntries"/> is less than one.
+    /// </exception>
+    public MemoryCacheProvider(TimeSpan? cleanupInterval = null, int maxEntries = 1000)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxEntries, 1);
+        _maxEntries = maxEntries;
+
         // Start cleanup timer to remove expired entries periodically
         var interval = cleanupInterval ?? TimeSpan.FromMinutes(5);
         _cleanupTimer = new Timer(_ => CleanupExpiredEntries(), null, interval, interval);
@@ -69,16 +84,21 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public void Set<T>(string key, T value, TimeSpan? expiration = null)
     {
+        var now = DateTime.UtcNow;
         var entry = new CacheEntry
         {
             Value = value,
-            CreatedAt = DateTime.UtcNow,
-            LastAccessedAt = DateTime.UtcNow,
-            ExpiresAt = expiration.HasValue ? DateTime.UtcNow.Add(expiration.Value) : null,
+            CreatedAt = now,
+            LastAccessedAt = now,
+            ExpiresAt = expiration.HasValue ? now.Add(expiration.Value) : null,
             SizeBytes = EstimateSizeBytes(value)
         };
 
-        _cache[key] = entry;
+        lock (_evictionLock)
+        {
+            _cache[key] = entry;
+            EvictLeastRecentlyUsedEntries();
+        }
     }
 
     /// <summary>
@@ -119,6 +139,14 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
     /// Note: This includes expired entries that haven't been cleaned up yet.
     /// </summary>
     public int Count => _cache.Count;
+
+    /// <summary>
+    /// Gets a snapshot of the current entry count and total number of LRU evictions.
+    /// </summary>
+    public CacheStatistics GetStatistics()
+    {
+        return new CacheStatistics(_cache.Count, Volatile.Read(ref _evictions));
+    }
 
     /// <summary>
     /// Estimates total size in bytes of cached objects.
@@ -223,6 +251,32 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
     }
 
     /// <summary>
+    /// Removes the least recently accessed entries until the cache is within its limit.
+    /// The caller must hold <see cref="_evictionLock"/>.
+    /// </summary>
+    private void EvictLeastRecentlyUsedEntries()
+    {
+        while (_cache.Count > _maxEntries)
+        {
+            var oldestEntry = _cache
+                .OrderBy(kvp => kvp.Value.LastAccessedAt)
+                .FirstOrDefault();
+
+            if (oldestEntry.Key is null)
+            {
+                break;
+            }
+
+            if (!_cache.TryRemove(oldestEntry.Key, out _))
+            {
+                continue;
+            }
+
+            Interlocked.Increment(ref _evictions);
+        }
+    }
+
+    /// <summary>
     /// Disposes the cleanup timer.
     /// </summary>
     public void Dispose()
@@ -247,3 +301,10 @@ public class MemoryCacheProvider : ICacheProvider, IDisposable
         public bool IsExpired() => ExpiresAt.HasValue && DateTime.UtcNow > ExpiresAt.Value;
     }
 }
+
+/// <summary>
+/// Represents a snapshot of memory cache usage and eviction statistics.
+/// </summary>
+/// <param name="Count">The number of entries currently in the cache.</param>
+/// <param name="Evictions">The total number of entries removed by LRU eviction.</param>
+public readonly record struct CacheStatistics(int Count, int Evictions);
