@@ -44,12 +44,35 @@ public class CoolifyApiClient
     private readonly CoolifyApiClientOptions _options;
     private readonly ResiliencePolicy _resilience;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CoolifyApiClient"/> class.
+    /// </summary>
+    /// <param name="httpClient">HTTP client used to send API requests.</param>
+    /// <param name="baseUrl">Absolute HTTP or HTTPS URL of the Coolify API.</param>
+    /// <param name="apiKey">API key used to authenticate requests.</param>
+    /// <param name="options">Optional API client settings.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpClient"/> is null.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="baseUrl"/> or <paramref name="apiKey"/> is null or white space,
+    /// or when <paramref name="baseUrl"/> is not an absolute HTTP or HTTPS URI.
+    /// </exception>
     public CoolifyApiClient(HttpClient httpClient, string baseUrl, string apiKey,
         CoolifyApiClientOptions? options = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
-        _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri) ||
+            (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ArgumentException(
+                "Base URL must be a valid absolute HTTP or HTTPS URI.",
+                nameof(baseUrl));
+        }
+
+        _baseUrl = baseUrl.EndsWith('/') ? baseUrl : $"{baseUrl}/";
+        _apiKey = apiKey;
         _options = options ?? new CoolifyApiClientOptions();
         _resilience = new ResiliencePolicy(
             failureThreshold: DefaultFailureThreshold,
