@@ -21,6 +21,18 @@ namespace CoolifyCli.Services;
 /// </summary>
 public class CoolifyApiClient
 {
+    /// <summary>Default number of consecutive failures before opening the circuit.</summary>
+    private const int DefaultFailureThreshold = 5;
+
+    /// <summary>Default duration for which the circuit remains open.</summary>
+    private static readonly TimeSpan DefaultBreakDuration = TimeSpan.FromSeconds(30);
+
+    /// <summary>User-Agent value sent with API requests.</summary>
+    private const string UserAgentValue = "CoolifyCli/1.0";
+
+    /// <summary>Name of the HTTP header used for API key authentication.</summary>
+    private const string ApiKeyHeaderName = "X-API-Key";
+
     private static readonly JsonSerializerOptions DeserializeOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -39,13 +51,15 @@ public class CoolifyApiClient
         _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
         _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
         _options = options ?? new CoolifyApiClientOptions();
-        _resilience = new ResiliencePolicy(failureThreshold: 5, breakDuration: TimeSpan.FromSeconds(30));
+        _resilience = new ResiliencePolicy(
+            failureThreshold: DefaultFailureThreshold,
+            breakDuration: DefaultBreakDuration);
 
         // Disable the global HttpClient timeout; per-method CancellationTokenSources control timing.
         _httpClient.Timeout = Timeout.InfiniteTimeSpan;
         _httpClient.BaseAddress = new Uri(_baseUrl);
-        _httpClient.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "CoolifyCli/1.0");
+        _httpClient.DefaultRequestHeaders.Add(ApiKeyHeaderName, _apiKey);
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", UserAgentValue);
     }
 
     /// <summary>
