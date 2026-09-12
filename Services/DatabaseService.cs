@@ -54,6 +54,8 @@ public sealed class DatabaseService
     /// <returns>Created database with assigned ID.</returns>
     public async Task<ApiResponse<DatabaseConfiguration>> CreateDatabaseAsync(DatabaseConfiguration database)
     {
+        ArgumentNullException.ThrowIfNull(database);
+
         var validationErrors = database.Validate().ToList();
         if (validationErrors.Count > 0)
         {
@@ -84,6 +86,8 @@ public sealed class DatabaseService
     /// <returns>Updated database.</returns>
     public async Task<ApiResponse<DatabaseConfiguration>> UpdateDatabaseAsync(int databaseId, DatabaseConfiguration database)
     {
+        ArgumentNullException.ThrowIfNull(database);
+
         _logger.Info($"Updating database {databaseId}");
         database.Id = databaseId;
 
