@@ -72,6 +72,8 @@ public class EnvironmentVariableService
     /// <returns>Created environment variable with masked secrets.</returns>
     public async Task<ApiResponse<EnvironmentVariable>> CreateVariableAsync(string applicationId, EnvironmentVariable variable)
     {
+        ArgumentNullException.ThrowIfNull(variable);
+
         if (string.IsNullOrWhiteSpace(applicationId))
             return ApiResponse<EnvironmentVariable>.ErrorResponse("Application ID is required.", 400);
 
@@ -109,6 +111,8 @@ public class EnvironmentVariableService
     /// <returns>Updated environment variable with masked secrets.</returns>
     public async Task<ApiResponse<EnvironmentVariable>> UpdateVariableAsync(int variableId, EnvironmentVariable variable)
     {
+        ArgumentNullException.ThrowIfNull(variable);
+
         _logger.Info($"Updating environment variable {variableId} ({variable.Key})");
         variable.Id = variableId;
 
@@ -287,6 +291,8 @@ public class EnvironmentVariableService
     /// <returns>Validation results.</returns>
     public async Task<ApiResponse<object>> ValidateVariablesAsync(string applicationId)
     {
+        ArgumentNullException.ThrowIfNull(applicationId);
+
         _logger.Info($"Validating environment variables for application {applicationId}");
         var response = await _apiClient.PostAsync<object>(
             $"/api/v1/applications/{applicationId}/env-vars/validate",
@@ -340,6 +346,8 @@ public class EnvironmentVariableService
     /// <returns>Formatted display string with masked or revealed value.</returns>
     public string FormatVariableDisplay(string key, string value, bool isSecret, bool revealSecrets = false)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
 
