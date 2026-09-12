@@ -7,24 +7,81 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class ApplicationDeployment
 {
+    /// <summary>
+    /// Gets or sets the Id.
+    /// </summary>
     public int Id { get; set; }
+    /// <summary>
+    /// Gets or sets the Name.
+    /// </summary>
     public string Name { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the Description.
+    /// </summary>
     public string Description { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the Repository.
+    /// </summary>
     public string Repository { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the Branch.
+    /// </summary>
     public string Branch { get; set; } = "main";
+    /// <summary>
+    /// Gets or sets the EnvironmentId.
+    /// </summary>
     public string EnvironmentId { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the Status.
+    /// </summary>
     public DeploymentStatus Status { get; set; } = DeploymentStatus.Pending;
+    /// <summary>
+    /// Gets or sets the CreatedAt.
+    /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>
+    /// Gets or sets the UpdatedAt.
+    /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>
+    /// Gets or sets the LastDeployedAt.
+    /// </summary>
     public DateTime? LastDeployedAt { get; set; }
+    /// <summary>
+    /// Gets or sets the FailureCount.
+    /// </summary>
     public int FailureCount { get; set; } = 0;
+    /// <summary>
+    /// Gets or sets the LastErrorMessage.
+    /// </summary>
     public string? LastErrorMessage { get; set; }
+    /// <summary>
+    /// Gets or sets the EnvironmentVariables.
+    /// </summary>
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
+    /// <summary>
+    /// Gets or sets the Ports.
+    /// </summary>
     public List<string> Ports { get; set; } = new();
+    /// <summary>
+    /// Gets or sets the BuildCommand.
+    /// </summary>
     public string BuildCommand { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the StartCommand.
+    /// </summary>
     public string StartCommand { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the IsActive.
+    /// </summary>
     public bool IsActive { get; set; } = true;
+    /// <summary>
+    /// Gets or sets the HealthCheckUrl.
+    /// </summary>
     public string? HealthCheckUrl { get; set; }
+    /// <summary>
+    /// Gets or sets the HealthCheckIntervalSeconds.
+    /// </summary>
     public int HealthCheckIntervalSeconds { get; set; } = 30;
 
     /// <summary>
