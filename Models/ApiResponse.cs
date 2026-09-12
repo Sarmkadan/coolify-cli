@@ -7,12 +7,33 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class ApiResponse<T>
 {
+    /// <summary>
+    /// Indicates whether the API operation was successful.
+    /// </summary>
     public bool Success { get; set; } = true;
+    /// <summary>
+    /// The response data payload.
+    /// </summary>
     public T? Data { get; set; }
+    /// <summary>
+    /// Optional message describing the operation result.
+    /// </summary>
     public string? Message { get; set; }
+    /// <summary>
+    /// List of error messages if the operation failed.
+    /// </summary>
     public List<string> Errors { get; set; } = new();
+    /// <summary>
+    /// HTTP status code of the response.
+    /// </summary>
     public int StatusCode { get; set; } = 200;
+    /// <summary>
+    /// Total number of records available (for paginated endpoints).
+    /// </summary>
     public long TotalRecords { get; set; } = 0;
+    /// <summary>
+    /// Timestamp when the response was generated.
+    /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
@@ -89,15 +110,45 @@ public class ApiResponse<T>
 /// </summary>
 public class ApiPaginatedResponse<T>
 {
+    /// <summary>
+    /// Indicates whether the API operation was successful.
+    /// </summary>
     public bool Success { get; set; } = true;
+    /// <summary>
+    /// The response data payload as a list of items.
+    /// </summary>
     public List<T> Data { get; set; } = new();
+    /// <summary>
+    /// Current page number (1-based).
+    /// </summary>
     public int PageNumber { get; set; } = 1;
+    /// <summary>
+    /// Number of items per page.
+    /// </summary>
     public int PageSize { get; set; } = 20;
+    /// <summary>
+    /// Total number of records available across all pages.
+    /// </summary>
     public long TotalRecords { get; set; } = 0;
+    /// <summary>
+    /// Total number of pages available.
+    /// </summary>
     public int TotalPages { get; set; } = 0;
+    /// <summary>
+    /// Optional message describing the operation result.
+    /// </summary>
     public string? Message { get; set; }
+    /// <summary>
+    /// List of error messages if the operation failed.
+    /// </summary>
     public List<string> Errors { get; set; } = new();
+    /// <summary>
+    /// HTTP status code of the response.
+    /// </summary>
     public int StatusCode { get; set; } = 200;
+    /// <summary>
+    /// Timestamp when the response was generated.
+    /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
