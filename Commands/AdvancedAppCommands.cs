@@ -15,6 +15,12 @@ public sealed class AdvancedAppCommands : CommandBase
     private readonly ApplicationService _appService;
     private readonly EnvironmentVariableService _envVarService;
 
+    /// <summary>
+    /// Initializes a new instance of the AdvancedAppCommands class with the specified API client, logger, and configuration.
+    /// </summary>
+    /// <param name="apiClient">The Coolify API client used to communicate with the Coolify server.</param>
+    /// <param name="logger">The logger used for logging messages.</param>
+    /// <param name="config">The configuration settings for the Coolify CLI.</param>
     public AdvancedAppCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
         : base(apiClient, logger, config)
     {
