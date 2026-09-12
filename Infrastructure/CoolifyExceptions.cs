@@ -9,11 +9,22 @@ public class CoolifyException : Exception
     public string? ErrorCode { get; set; }
     public Dictionary<string, string> ContextData { get; set; } = new();
 
+    /// <summary>
+/// Initialises a new instance of the <see cref="CoolifyException"/> class with a specified error message and optional error code.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="errorCode">An optional error code associated with the exception.</param>
     public CoolifyException(string message, string? errorCode = null) : base(message)
     {
         ErrorCode = errorCode;
     }
 
+    /// <summary>
+/// Initialises a new instance of the <see cref="CoolifyException"/> class with a specified error message, inner exception, and optional error code.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="innerException">The exception that is the cause of the current exception.</param>
+/// <param name="errorCode">An optional error code associated with the exception.</param>
     public CoolifyException(string message, Exception innerException, string? errorCode = null)
         : base(message, innerException)
     {
@@ -31,7 +42,16 @@ public class CoolifyException : Exception
 /// </summary>
 public class ConfigurationException : CoolifyException
 {
+    /// <summary>
+/// Initialises a new instance of the <see cref="ConfigurationException"/> class with a specified error message.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
     public ConfigurationException(string message) : base(message, "CONFIG_ERROR") { }
+/// <summary>
+/// Initialises a new instance of the <see cref="ConfigurationException"/> class with a specified error message and inner exception.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="innerException">The exception that is the cause of the current exception.</param>
     public ConfigurationException(string message, Exception innerException)
         : base(message, innerException, "CONFIG_ERROR") { }
 }
@@ -43,12 +63,23 @@ public class ApiCommunicationException : CoolifyException
 {
     public int? HttpStatusCode { get; set; }
 
+    /// <summary>
+/// Initialises a new instance of the <see cref="ApiCommunicationException"/> class with a specified error message and optional HTTP status code.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="statusCode">The HTTP status code associated with the exception, if available.</param>
     public ApiCommunicationException(string message, int? statusCode = null)
         : base(message, "API_COMMUNICATION_ERROR")
     {
         HttpStatusCode = statusCode;
     }
 
+/// <summary>
+/// Initialises a new instance of the <see cref="ApiCommunicationException"/> class with a specified error message, inner exception, and optional HTTP status code.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="innerException">The exception that is the cause of the current exception.</param>
+/// <param name="statusCode">The HTTP status code associated with the exception, if available.</param>
     public ApiCommunicationException(string message, Exception innerException, int? statusCode = null)
         : base(message, innerException, "API_COMMUNICATION_ERROR")
     {
@@ -64,6 +95,12 @@ public class ApiException : CoolifyException
     public int StatusCode { get; set; }
     public string? ApiErrorCode { get; set; }
 
+    /// <summary>
+/// Initialises a new instance of the <see cref="ApiException"/> class with a specified error message, HTTP status code, and optional API error code.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="statusCode">The HTTP status code returned by the API.</param>
+/// <param name="apiErrorCode">The optional API-specific error code.</param>
     public ApiException(string message, int statusCode, string? apiErrorCode = null)
         : base(message, "API_ERROR")
     {
@@ -77,6 +114,10 @@ public class ApiException : CoolifyException
 /// </summary>
 public class ApplicationNotFoundException : ApiException
 {
+    /// <summary>
+    /// Initialises a new instance of the <see cref="ApplicationNotFoundException"/> class with the specified application identifier.
+    /// </summary>
+    /// <param name="applicationId">The identifier of the application that was not found.</param>
     public ApplicationNotFoundException(int applicationId)
         : base($"Application {applicationId} not found.", 404, "NOT_FOUND") { }
 }
@@ -86,6 +127,10 @@ public class ApplicationNotFoundException : ApiException
 /// </summary>
 public class DatabaseNotFoundException : ApiException
 {
+    /// <summary>
+    /// Initialises a new instance of the <see cref="DatabaseNotFoundException"/> class with the specified database identifier.
+    /// </summary>
+    /// <param name="databaseId">The identifier of the database that was not found.</param>
     public DatabaseNotFoundException(int databaseId)
         : base($"Database {databaseId} not found.", 404, "NOT_FOUND") { }
 }
@@ -97,6 +142,11 @@ public class DeploymentException : CoolifyException
 {
     public string? DeploymentId { get; set; }
 
+    /// <summary>
+/// Initialises a new instance of the <see cref="DeploymentException"/> class with a specified error message and optional deployment identifier.
+/// </summary>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="deploymentId">The optional identifier of the deployment that failed.</param>
     public DeploymentException(string message, string? deploymentId = null)
         : base(message, "DEPLOYMENT_ERROR")
     {
