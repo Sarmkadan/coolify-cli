@@ -14,7 +14,12 @@ public sealed class ApplicationService
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
 
-    public ApplicationService(CoolifyApiClient apiClient, ILogger logger)
+    /// <summary>
+/// Initializes a new instance of the ApplicationService class.
+/// </summary>
+/// <param name="apiClient">The Coolify API client used to communicate with the Coolify service.</param>
+/// <param name="logger">The logger used for logging service operations.</param>
+public ApplicationService(CoolifyApiClient apiClient, ILogger logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
