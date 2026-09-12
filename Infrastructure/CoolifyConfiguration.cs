@@ -6,14 +6,41 @@ namespace CoolifyCli.Infrastructure;
 /// </summary>
 public class CoolifyConfiguration
 {
+    /// <summary>
+    /// Gets or sets the base URL for the Coolify API.
+    /// </summary>
     public string ApiUrl { get; set; } = "https://api.coolify.io";
+    /// <summary>
+    /// Gets or sets the API key for authenticating with the Coolify API.
+    /// </summary>
     public string? ApiKey { get; set; }
+    /// <summary>
+    /// Gets or sets the request timeout in seconds for API calls.
+    /// </summary>
     public int RequestTimeoutSeconds { get; set; } = 30;
+    /// <summary>
+    /// Gets or sets whether verbose logging is enabled.
+    /// </summary>
     public bool VerboseLogging { get; set; } = false;
+    /// <summary>
+    /// Gets or sets whether quiet logging is enabled (suppresses non-essential output).
+    /// </summary>
 public bool QuietLogging { get; set; } = false;
+    /// <summary>
+    /// Gets or sets the default environment name for deployments.
+    /// </summary>
     public string DefaultEnvironment { get; set; } = "production";
+    /// <summary>
+    /// Gets or sets whether automatic retry of failed requests is enabled.
+    /// </summary>
     public bool AutoRetry { get; set; } = true;
+    /// <summary>
+    /// Gets or sets the maximum number of retry attempts for failed requests.
+    /// </summary>
     public int MaxRetries { get; set; } = 3;
+    /// <summary>
+    /// Gets or sets the list of trusted hosts for SSL certificate validation.
+    /// </summary>
     public List<string> TrustedHosts { get; set; } = new();
 
     /// <summary>
