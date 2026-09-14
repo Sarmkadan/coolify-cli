@@ -146,4 +146,13 @@ public class DatabaseConfiguration
         IsHealthy = false;
         LastHealthCheckAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Returns a concise readable representation of the configuration, excluding secrets.
+    /// </summary>
+    /// <returns>A string representation of the database configuration.</returns>
+    public override string ToString()
+    {
+        return $"DatabaseConfiguration {{ Id={Id}, Name={Name}, Type={Type}, Version={Version}, Host={Host}, Port={Port}, DefaultDatabase={DefaultDatabase}, CreatedAt={CreatedAt:u}, EnableBackups={EnableBackups}, IsHealthy={IsHealthy} }}";
+    }
 }
