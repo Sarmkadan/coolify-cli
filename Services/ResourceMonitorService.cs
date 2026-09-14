@@ -106,6 +106,9 @@ public class ResourceMonitorService
     /// <param name="usage">The snapshot to render.</param>
     public static void RenderUsageLine(ResourceUsage usage)
     {
+        if (usage is null)
+            throw new ArgumentNullException(nameof(usage));
+
         var severity = usage.GetAlertSeverity();
         Console.ForegroundColor = severity switch
         {
