@@ -7,19 +7,46 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class ServiceHealth
 {
+    /// <summary>Gets or sets the unique identifier of the health check record.</summary>
     public int Id { get; set; }
+
+    /// <summary>Gets or sets the identifier of the service being monitored.</summary>
     public string ServiceId { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the current health status of the service.</summary>
     public HealthStatus Status { get; set; } = HealthStatus.Unknown;
+
+    /// <summary>Gets or sets the timestamp of the last health check.</summary>
     public DateTime CheckedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Gets or sets the response time of the last check, in milliseconds.</summary>
     public double ResponseTimeMs { get; set; } = 0;
+
+    /// <summary>Gets or sets the HTTP status code returned by the last check.</summary>
     public int HttpStatusCode { get; set; } = 0;
+
+    /// <summary>Gets or sets the CPU usage percentage of the service.</summary>
     public double CpuUsagePercent { get; set; } = 0;
+
+    /// <summary>Gets or sets the memory usage of the service, in megabytes.</summary>
     public double MemoryUsageMb { get; set; } = 0;
+
+    /// <summary>Gets or sets the number of active connections to the service.</summary>
     public int ActiveConnections { get; set; } = 0;
+
+    /// <summary>Gets or sets the error rate percentage of the service.</summary>
     public double ErrorRatePercent { get; set; } = 0;
+
+    /// <summary>Gets or sets the timestamp of the last successful health check.</summary>
     public DateTime? LastSuccessfulCheck { get; set; }
+
+    /// <summary>Gets or sets the number of consecutive failed health checks.</summary>
     public int FailureCount { get; set; } = 0;
+
+    /// <summary>Gets or sets the reason for the most recent failure, if any.</summary>
     public string? FailureReason { get; set; }
+
+    /// <summary>Gets or sets the list of warnings raised during health checks.</summary>
     public List<string> Warnings { get; set; } = new();
 
     /// <summary>
