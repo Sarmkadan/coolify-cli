@@ -26,6 +26,10 @@ public sealed class ResilientHttpHandler : DelegatingHandler
     private DateTimeOffset _circuitOpenedUntil = DateTimeOffset.MinValue;
     private bool _halfOpenTrialInFlight;
 
+    private const int BackoffAttemptOffset = 1;
+    private const double BackoffExponentBase = 2.0;
+    private const double JitterFactor = 1.0;
+
     /// <summary>
     /// Creates the handler around an inner HTTP handler.
     /// </summary>
@@ -183,8 +187,8 @@ public sealed class ResilientHttpHandler : DelegatingHandler
             }
         }
 
-        double backoffMs = _options.BaseDelay.TotalMilliseconds * Math.Pow(2, attempt - 1);
-        double jitterMs = Random.Shared.NextDouble() * _options.BaseDelay.TotalMilliseconds;
+        double backoffMs = _options.BaseDelay.TotalMilliseconds * Math.Pow(BackoffExponentBase, attempt - BackoffAttemptOffset);
+        double jitterMs = Random.Shared.NextDouble() * _options.BaseDelay.TotalMilliseconds * JitterFactor;
         double totalMs = Math.Min(backoffMs + jitterMs, _options.MaxDelay.TotalMilliseconds);
         return TimeSpan.FromMilliseconds(totalMs);
     }
