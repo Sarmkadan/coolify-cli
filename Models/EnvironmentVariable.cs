@@ -175,4 +175,14 @@ public class EnvironmentVariable
         UpdatedAt = DateTime.UtcNow;
         UpdatedBy = updatedBy;
     }
+
+    /// <summary>
+    /// Returns a string representation of the environment variable in 'Key=Value' format.
+    /// The value is masked if it looks like a secret.
+    /// </summary>
+    /// <returns>'Key=Value' string with value masked if secret.</returns>
+    public override string ToString()
+    {
+        return $"{Key}={GetDisplayValue()}";
+    }
 }
