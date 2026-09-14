@@ -15,6 +15,9 @@ public class MonitoringCommands : CommandBase
     private readonly HealthCheckService _healthService;
     private readonly LogService _logService;
 
+    /// <summary>
+    /// Initializes a new instance of the MonitoringCommands class with the specified API client, logger, and configuration.
+    /// </summary>
     public MonitoringCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
         : base(apiClient, logger, config)
     {
