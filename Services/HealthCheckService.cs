@@ -144,6 +144,9 @@ public class HealthCheckService
     /// <returns>List of active alerts.</returns>
     public async Task<ApiResponse<List<object>>> GetApplicationAlertsAsync(int applicationId, string? severity = null)
     {
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
+
         _logger.Info($"Fetching alerts for application {applicationId}");
 
         var endpoint = $"/api/v1/applications/{applicationId}/alerts";
@@ -281,6 +284,9 @@ public class HealthCheckService
     /// <returns>Async enumerable of health snapshots.</returns>
     public async IAsyncEnumerable<ServiceHealth> MonitorHealthAsync(int applicationId, int intervalSeconds = 30, [EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
     {
+        if (applicationId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(applicationId), "Application ID must be positive.");
+
         if (intervalSeconds < 5 || intervalSeconds > 300)
             yield break;
 
