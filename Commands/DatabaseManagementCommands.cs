@@ -14,6 +14,10 @@ public class DatabaseManagementCommands : CommandBase
 {
     private readonly DatabaseService _dbService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DatabaseManagementCommands"/> class
+    /// with the API client, logger, and configuration used to build database commands.
+    /// </summary>
     public DatabaseManagementCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
         : base(apiClient, logger, config)
     {
