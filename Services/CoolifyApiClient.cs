@@ -33,6 +33,12 @@ public class CoolifyApiClient
     /// <summary>Name of the HTTP header used for API key authentication.</summary>
     private const string ApiKeyHeaderName = "X-API-Key";
 
+    /// <summary>Name of the HTTP header for User-Agent.</summary>
+    private const string UserAgentHeaderName = "User-Agent";
+
+    /// <summary>Endpoint for health check.</summary>
+    private const string HealthEndpoint = "/health";
+
     private static readonly JsonSerializerOptions DeserializeOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -82,7 +88,7 @@ public class CoolifyApiClient
         _httpClient.Timeout = Timeout.InfiniteTimeSpan;
         _httpClient.BaseAddress = new Uri(_baseUrl);
         _httpClient.DefaultRequestHeaders.Add(ApiKeyHeaderName, _apiKey);
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", UserAgentValue);
+        _httpClient.DefaultRequestHeaders.Add(UserAgentHeaderName, UserAgentValue);
     }
 
     /// <summary>
@@ -292,7 +298,7 @@ public class CoolifyApiClient
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.GetTimeoutSeconds));
-            using var response = await _httpClient.GetAsync("/health", cts.Token);
+            using var response = await _httpClient.GetAsync(HealthEndpoint, cts.Token);
             return response.IsSuccessStatusCode;
         }
         catch (TaskCanceledException)
