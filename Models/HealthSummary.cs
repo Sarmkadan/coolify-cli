@@ -36,4 +36,13 @@ public class HealthSummary
     /// Gets the percentage of unhealthy services.
     /// </summary>
     public double TotalUnhealthyPercentage => UnhealthyPercentage + CriticalPercentage + DegradedPercentage;
+
+    /// <summary>
+    /// Returns a concise human-readable summary of the health status.
+    /// </summary>
+    /// <returns>A string like 'Healthy: X%, Unhealthy: Y, Total: Z'</returns>
+    public override string ToString()
+    {
+        return $"Healthy: {HealthyPercentage:0.#}%, Unhealthy: {TotalUnhealthyCount}, Total: {TotalServices}";
+    }
 }
