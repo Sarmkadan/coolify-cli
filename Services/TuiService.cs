@@ -16,6 +16,13 @@ public class TuiService
     private const int HeaderRows = 4;
     private const int FooterRows = 2;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TuiService"/> class with the
+    /// application, database, and logging dependencies used by the TUI loop.
+    /// </summary>
+    /// <param name="appService">Service used to query application deployments.</param>
+    /// <param name="dbService">Service used to query database configurations.</param>
+    /// <param name="logger">Logger used to record diagnostic messages.</param>
     public TuiService(ApplicationService appService, DatabaseService dbService, ILogger logger)
     {
         _appService = appService ?? throw new ArgumentNullException(nameof(appService));
