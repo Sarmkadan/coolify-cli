@@ -13,6 +13,11 @@ public class HealthCheckService
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HealthCheckService"/> class.
+    /// </summary>
+    /// <param name="apiClient">The API client for interacting with Coolify.</param>
+    /// <param name="logger">The logger instance.</param>
     public HealthCheckService(CoolifyApiClient apiClient, ILogger logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
