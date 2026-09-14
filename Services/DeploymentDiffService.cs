@@ -16,6 +16,11 @@ public sealed class DeploymentDiffService
     private readonly ApplicationService _appService;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeploymentDiffService"/> class.
+    /// </summary>
+    /// <param name="appService">The application service used to fetch live configuration.</param>
+    /// <param name="logger">The logger used for logging information and errors.</param>
     public DeploymentDiffService(ApplicationService appService, ILogger logger)
     {
         _appService = appService ?? throw new ArgumentNullException(nameof(appService));
