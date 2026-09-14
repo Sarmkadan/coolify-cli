@@ -15,6 +15,12 @@ public class TuiCommands : CommandBase
     private readonly ApplicationService _appService;
     private readonly DatabaseService _dbService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TuiCommands"/> class.
+    /// </summary>
+    /// <param name="apiClient">The Coolify API client.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="config">The Coolify configuration.</param>
     public TuiCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
         : base(apiClient, logger, config)
     {
