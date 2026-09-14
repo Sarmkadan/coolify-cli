@@ -13,6 +13,11 @@ public class EnvironmentVariableService
     private readonly ILogger _logger;
     private readonly SecretMasker _secretMasker;
 
+    /// <summary>
+    /// Initializes a new instance of the EnvironmentVariableService class.
+    /// </summary>
+    /// <param name="apiClient">The API client for communicating with Coolify.</param>
+    /// <param name="logger">The logger for recording service operations.</param>
     public EnvironmentVariableService(CoolifyApiClient apiClient, ILogger logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
