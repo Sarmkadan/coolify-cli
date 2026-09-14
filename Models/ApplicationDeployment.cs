@@ -148,4 +148,13 @@ public class ApplicationDeployment
     /// </summary>
     /// <returns>True if failure count exceeds threshold.</returns>
     public bool RequiresAttention() => FailureCount >= 3;
+
+    /// <summary>
+    /// Returns a string representation of the deployment.
+    /// </summary>
+    /// <returns>A string containing the name, id, and status.</returns>
+    public override string ToString()
+    {
+        return $"{Name} (Id: {Id}, Status: {Status})";
+    }
 }
