@@ -44,8 +44,12 @@ public static class ConfigurationHelper
     /// Saves configuration to file.
     /// </summary>
     /// <param name="config">Configuration dictionary to save.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
     public static void SaveConfiguration(Dictionary<string, object> config)
     {
+        if (config == null)
+            throw new ArgumentNullException(nameof(config));
+
         try
         {
             if (!Directory.Exists(ConfigDir))
@@ -66,8 +70,12 @@ public static class ConfigurationHelper
     /// <param name="key">Configuration key.</param>
     /// <param name="defaultValue">Default value if key not found.</param>
     /// <returns>Configuration value or default.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is null.</exception>
     public static object? GetConfigValue(string key, object? defaultValue = null)
     {
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+
         var config = LoadConfiguration();
         return config.TryGetValue(key, out var value) ? value : defaultValue;
     }
@@ -77,8 +85,12 @@ public static class ConfigurationHelper
     /// </summary>
     /// <param name="key">Configuration key.</param>
     /// <param name="value">Configuration value.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is null.</exception>
     public static void SetConfigValue(string key, object value)
     {
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+
         var config = LoadConfiguration();
         config[key] = value;
         SaveConfiguration(config);
@@ -88,8 +100,12 @@ public static class ConfigurationHelper
     /// Deletes a configuration value.
     /// </summary>
     /// <param name="key">Configuration key to delete.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is null.</exception>
     public static void DeleteConfigValue(string key)
     {
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+
         var config = LoadConfiguration();
         if (config.ContainsKey(key))
         {
@@ -202,8 +218,12 @@ public static class ConfigurationHelper
     /// Exports configuration to a JSON file.
     /// </summary>
     /// <param name="filePath">Path to export to.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
     public static void ExportConfiguration(string filePath)
     {
+        if (filePath == null)
+            throw new ArgumentNullException(nameof(filePath));
+
         try
         {
             var config = LoadConfiguration();
