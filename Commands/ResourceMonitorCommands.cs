@@ -13,6 +13,9 @@ public class ResourceMonitorCommands : CommandBase
 {
     private readonly ApplicationService _appService;
 
+    /// <summary>
+    /// Initializes a new instance of the ResourceMonitorCommands class.
+    /// </summary>
     public ResourceMonitorCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
         : base(apiClient, logger, config)
     {
