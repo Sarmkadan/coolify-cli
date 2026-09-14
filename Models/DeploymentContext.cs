@@ -7,17 +7,40 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class DeploymentContext
 {
+    /// <summary>Gets or sets the unique identifier for this deployment.</summary>
     public string DeploymentId { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>Gets or sets the application being deployed.</summary>
     public ApplicationDeployment Application { get; set; } = new();
+
+    /// <summary>Gets or sets the environment variables applied to the deployment.</summary>
     public List<EnvironmentVariable> EnvironmentVariables { get; set; } = new();
+
+    /// <summary>Gets or sets the databases linked to this deployment.</summary>
     public List<DatabaseConfiguration> LinkedDatabases { get; set; } = new();
+
+    /// <summary>Gets or sets the target status the deployment should reach.</summary>
     public DeploymentStatus TargetStatus { get; set; } = DeploymentStatus.Deployed;
+
+    /// <summary>Gets or sets the UTC timestamp when the deployment started.</summary>
     public DateTime StartedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Gets or sets the UTC timestamp when the deployment completed, or null if not yet completed.</summary>
     public DateTime? CompletedAt { get; set; }
+
+    /// <summary>Gets or sets the log entries recorded during the deployment.</summary>
     public List<LogEntry> DeploymentLogs { get; set; } = new();
+
+    /// <summary>Gets or sets the artifacts produced during the deployment, keyed by identifier.</summary>
     public Dictionary<string, string> Artifacts { get; set; } = new();
+
+    /// <summary>Gets or sets a value indicating whether the deployment requires manual approval.</summary>
     public bool RequiresApproval { get; set; } = false;
+
+    /// <summary>Gets or sets the identifier of the user who approved the deployment, or null if not approved.</summary>
     public string? ApprovedBy { get; set; }
+
+    /// <summary>Gets or sets the version to roll back to, or null if no rollback is pending.</summary>
     public string? RollbackToVersion { get; set; }
 
     /// <summary>
