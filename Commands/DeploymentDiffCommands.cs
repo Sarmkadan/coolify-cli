@@ -14,6 +14,12 @@ public class DeploymentDiffCommands : CommandBase
 {
     private readonly ApplicationService _appService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeploymentDiffCommands"/> class.
+    /// </summary>
+    /// <param name="apiClient">The Coolify API client used for service calls.</param>
+    /// <param name="logger">The logger used for diagnostics.</param>
+    /// <param name="config">The Coolify configuration.</param>
     public DeploymentDiffCommands(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
         : base(apiClient, logger, config)
     {
