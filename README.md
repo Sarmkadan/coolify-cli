@@ -3130,7 +3130,100 @@ The `EnumExtensions` class provides a comprehensive set of utility methods for w
 
 ## AdvancedAppCommands
 
-The `AdvancedAppCommands` class provides advanced application lifecycle management commands for deployment configuration, environment variables, scaling, and rollback operations. It offers fine-grained control over application management through commands like restart, set-env, scale, and rollback.
+The `AdvancedAppCommands` class provides advanced application lifecycle management commands for deployment configuration, environment variables, scaling, and rollback operations. It offers fine-grained control over application management through commands like restart, set-env, list-env, scale, and rollback.
+
+### Commands
+
+#### CreateRestartCommand()
+Creates a command to restart an application, performing graceful shutdown and startup sequence.
+
+**Usage:**
+```csharp
+var restartCommand = advancedCommands.CreateRestartCommand();
+// Add to CLI root command
+// Example CLI usage: coolify app restart 123 --force
+```
+
+**Options:**
+- `--force`, `-f`: Force restart without graceful shutdown
+
+**Arguments:**
+- `id`: Application ID (integer)
+
+#### CreateSetEnvCommand()
+Creates a command to update environment variables for an application without redeployment. Loads variables from file or command-line, validates, then updates via API.
+
+**Usage:**
+```csharp
+var setEnvCommand = advancedCommands.CreateSetEnvCommand();
+// Add to CLI root command
+// Example CLI usage: coolify app set-env 123 --file .env
+// Example CLI usage: coolify app set-env 123 --var KEY1=VALUE1 --var KEY2=VALUE2
+```
+
+**Options:**
+- `--file`, `-f`: Path to environment variable file (each line in KEY=VALUE format, comments start with #)
+- `--var`, `-v`: Environment variables in KEY=VALUE format (can be specified multiple times)
+
+**Arguments:**
+- `id`: Application ID (integer)
+
+#### CreateListEnvCommand()
+Creates a command to list environment variables for an application. Secret values are masked by default (e.g. "abcd****"); pass `--reveal` to print them in plain text.
+
+**Usage:**
+```csharp
+var listEnvCommand = advancedCommands.CreateListEnvCommand();
+// Add to CLI root command
+// Example CLI usage: coolify app list-env 123
+// Example CLI usage: coolify app list-env 123 --reveal
+```
+
+**Options:**
+- `--reveal`: Show actual secret values instead of masked placeholders
+
+**Arguments:**
+- `id`: Application ID (integer)
+
+#### CreateScaleCommand()
+Creates a command to scale application instances or resources. Validates requested resources against available capacity before applying scale operation.
+
+**Usage:**
+```csharp
+var scaleCommand = advancedCommands.CreateScaleCommand();
+// Add to CLI root command
+// Example CLI usage: coolify app scale 123 --instances 3
+// Example CLI usage: coolify app scale 123 --cpu 0.5 --memory 1Gi
+```
+
+**Options:**
+- `--instances`, `-i`: Number of instances
+- `--cpu`: CPU limit in millicores (e.g., 500m = 0.5)
+- `--memory`, `-m`: Memory limit (e.g., 512Mi, 1Gi)
+
+**Arguments:**
+- `id`: Application ID (integer)
+
+**Note:** At least one scaling parameter must be specified.
+
+#### CreateRollbackCommand()
+Creates a command to rollback application to previous deployment version. Validates rollback target exists and handles rollback process.
+
+**Usage:**
+```csharp
+var rollbackCommand = advancedCommands.CreateRollbackCommand();
+// Add to CLI root command
+// Example CLI usage: coolify app rollback 123
+// Example CLI usage: coolify app rollback 123 --deployment abc123
+```
+
+**Options:**
+- `--deployment`, `-d`: Specific deployment ID to rollback to (if not specified, rolls back to latest)
+
+**Arguments:**
+- `id`: Application ID (integer)
+
+### Example Usage
 
 Here's an example of how to use the `AdvancedAppCommands` class to manage application lifecycle:
 
@@ -3145,18 +3238,31 @@ var advancedCommands = new AdvancedAppCommands(apiClient, logger, config);
 // Create and execute restart command
 var restartCommand = advancedCommands.CreateRestartCommand();
 // restartCommand can be added to a CLI root command and executed with appropriate arguments
+// Example: coolify app restart 123 --force
 
 // Create and execute set-env command to update environment variables
 var setEnvCommand = advancedCommands.CreateSetEnvCommand();
 // setEnvCommand can be configured with --file or --var options for environment variable updates
+// Example: coolify app set-env 123 --file .env
+// Example: coolify app set-env 123 --var DB_HOST=localhost --var DB_PORT=5432
+
+// Create and execute list-env command to view environment variables
+var listEnvCommand = advancedCommands.CreateListEnvCommand();
+// listEnvCommand can be used with --reveal to show actual secret values
+// Example: coolify app list-env 123
+// Example: coolify app list-env 123 --reveal
 
 // Create and execute scale command to adjust application resources
 var scaleCommand = advancedCommands.CreateScaleCommand();
 // scaleCommand accepts --instances, --cpu, and --memory options for scaling
+// Example: coolify app scale 123 --instances 3
+// Example: coolify app scale 123 --cpu 0.5 --memory 1Gi
 
 // Create and execute rollback command to revert to a previous deployment
 var rollbackCommand = advancedCommands.CreateRollbackCommand();
 // rollbackCommand accepts --deployment option to specify a specific deployment ID
+// Example: coolify app rollback 123
+// Example: coolify app rollback 123 --deployment v1.2.3
 ```
 
 ## EnvironmentVariable
