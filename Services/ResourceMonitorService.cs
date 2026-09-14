@@ -13,6 +13,11 @@ public class ResourceMonitorService
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the ResourceMonitorService class.
+    /// </summary>
+    /// <param name="apiClient">The API client for communicating with Coolify.</param>
+    /// <param name="logger">The logger for recording service operations.</param>
     public ResourceMonitorService(CoolifyApiClient apiClient, ILogger logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
