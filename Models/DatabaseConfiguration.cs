@@ -7,24 +7,61 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class DatabaseConfiguration
 {
+    /// <summary>Gets or sets the unique identifier of the database instance.</summary>
     public int Id { get; set; }
+
+    /// <summary>Gets or sets the display name of the database instance.</summary>
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the database engine type.</summary>
     public DatabaseType Type { get; set; }
+
+    /// <summary>Gets or sets the database engine version.</summary>
     public string Version { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the hostname or IP address where the database is reachable.</summary>
     public string Host { get; set; } = "localhost";
+
+    /// <summary>Gets or sets the TCP port the database listens on.</summary>
     public int Port { get; set; }
+
+    /// <summary>Gets or sets the administrative username used to connect to the database.</summary>
     public string RootUsername { get; set; } = "root";
+
+    /// <summary>Gets or sets the administrative password used to connect to the database.</summary>
     public string RootPassword { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the name of the default database to connect to.</summary>
     public string DefaultDatabase { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the timestamp when the database instance was created.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Gets or sets the maximum number of concurrent connections allowed.</summary>
     public int MaxConnections { get; set; } = 100;
+
+    /// <summary>Gets or sets the connection timeout in seconds.</summary>
     public int ConnectionTimeoutSeconds { get; set; } = 30;
+
+    /// <summary>Gets or sets a value indicating whether automated backups are enabled.</summary>
     public bool EnableBackups { get; set; } = true;
+
+    /// <summary>Gets or sets the number of days to retain backups.</summary>
     public int BackupRetentionDays { get; set; } = 30;
+
+    /// <summary>Gets or sets the cron expression that defines the backup schedule.</summary>
     public string BackupSchedule { get; set; } = "0 2 * * *"; // 2 AM daily
+
+    /// <summary>Gets or sets a value indicating whether the database passed its last health check.</summary>
     public bool IsHealthy { get; set; } = true;
+
+    /// <summary>Gets or sets the timestamp of the last health check, or null if none has run.</summary>
     public DateTime? LastHealthCheckAt { get; set; }
+
+    /// <summary>Gets or sets the identifier of the environment this database belongs to.</summary>
     public string EnvironmentId { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the list of host patterns allowed to connect to the database.</summary>
     public List<string> AllowedHostPatterns { get; set; } = new();
 
     /// <summary>
