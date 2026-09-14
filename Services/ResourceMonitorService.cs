@@ -49,6 +49,9 @@ public class ResourceMonitorService
     /// <returns>List of <see cref="ResourceUsage"/> snapshots (failed queries are silently skipped).</returns>
     public async Task<List<ResourceUsage>> GetBulkResourceUsageAsync(IEnumerable<int> applicationIds)
     {
+        if (applicationIds is null)
+            throw new ArgumentNullException(nameof(applicationIds));
+
         var ids = applicationIds.ToList();
         _logger.Info($"Fetching resource usage for {ids.Count} applications");
 
