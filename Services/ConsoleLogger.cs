@@ -13,6 +13,12 @@ public sealed class ConsoleLogger : ILogger
     private readonly bool _quiet;
     private readonly object _lockObject = new();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
+    /// </summary>
+    /// <param name="verbose">When <c>true</c>, enables debug-level logging.</param>
+    /// <param name="colorOutput">When <c>true</c>, colors output by log level.</param>
+    /// <param name="quiet">When <c>true</c>, suppresses info, debug, and warning messages.</param>
     public ConsoleLogger(bool verbose = false, bool colorOutput = true, bool quiet = false)
     {
         _verboseLogging = verbose;
