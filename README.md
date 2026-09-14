@@ -188,34 +188,108 @@ diff.ApplicationName.Should().Be("my-service");
 
 The `DatabaseManagementCommands` class provides database lifecycle management commands for backup, restore, optimization, and credential management operations. It handles critical database operations with safety validations and confirmation prompts to prevent accidental data loss.
 
-Here's a realistic example of using the database management commands:
+### Available Commands
 
-```csharp
-// Create database management commands instance
-var dbCommands = new DatabaseManagementCommands(apiClient, logger, config);
+#### Backup Command
+Creates a database backup with options for backup type and retention.
 
-// Create and execute backup command
-var backupCommand = dbCommands.CreateBackupCommand();
-// backupCommand can be added to a CLI root command with arguments:
-// backupCommand.AddArgument(new Argument<int>("id"));
-// backupCommand.AddOption(new Option<string>("--type"));
-// backupCommand.AddOption(new Option<string>("--destination"));
+**Usage:**
+```bash
+coolify database backup <id> [options]
+```
 
-// Create and execute restore command
-var restoreCommand = dbCommands.CreateRestoreCommand();
-// restoreCommand.AddArgument(new Argument<int>("id"));
-// restoreCommand.AddOption(new Option<string>("--backup"));
-// restoreCommand.AddOption(new Option<bool>("--force"));
+**Arguments:**
+- `id` (required): Database ID to backup
 
-// Create and execute optimize command
-var optimizeCommand = dbCommands.CreateOptimizeCommand();
-// optimizeCommand.AddArgument(new Argument<int>("id"));
-// optimizeCommand.AddOption(new Option<string>("--mode"));
+**Options:**
+- `-t, --type <type>`: Backup type: `full` or `incremental` (default: `full`)
+- `-d, --destination <destination>`: Backup storage destination (S3, local, etc.)
+- `-r, --retention <days>`: Retention days for backup (default: `30`)
 
-// Create and execute credentials command
-var credentialsCommand = dbCommands.CreateCredentialsCommand();
-// credentialsCommand.AddArgument(new Argument<int>("id"));
-// credentialsCommand.AddOption(new Option<bool>("--reset"));
+**Example:**
+```bash
+# Create a full backup with 60-day retention
+coolify database backup 42 --type full --retention 60
+
+# Create an incremental backup to S3
+coolify database backup 123 --type incremental --destination s3://my-bucket/backups
+```
+
+#### Restore Command
+Restores a database from a backup with confirmation prompt unless forced.
+
+**Usage:**
+```bash
+coolify database restore <id> [options]
+```
+
+**Arguments:**
+- `id` (required): Database ID to restore
+
+**Options:**
+- `-b, --backup <backupId>` (required): Backup ID to restore from
+- `-f, --force`: Skip confirmation prompt
+
+**Example:**
+```bash
+# Restore from backup with confirmation
+coolify database restore 42 --backup backup-2024-06-15-1430
+
+# Force restore without confirmation
+coolify database restore 42 --backup backup-2024-06-15-1430 --force
+```
+
+#### Optimize Command
+Optimizes database performance with different optimization modes.
+
+**Usage:**
+```bash
+coolify database optimize <id> [options]
+```
+
+**Arguments:**
+- `id` (required): Database ID to optimize
+
+**Options:**
+- `-m, --mode <mode>`: Optimization mode: `quick`, `standard`, or `full` (default: `standard`)
+
+**Example:**
+```bash
+# Standard optimization
+coolify database optimize 42 --mode standard
+
+# Full optimization for maximum performance
+coolify database optimize 123 --mode full
+
+# Quick optimization for minimal downtime
+coolify database optimize 42 --mode quick
+```
+
+#### Credentials Command
+Manages database user credentials, allowing password reset and credential rotation.
+
+**Usage:**
+```bash
+coolify database credentials <id> [options]
+```
+
+**Arguments:**
+- `id` (required): Database ID
+
+**Options:**
+- `--reset`: Reset all credentials (required to perform action)
+- `-u, --user <username>`: Specific user account to reset (if not specified, resets all users)
+
+**Example:**
+```bash
+# Reset all credentials for database
+coolify database credentials 42 --reset
+
+# Reset credentials for specific user
+coolify database credentials 42 --reset --user admin
+
+# Show help (requires --reset flag to actually perform reset)
+coolify database credentials 42
 ```
 
 ## DeploymentDiffEntry
