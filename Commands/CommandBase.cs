@@ -11,11 +11,30 @@ namespace CoolifyCli.Commands;
 /// </summary>
 public abstract class CommandBase
 {
+/// <summary>
+/// The Coolify API client used to communicate with the Coolify server.
+/// </summary>
 protected readonly CoolifyApiClient ApiClient;
+/// <summary>
+/// The logger used to record diagnostic and error information.
+/// </summary>
 protected readonly ILogger Logger;
+/// <summary>
+/// The application configuration providing settings such as the server URL and logging preferences.
+/// </summary>
 protected readonly CoolifyConfiguration Configuration;
+/// <summary>
+/// Gets a value indicating whether quiet logging is enabled, suppressing non-essential console output.
+/// </summary>
 protected bool QuietMode => Configuration.QuietLogging;
 
+/// <summary>
+/// Initializes a new instance of the <see cref="CommandBase"/> class with the specified dependencies.
+/// </summary>
+/// <param name="apiClient">The Coolify API client. Must not be null.</param>
+/// <param name="logger">The logger. Must not be null.</param>
+/// <param name="config">The application configuration. Must not be null.</param>
+/// <exception cref="ArgumentNullException">Thrown when any argument is null.</exception>
 public CommandBase(CoolifyApiClient apiClient, ILogger logger, CoolifyConfiguration config)
 {
 ApiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
