@@ -1,135 +1,192 @@
 # CoolifyApiClient
 
-`CoolifyApiClient` is the primary HTTP client wrapper for interacting with a Coolify instance's REST API. It encapsulates authentication, serialization, and error handling, exposing typed asynchronous methods for the standard CRUD operations (`GET`, `POST`, `PUT`, `DELETE`) and a connectivity check. All responses are wrapped in a generic `ApiResponse<T>` envelope that carries the deserialized payload, status information, and any error context.
+Core HTTP client for Coolify API communication. Handles authentication, request serialization, and error handling.
 
-## API
+## Overview
 
-### `CoolifyApiClient`
+Every request is wrapped in a `ResiliencePolicy` that retries transient failures (408/429/5xx and connection errors) with exponential backoff and jitter, and trips a circuit breaker after repeated consecutive failures so a Coolify outage does not turn into a pile of hanging requests.
 
-Constructor for the client. Initializes the underlying HTTP handler, configures base addressing, and sets up authentication headers or tokens required by the Coolify API. The exact parameters (e.g., base URL, API key) are implementation-specific and should be supplied according to the target Coolify instance configuration.
+## Constructor
 
-### `GetAsync<T>`
+```csharp
+public CoolifyApiClient(HttpClient httpClient, string baseUrl, string apiKey, CoolifyApiClientOptions? options = null)
+```
+
+### Parameters
+
+- `httpClient`: HTTP client used to send API requests.
+- `baseUrl`: Absolute HTTP or HTTPS URL of the Coolify API.
+- `apiKey`: API key used to authenticate requests.
+- `options`: Optional API client settings (defaults to new `CoolifyApiClientOptions()` if null).
+
+### Exceptions
+
+- `ArgumentNullException`: Thrown when `httpClient` is null.
+- `ArgumentException`: Thrown when `baseUrl` or `apiKey` is null or white space, or when `baseUrl` is not an absolute HTTP or HTTPS URI.
+
+## Configuration
+
+The client configures the provided `HttpClient` as follows:
+- Sets `Timeout` to `InfiniteTimeSpan` (per-method `CancellationTokenSource` controls timing).
+- Sets `BaseAddress` to the provided `baseUrl` (ensuring trailing slash).
+- Adds default headers:
+  - `X-API-Key`: the provided `apiKey`
+  - `User-Agent`: "CoolifyCli/1.0"
+
+## Public Methods
+
+### GetAsync<T>
 
 ```csharp
 public async Task<ApiResponse<T>> GetAsync<T>(string endpoint)
 ```
 
-Performs an HTTP `GET` request against the specified relative `endpoint` and deserializes a successful JSON response body into an instance of `T`.
+Performs a GET request to the specified endpoint.
 
-- **Parameters:**
-  - `endpoint` (`string`): The relative URL path (e.g., `"projects"`, `"servers/1"`). Must not be `null` or empty.
-- **Returns:** `Task<ApiResponse<T>>` — an `ApiResponse<T>` containing the deserialized data on success, or error details on failure.
-- **Exceptions:** Throws `ArgumentNullException` when `endpoint` is `null`. Throws `HttpRequestException` for network-level failures. Throws `JsonException` when the response body cannot be deserialized to `T`.
+#### Parameters
 
-### `PostAsync<T>`
+- `endpoint`: API endpoint path.
 
-```csharp
-public async Task<ApiResponse<T>> PostAsync<T>(string endpoint, object? body = null)
-```
+#### Returns
 
-Performs an HTTP `POST` request to the specified `endpoint`, optionally sending a JSON-serialized request `body`. Deserializes the response into `T`.
+- `ApiResponse<T>`: API response with data.
 
-- **Parameters:**
-  - `endpoint` (`string`): The relative URL path. Must not be `null` or empty.
-  - `body` (`object?`): An optional object to serialize as the JSON request body. `null` sends an empty body.
-- **Returns:** `Task<ApiResponse<T>>` — the wrapped response.
-- **Exceptions:** Throws `ArgumentNullException` when `endpoint` is `null`. Throws `HttpRequestException` for transport errors. Throws `JsonException` on serialization or deserialization failures.
+#### Exceptions
 
-### `PutAsync<T>`
+- `ArgumentException`: Thrown when `endpoint` is null or empty.
+
+#### Timeout
+
+Uses `CoolifyApiClientOptions.GetTimeoutSeconds` as the per-request timeout.
+
+### PostAsync<T>
 
 ```csharp
-public async Task<ApiResponse<T>> PutAsync<T>(string endpoint, object? body = null)
+public async Task<ApiResponse<T>> PostAsync<T>(string endpoint, object content)
 ```
 
-Performs an HTTP `PUT` request to the specified `endpoint`, optionally sending a JSON-serialized request `body`. Deserializes the response into `T`.
+Performs a POST request with JSON body.
 
-- **Parameters:**
-  - `endpoint` (`string`): The relative URL path. Must not be `null` or empty.
-  - `body` (`object?`): An optional object to serialize as the JSON request body. `null` sends an empty body.
-- **Returns:** `Task<ApiResponse<T>>` — the wrapped response.
-- **Exceptions:** Throws `ArgumentNullException` when `endpoint` is `null`. Throws `HttpRequestException` for transport errors. Throws `JsonException` on serialization or deserialization failures.
+#### Parameters
 
-### `DeleteAsync<T>`
+- `endpoint`: API endpoint path.
+- `content`: Request body content.
+
+#### Returns
+
+- `ApiResponse<T>`: API response with data.
+
+#### Exceptions
+
+- `ArgumentException`: Thrown when `endpoint` is null or empty.
+- `ArgumentNullException`: Thrown when `content` is null.
+
+#### Timeout
+
+Uses `CoolifyApiClientOptions.PostTimeoutSeconds` as the per-request timeout.
+
+### PutAsync<T>
+
+```csharp
+public async Task<ApiResponse<T>> PutAsync<T>(string endpoint, object content)
+```
+
+Performs a PUT request with JSON body.
+
+#### Parameters
+
+- `endpoint`: API endpoint path.
+- `content`: Request body content.
+
+#### Returns
+
+- `ApiResponse<T>`: API response with data.
+
+#### Exceptions
+
+- `ArgumentException`: Thrown when `endpoint` is null or empty.
+- `ArgumentNullException`: Thrown when `content` is null.
+
+#### Timeout
+
+Uses `CoolifyApiClientOptions.PutTimeoutSeconds` as the per-request timeout.
+
+### DeleteAsync<T>
 
 ```csharp
 public async Task<ApiResponse<T>> DeleteAsync<T>(string endpoint)
 ```
 
-Performs an HTTP `DELETE` request against the specified `endpoint`. Deserializes the response body into `T` (often an acknowledgment or status object).
+Performs a DELETE request.
 
-- **Parameters:**
-  - `endpoint` (`string`): The relative URL path. Must not be `null` or empty.
-- **Returns:** `Task<ApiResponse<T>>` — the wrapped response.
-- **Exceptions:** Throws `ArgumentNullException` when `endpoint` is `null`. Throws `HttpRequestException` for network-level failures. Throws `JsonException` when the response body cannot be deserialized to `T`.
+#### Parameters
 
-### `TestConnectionAsync`
+- `endpoint`: API endpoint path.
+
+#### Returns
+
+- `ApiResponse<T>`: API response with data.
+
+#### Exceptions
+
+- `ArgumentException`: Thrown when `endpoint` is null or empty.
+
+#### Timeout
+
+Uses `CoolifyApiClientOptions.DeleteTimeoutSeconds` as the per-request timeout.
+
+### TestConnectionAsync
 
 ```csharp
 public async Task<bool> TestConnectionAsync()
 ```
 
-Sends a lightweight probe request to the Coolify API (typically a `GET` against a health-check or root endpoint) to verify that the configured base URL is reachable and the authentication credentials are valid.
+Tests the connection to the Coolify API.
 
-- **Parameters:** None.
-- **Returns:** `Task<bool>` — `true` if the API responds with a successful status code; `false` otherwise.
-- **Exceptions:** Does not throw for standard HTTP error responses (returns `false`). May throw `HttpRequestException` for DNS resolution failures or network timeouts if the underlying handler is configured to do so.
+#### Returns
 
-## Usage
+- `True` if connection is successful; `false` if the server is unreachable or the request times out.
 
-### Example 1: Fetching a list of projects
+#### Notes
 
-```csharp
-using CoolifyCli;
+- Returns false (rather than throwing) when the server is unreachable or the request times out.
+- Uses `CoolifyApiClientOptions.GetTimeoutSeconds` as the timeout.
+- Endpoint: `/health`
 
-var client = new CoolifyApiClient("https://coolify.example.com", "your-api-token");
+## Resilience Behavior
 
-ApiResponse<List<Project>> response = await client.GetAsync<List<Project>>("projects");
+### Retry Policy
 
-if (response.IsSuccess)
-{
-    foreach (var project in response.Data)
-    {
-        Console.WriteLine($"Project: {project.Name} (UUID: {project.Uuid})");
-    }
-}
-else
-{
-    Console.WriteLine($"Failed to fetch projects: {response.ErrorMessage}");
-}
-```
+- Retries on HTTP status codes: 408, 429, and 5xx.
+- Retries on `HttpRequestException` (connection errors).
+- Uses exponential backoff with jitter.
+- Honors `Retry-After` header (both delta-seconds and HTTP-date forms) on 429 responses.
 
-### Example 2: Creating a new resource and checking connectivity
+### Circuit Breaker
 
-```csharp
-using CoolifyCli;
+- Trips after `DefaultFailureThreshold` (5) consecutive failures.
+- Remains open for `DefaultBreakDuration` (30 seconds).
+- While open, returns a 503 error without attempting the request.
+- After the break duration, allows a single trial request to test if the service has recovered.
 
-var client = new CoolifyApiClient("https://coolify.example.com", "your-api-token");
+## Options
 
-// Verify connectivity before proceeding
-bool isConnected = await client.TestConnectionAsync();
-if (!isConnected)
-{
-    Console.WriteLine("Coolify instance is unreachable or credentials are invalid.");
-    return;
-}
+The client behavior can be customized via `CoolifyApiClientOptions` (not shown in this file, but referenced):
 
-var newServer = new { Name = "production-web", Description = "Main production server" };
-ApiResponse<Server> createResponse = await client.PostAsync<Server>("servers", newServer);
+- `GetTimeoutSeconds`: Timeout for GET requests (used by `GetAsync<T>` and `TestConnectionAsync`).
+- `PostTimeoutSeconds`: Timeout for POST requests.
+- `PutTimeoutSeconds`: Timeout for PUT requests.
+- `DeleteTimeoutSeconds`: Timeout for DELETE requests.
 
-if (createResponse.IsSuccess)
-{
-    Console.WriteLine($"Server created with UUID: {createResponse.Data.Uuid}");
-}
-else
-{
-    Console.WriteLine($"Creation failed: {createResponse.ErrorMessage}");
-}
-```
+## Response Handling
 
-## Notes
+All methods return an `ApiResponse<T>` object which indicates success or failure:
 
-- **Thread Safety:** The client is designed to be instantiated once and reused across multiple requests. Concurrent calls to its async methods are safe; however, the underlying `HttpClient` instance should not be disposed while operations are in flight. Avoid creating a new `CoolifyApiClient` per request in high-throughput scenarios to prevent socket exhaustion.
-- **Serialization Behavior:** All methods that accept a `body` parameter perform JSON serialization using the client's configured serializer settings. Ensure that passed objects are composed of types and property shapes compatible with `System.Text.Json` (or the configured alternative) to avoid runtime `JsonException`.
-- **Error Handling:** Non-success HTTP status codes (4xx, 5xx) populate the `ApiResponse<T>` error fields rather than throwing. Callers must inspect `IsSuccess` or equivalent properties before accessing `Data`. Network-level failures (DNS, timeout, connection reset) surface as `HttpRequestException`.
-- **Endpoint Format:** The `endpoint` parameter is relative to the configured base URL. Leading slashes are normalized internally; supplying `"projects"` and `"/projects"` are typically equivalent. Query strings must be included in the endpoint string directly (e.g., `"projects?page=2"`).
-- **`TestConnectionAsync` Semantics:** This method returns `false` for any non-success response, including `401 Unauthorized` and `403 Forbidden`. It is a best-effort probe and does not guarantee that subsequent authenticated calls will succeed if permissions change between calls.
+- On success: Contains deserialized response data of type `T`.
+- On failure: Contains an error message and HTTP status code (or 503 for circuit breaker/open, 500 for processing failures).
+
+JSON deserialization uses case-insensitive property matching.
+
+## Thread Safety
+
+The client is thread-safe for concurrent use by multiple threads.
