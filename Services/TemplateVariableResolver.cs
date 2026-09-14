@@ -26,7 +26,7 @@ public sealed class TemplateVariableResolver
     /// </summary>
     /// <param name="logger">Logger for diagnostic messages.</param>
     public TemplateVariableResolver(ILogger logger)
-        : this(logger, new Dictionary<string, string>()) { }
+        : this(logger ?? throw new ArgumentNullException(nameof(logger)), new Dictionary<string, string>()) { }
 
     /// <summary>
     /// Initialises a resolver with caller-supplied variable overrides that take precedence
@@ -52,8 +52,11 @@ public sealed class TemplateVariableResolver
     /// </summary>
     /// <param name="key">The variable name (case-insensitive).</param>
     /// <param name="value">The substitution value.</param>
-    public void SetOverride(string key, string value) =>
+    public void SetOverride(string key, string value)
+    {
+        if (key == null) throw new ArgumentNullException(nameof(key));
         _overrides[key] = value;
+    }
 
     /// <summary>
     /// Parses a <c>.env</c>-format file (<c>KEY=VALUE</c> lines) and merges the entries
@@ -67,6 +70,7 @@ public sealed class TemplateVariableResolver
     /// </returns>
     public int LoadDotEnvFile(string dotEnvPath)
     {
+        if (dotEnvPath == null) throw new ArgumentNullException(nameof(dotEnvPath));
         if (!File.Exists(dotEnvPath))
             return 0;
 
