@@ -315,8 +315,12 @@ public sealed class InfrastructureTemplateEngine : IInfrastructureTemplateEngine
     /// </summary>
     /// <param name="template">The template to serialise.</param>
     /// <returns>A YAML string representation of <paramref name="template"/>.</returns>
-    public static string SerializeToYaml(InfrastructureTemplate template) =>
-        YamlSerializer.Serialize(template);
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="template"/> is null.</exception>
+    public static string SerializeToYaml(InfrastructureTemplate template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        return YamlSerializer.Serialize(template);
+    }
 
     // ─── Private helpers ──────────────────────────────────────────────────────
 
