@@ -15,6 +15,7 @@ public static class CliHelpers
     /// <param name="title">Section title.</param>
     public static void PrintHeader(string title)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(title);
@@ -28,6 +29,7 @@ public static class CliHelpers
     /// <param name="title">Subheader title.</param>
     public static void PrintSubheader(string title)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"\n{title}");
         Console.WriteLine(new string('-', title.Length));
@@ -40,6 +42,7 @@ public static class CliHelpers
     /// <param name="message">Message to print.</param>
     public static void PrintSuccess(string message)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"✓ {message}");
         Console.ResetColor();
@@ -51,6 +54,7 @@ public static class CliHelpers
     /// <param name="message">Message to print.</param>
     public static void PrintError(string message)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine($"✗ {message}");
         Console.ResetColor();
@@ -62,6 +66,7 @@ public static class CliHelpers
     /// <param name="message">Message to print.</param>
     public static void PrintWarning(string message)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"⚠ {message}");
         Console.ResetColor();
@@ -73,6 +78,7 @@ public static class CliHelpers
     /// <param name="message">Message to print.</param>
     public static void PrintInfo(string message)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
         Console.ForegroundColor = ConsoleColor.Blue;
         Console.WriteLine($"ℹ {message}");
         Console.ResetColor();
@@ -85,6 +91,7 @@ public static class CliHelpers
     /// <returns>True if user confirms.</returns>
     public static bool PromptConfirmation(string prompt)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(prompt);
         Console.Write($"{prompt} (y/n): ");
         var response = Console.ReadLine()?.ToLowerInvariant();
         return response == "y" || response == "yes";
