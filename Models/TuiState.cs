@@ -1,5 +1,7 @@
 #nullable enable
-using System.Threading;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CoolifyCli.Models;
 
@@ -18,44 +20,73 @@ public enum TuiView
 /// <summary>
 /// Immutable snapshot of the TUI state at a point in time.
 /// </summary>
-/// <param name="ActiveView">The currently active view panel.</param>
-/// <param name="SelectedIndex">The zero-based index of the highlighted row in the current list.</param>
-/// <param name="ScrollOffset">The zero-based scroll offset for lists taller than the terminal.</param>
-/// <param name="SelectedAppId">The ID of the currently selected application, or null if none selected.</param>
-/// <param name="Applications">The list of applications loaded into the TUI.</param>
-/// <param name="Databases">The list of databases loaded into the TUI.</param>
-/// <param name="StatusMessage">A status message displayed in the footer bar.</param>
-/// <param name="IsRefreshing">A value indicating whether a background refresh is in progress.</param>
-/// <param name="LastRefreshedAt">The timestamp of the last successful data refresh.</param>
-/// <param name="ShouldExit">A value indicating whether the TUI should exit on the next tick.</param>
-public record TuiState(
-    TuiView ActiveView = TuiView.AppList,
-    int SelectedIndex = 0,
-    int ScrollOffset = 0,
-    int? SelectedAppId = null,
-    List<ApplicationDeployment> Applications = null!,
-    List<DatabaseConfiguration> Databases = null!,
-    string StatusMessage = "",
-    bool IsRefreshing = false,
-    DateTime LastRefreshedAt = default,
-    bool ShouldExit = false)
+public record TuiState
 {
+    /// <summary>
+    /// The currently active view panel.
+    /// </summary>
+    public TuiView ActiveView { get; init; }
+
+    /// <summary>
+    /// The zero-based index of the highlighted row in the current list.
+    /// </summary>
+    public int SelectedIndex { get; init; }
+
+    /// <summary>
+    /// The zero-based scroll offset for lists taller than the terminal.
+    /// </summary>
+    public int ScrollOffset { get; init; }
+
+    /// <summary>
+    /// The ID of the currently selected application, or null if none selected.
+    /// </summary>
+    public int? SelectedAppId { get; init; }
+
+    /// <summary>
+    /// The list of applications loaded into the TUI.
+    /// </summary>
+    public List<ApplicationDeployment> Applications { get; init; }
+
+    /// <summary>
+    /// The list of databases loaded into the TUI.
+    /// </summary>
+    public List<DatabaseConfiguration> Databases { get; init; }
+
+    /// <summary>
+    /// A status message displayed in the footer bar.
+    /// </summary>
+    public string StatusMessage { get; init; }
+
+    /// <summary>
+    /// A value indicating whether a background refresh is in progress.
+    /// </summary>
+    public bool IsRefreshing { get; init; }
+
+    /// <summary>
+    /// The timestamp of the last successful data refresh.
+    /// </summary>
+    public DateTime LastRefreshedAt { get; init; }
+
+    /// <summary>
+    /// A value indicating whether the TUI should exit on the next tick.
+    /// </summary>
+    public bool ShouldExit { get; init; }
+
     /// <summary>
     /// Initializes a new immutable TuiState with default values.
     /// </summary>
     public TuiState()
-        : this(
-            ActiveView: TuiView.AppList,
-            SelectedIndex: 0,
-            ScrollOffset: 0,
-            SelectedAppId: null,
-            Applications: new List<ApplicationDeployment>(),
-            Databases: new List<DatabaseConfiguration>(),
-            StatusMessage: string.Empty,
-            IsRefreshing: false,
-            LastRefreshedAt: DateTime.MinValue,
-            ShouldExit: false)
     {
+        ActiveView = TuiView.AppList;
+        SelectedIndex = 0;
+        ScrollOffset = 0;
+        SelectedAppId = null;
+        Applications = new List<ApplicationDeployment>();
+        Databases = new List<DatabaseConfiguration>();
+        StatusMessage = string.Empty;
+        IsRefreshing = false;
+        LastRefreshedAt = DateTime.MinValue;
+        ShouldExit = false;
     }
 
     /// <summary>
