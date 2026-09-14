@@ -7,17 +7,64 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class EnvironmentVariable
 {
+    /// <summary>
+    /// Gets or sets the unique identifier of the environment variable.
+    /// </summary>
     public int Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identifier of the application or service this variable belongs to.
+    /// </summary>
     public string ApplicationId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the name of the environment variable.
+    /// </summary>
     public string Key { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the value of the environment variable.
+    /// </summary>
     public string Value { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the variable holds a secret value.
+    /// </summary>
     public bool IsSecret { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets an optional human-readable description of the variable.
+    /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Gets or sets the environment scope (for example, "production") the variable applies to.
+    /// </summary>
     public string EnvironmentScope { get; set; } = "production";
+
+    /// <summary>
+    /// Gets or sets the timestamp when the variable was created.
+    /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the timestamp when the variable was last updated.
+    /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the user or system that created the variable.
+    /// </summary>
     public string? CreatedBy { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user or system that last updated the variable.
+    /// </summary>
     public string? UpdatedBy { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the variable is currently active.
+    /// </summary>
     public bool IsActive { get; set; } = true;
 
     /// <summary>
