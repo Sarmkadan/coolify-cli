@@ -47,6 +47,9 @@ public sealed class DeploymentDiffService
         ApplicationDeployment proposed,
         IEnumerable<string>? ignoreKeys = null)
     {
+        if (proposed is null)
+            throw new ArgumentNullException(nameof(proposed));
+
         _logger.Info($"Computing deployment diff for application {applicationId}");
 
         var currentResult = await _appService.GetApplicationAsync(applicationId);
@@ -105,6 +108,9 @@ public sealed class DeploymentDiffService
     /// <param name="showUnchanged">When true, all properties are shown regardless of change.</param>
     public void RenderDiff(DeploymentDiff diff, bool showUnchanged = false)
     {
+        if (diff is null)
+            throw new ArgumentNullException(nameof(diff));
+
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine($"Deployment Diff — {diff.ApplicationName} (id: {diff.ApplicationId})");
