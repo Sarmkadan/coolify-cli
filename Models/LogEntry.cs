@@ -7,15 +7,34 @@ namespace CoolifyCli.Models;
 /// </summary>
 public class LogEntry
 {
+    /// <summary>Gets or sets the unique identifier of the log entry.</summary>
     public int Id { get; set; }
+
+    /// <summary>Gets or sets the identifier of the application that produced the log entry.</summary>
     public string ApplicationId { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the log message text.</summary>
     public string Message { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the severity level of the log entry.</summary>
     public LogLevel Level { get; set; } = LogLevel.Info;
+
+    /// <summary>Gets or sets the UTC timestamp when the log entry was created.</summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Gets or sets the source component that produced the log entry.</summary>
     public string? Source { get; set; }
+
+    /// <summary>Gets or sets the trace identifier used to correlate related log entries.</summary>
     public string? TraceId { get; set; }
+
+    /// <summary>Gets or sets a collection of additional key-value metadata for the log entry.</summary>
     public Dictionary<string, string> Metadata { get; set; } = new();
+
+    /// <summary>Gets or sets the process exit code associated with the log entry, if any.</summary>
     public int? ExitCode { get; set; }
+
+    /// <summary>Gets or sets the stack trace associated with the log entry, if any.</summary>
     public string? StackTrace { get; set; }
 
     /// <summary>
