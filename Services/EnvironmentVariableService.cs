@@ -396,11 +396,11 @@ public sealed class SecretMasker
         // Format: abcd**** (at least 8 characters total)
         if (value.Length > 8)
         {
-            return $"abcd{new string('*', value.Length - 8)}cd";
+            return $"{value.Substring(0, 4)}{new string('*', value.Length - 8)}{value.Substring(value.Length - 4, 4)}";
         }
         else if (value.Length > 4)
         {
-            return $"abcd{new string('*', value.Length - 4)}";
+            return $"{value.Substring(0, 4)}{new string('*', value.Length - 4)}";
         }
         else
         {
