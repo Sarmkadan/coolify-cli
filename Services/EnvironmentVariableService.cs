@@ -323,7 +323,7 @@ public class EnvironmentVariableService
         }
 
         var maskedVariable = variable.Clone();
-        maskedVariable.Value = _secretMasker.MaskSecret(variable.Value, variable.IsSecret);
+        maskedVariable.Value = _secretMasker.MaskSecret(variable.Value, variable.IsSecret, variable.Key);
         return maskedVariable;
     }
 
