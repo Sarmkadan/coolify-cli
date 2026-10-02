@@ -152,31 +152,109 @@ public class CsvFormatter : IOutputFormatter
     /// </summary>
     public List<Dictionary<string, string>> ParseCsv(string csvContent)
     {
-        var lines = csvContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         var result = new List<Dictionary<string, string>>();
+        var records = ParseCsvRecords(csvContent);
 
-        if (lines.Length < 2)
+        if (records.Count < 2)
             return result;
 
-        var headers = lines[0].Split(_delimiter);
+        var headers = records[0];
 
-        for (int i = 1; i < lines.Length; i++)
+        for (int i = 1; i < records.Count; i++)
         {
-            if (string.IsNullOrWhiteSpace(lines[i]))
+            var values = records[i];
+            if (values.Count == 1 && string.IsNullOrWhiteSpace(values[0]))
                 continue;
 
-            var values = lines[i].Split(_delimiter);
             var row = new Dictionary<string, string>();
-
-            for (int j = 0; j < headers.Length && j < values.Length; j++)
+            for (int j = 0; j < headers.Count && j < values.Count; j++)
             {
-                row[headers[j].Trim()] = UnescapeCsvField(values[j].Trim());
+                row[headers[j].Trim()] = values[j].Trim();
             }
 
             result.Add(row);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Parses CSV content into a list of records, each being a list of field values.
+    /// Handles quoted fields with embedded newlines, commas, and escaped quotes.
+    /// </summary>
+    private List<List<string>> ParseCsvRecords(string csvContent)
+    {
+        var records = new List<List<string>>();
+        var currentRecord = new List<string>();
+        var currentField = new StringBuilder();
+        var inQuotes = false;
+        var i = 0;
+
+        while (i < csvContent.Length)
+        {
+            var ch = csvContent[i];
+
+            if (inQuotes)
+            {
+                if (ch == '"')
+                {
+                    if (i + 1 < csvContent.Length && csvContent[i + 1] == '"')
+                    {
+                        currentField.Append('"');
+                        i += 2;
+                    }
+                    else
+                    {
+                        inQuotes = false;
+                        i++;
+                    }
+                }
+                else
+                {
+                    currentField.Append(ch);
+                    i++;
+                }
+            }
+            else
+            {
+                if (ch == '"')
+                {
+                    inQuotes = true;
+                    i++;
+                }
+                else if (ch == _delimiter)
+                {
+                    currentRecord.Add(currentField.ToString());
+                    currentField.Clear();
+                    i++;
+                }
+                else if (ch == '\r' || ch == '\n')
+                {
+                    currentRecord.Add(currentField.ToString());
+                    currentField.Clear();
+                    records.Add(currentRecord);
+                    currentRecord = new List<string>();
+
+                    if (ch == '\r' && i + 1 < csvContent.Length && csvContent[i + 1] == '\n')
+                        i += 2;
+                    else
+                        i++;
+                }
+                else
+                {
+                    currentField.Append(ch);
+                    i++;
+                }
+            }
+        }
+
+        if (currentField.Length > 0 || currentRecord.Count > 0)
+        {
+            currentRecord.Add(currentField.ToString());
+            records.Add(currentRecord);
+        }
+
+        return records;
     }
 
     /// <summary>
@@ -223,7 +301,7 @@ public class CsvFormatter : IOutputFormatter
             return string.Empty;
 
         // Quote field if it contains delimiter, quotes, or newlines
-        if (field.Contains(_delimiter) || field.Contains('\"') || field.Contains('\n') || field.Contains('\r'))
+        if (field.Contains(_delimiter) || field.Contains('\"') || field.Contains('\n') || field.Contains('\r') || field.Contains('\t') || field.Contains(';'))
         {
             return $"\"{field.Replace("\"", "\"\"")}\"";
         }

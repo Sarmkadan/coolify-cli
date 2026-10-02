@@ -36,6 +36,11 @@ public static class TuiStateExtensions
     /// <param name="steps">Number of rows to move up.</param>
     /// <exception cref="ArgumentNullException"><paramref name="state"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="steps"/> is negative.</exception>
+    public static TuiState MoveUp(this TuiState state) => MoveUp(state, 1);
+
+    /// <summary>
+    /// Moves the selection cursor up by the specified number of rows, clamped to zero.
+    /// </summary>
     public static TuiState MoveUp(this TuiState state, int steps)
     {
         ArgumentNullException.ThrowIfNull(state);

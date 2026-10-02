@@ -193,8 +193,10 @@ public class JsonFormatter : IOutputFormatter
 
         foreach (var field in _includeFields!)
         {
-            if (jObject.ContainsKey(field))
-                filtered[field] = jObject[field]?.DeepClone();
+            // Match case-insensitively to support PascalCase field names against camelCase keys
+            var matchingKey = jObject.FirstOrDefault(kvp => string.Equals(kvp.Key, field, StringComparison.OrdinalIgnoreCase)).Key;
+            if (matchingKey is not null)
+                filtered[matchingKey] = jObject[matchingKey]?.DeepClone();
         }
 
         return filtered;
@@ -209,7 +211,7 @@ public class JsonFormatter : IOutputFormatter
 
         foreach (var kvp in jObject)
         {
-            if (!_excludeFields!.Contains(kvp.Key))
+            if (!_excludeFields!.Any(f => string.Equals(f, kvp.Key, StringComparison.OrdinalIgnoreCase)))
                 filtered[kvp.Key] = kvp.Value?.DeepClone();
         }
 
