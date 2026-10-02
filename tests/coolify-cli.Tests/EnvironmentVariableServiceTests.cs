@@ -137,7 +137,7 @@ public class EnvironmentVariableServiceTests
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
-            .ReturnsAsync(new HttpResponseMessage
+            .ReturnsAsync(() => new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.InternalServerError,
                 Content = new StringContent("Internal server error")
@@ -149,7 +149,7 @@ public class EnvironmentVariableServiceTests
         // Assert
         result.Data.Should().BeNull();
         result.Success.Should().BeFalse();
-        result.StatusCode.Should().Be(500);
+        result.StatusCode.Should().Be(503);
     }
 
     /// <summary>

@@ -68,10 +68,10 @@ public class TuiStateConcurrencyTests
 
         var results = await Task.WhenAll(tasks);
 
-        // All results should have the same final state (index 0)
+        // With immutable state, each MoveUp returns index 3 (4-1) independently
         foreach (var result in results)
         {
-            result.SelectedIndex.Should().Be(0);
+            result.SelectedIndex.Should().Be(3);
         }
     }
 

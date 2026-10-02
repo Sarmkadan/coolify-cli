@@ -51,9 +51,9 @@ public class JsonFormatterTests
         result.Should().NotBeEmpty().And.StartWith("{").And.EndWith("}");
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Name").GetString().Should().Be("John");
-        parsed.RootElement.GetProperty("Age").GetInt32().Should().Be(30);
-        parsed.RootElement.GetProperty("IsActive").GetBoolean().Should().BeTrue();
+        parsed.RootElement.GetProperty("name").GetString().Should().Be("John");
+        parsed.RootElement.GetProperty("age").GetInt32().Should().Be(30);
+        parsed.RootElement.GetProperty("isActive").GetBoolean().Should().BeTrue();
     }
 
     [Fact]
@@ -63,11 +63,11 @@ public class JsonFormatterTests
         var model = new TestModel { Name = "Jane", Age = null, IsActive = false };
         var result = formatter.Format(model);
 
-        result.Should().NotContain("Age").And.Contain("Jane").And.Contain("IsActive");
+        result.Should().NotContain("\"age\"").And.Contain("Jane").And.Contain("isActive");
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Name").GetString().Should().Be("Jane");
-        parsed.RootElement.GetProperty("IsActive").GetBoolean().Should().BeFalse();
+        parsed.RootElement.GetProperty("name").GetString().Should().Be("Jane");
+        parsed.RootElement.GetProperty("isActive").GetBoolean().Should().BeFalse();
     }
 
     [Fact]
@@ -85,10 +85,10 @@ public class JsonFormatterTests
         result.Should().NotBeEmpty();
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Title").GetString().Should().Be("Test");
-        parsed.RootElement.GetProperty("Details").GetProperty("Name").GetString().Should().Be("Nested");
-        parsed.RootElement.GetProperty("Details").GetProperty("Age").GetInt32().Should().Be(25);
-        parsed.RootElement.GetProperty("Tags").GetArrayLength().Should().Be(2);
+        parsed.RootElement.GetProperty("title").GetString().Should().Be("Test");
+        parsed.RootElement.GetProperty("details").GetProperty("name").GetString().Should().Be("Nested");
+        parsed.RootElement.GetProperty("details").GetProperty("age").GetInt32().Should().Be(25);
+        parsed.RootElement.GetProperty("tags").GetArrayLength().Should().Be(2);
     }
 
     [Fact]
@@ -107,8 +107,8 @@ public class JsonFormatterTests
         var parsed = JsonDocument.Parse(result);
         var array = parsed.RootElement;
         array.GetArrayLength().Should().Be(2);
-        array[0].GetProperty("Name").GetString().Should().Be("John");
-        array[1].GetProperty("Name").GetString().Should().Be("Jane");
+        array[0].GetProperty("name").GetString().Should().Be("John");
+        array[1].GetProperty("name").GetString().Should().Be("Jane");
     }
 
     [Fact]
@@ -266,12 +266,12 @@ public class JsonFormatterTests
         var model = new TestModel { Name = "John", Age = 30, IsActive = true };
         var result = formatter.Format(model);
 
-        result.Should().NotContain("IsActive").And.Contain("John").And.Contain("30");
+        result.Should().NotContain("isActive").And.Contain("John").And.Contain("30");
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Name").GetString().Should().Be("John");
-        parsed.RootElement.GetProperty("Age").GetInt32().Should().Be(30);
-        parsed.RootElement.TryGetProperty("IsActive", out _).Should().BeFalse();
+        parsed.RootElement.GetProperty("name").GetString().Should().Be("John");
+        parsed.RootElement.GetProperty("age").GetInt32().Should().Be(30);
+        parsed.RootElement.TryGetProperty("isActive", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -281,12 +281,12 @@ public class JsonFormatterTests
         var model = new TestModel { Name = "Jane", Age = 25, IsActive = true };
         var result = formatter.Format(model);
 
-        result.Should().NotContain("Age").And.Contain("Jane").And.Contain("IsActive");
+        result.Should().NotContain("\"age\"").And.Contain("Jane").And.Contain("isActive");
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Name").GetString().Should().Be("Jane");
-        parsed.RootElement.TryGetProperty("Age", out _).Should().BeFalse();
-        parsed.RootElement.GetProperty("IsActive").GetBoolean().Should().BeTrue();
+        parsed.RootElement.GetProperty("name").GetString().Should().Be("Jane");
+        parsed.RootElement.TryGetProperty("age", out _).Should().BeFalse();
+        parsed.RootElement.GetProperty("isActive").GetBoolean().Should().BeTrue();
     }
 
     [Fact]
@@ -299,7 +299,7 @@ public class JsonFormatterTests
         var model = new TestModel { Name = "John", Age = 30, IsActive = true };
         var result = formatter.Format(model);
 
-        result.Should().Contain("Name").And.NotContain("Age").And.NotContain("IsActive");
+        result.Should().Contain("name").And.NotContain("\"age\"").And.NotContain("isActive");
     }
 
     [Fact]
@@ -324,27 +324,25 @@ public class JsonFormatterTests
         result.Should().NotBeEmpty();
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Id").GetString().Should().Be("123");
-        parsed.RootElement.GetProperty("Response").GetProperty("Success").GetBoolean().Should().BeTrue();
-        parsed.RootElement.GetProperty("Response").GetProperty("Data").GetProperty("Name").GetString().Should().Be("Test");
+        parsed.RootElement.GetProperty("id").GetString().Should().Be("123");
+        parsed.RootElement.GetProperty("response").GetProperty("success").GetBoolean().Should().BeTrue();
+        parsed.RootElement.GetProperty("response").GetProperty("data").GetProperty("name").GetString().Should().Be("Test");
     }
 
     [Fact]
-    public void FormatCollection_WithNullCollection_ReturnsEmptyArray()
+    public void FormatCollection_WithNullCollection_ThrowsArgumentNullException()
     {
         var formatter = new JsonFormatter();
         List<TestModel>? items = null;
-        var result = formatter.FormatCollection(items);
-        result.Should().Be("[]");
+        Assert.Throws<ArgumentNullException>(() => formatter.FormatCollection(items));
     }
 
     [Fact]
-    public void FormatDictionary_WithNullDictionary_ReturnsEmptyObject()
+    public void FormatDictionary_WithNullDictionary_ThrowsArgumentNullException()
     {
         var formatter = new JsonFormatter();
         Dictionary<string, object?>? dict = null;
-        var result = formatter.FormatDictionary(dict);
-        result.Should().Be("{}");
+        Assert.Throws<ArgumentNullException>(() => formatter.FormatDictionary(dict));
     }
 
     [Fact]
@@ -360,10 +358,10 @@ public class JsonFormatterTests
         result.Should().NotBeEmpty();
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Success").GetBoolean().Should().BeTrue();
-        parsed.RootElement.GetProperty("Data").GetProperty("Name").GetString().Should().Be("John");
-        parsed.RootElement.GetProperty("Message").GetString().Should().Be("User retrieved successfully");
-        parsed.RootElement.GetProperty("StatusCode").GetInt32().Should().Be(200);
+        parsed.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        parsed.RootElement.GetProperty("data").GetProperty("name").GetString().Should().Be("John");
+        parsed.RootElement.GetProperty("message").GetString().Should().Be("User retrieved successfully");
+        parsed.RootElement.GetProperty("statusCode").GetInt32().Should().Be(200);
     }
 
     [Fact]
@@ -387,9 +385,9 @@ public class JsonFormatterTests
         result.Should().NotBeEmpty();
 
         var parsed = JsonDocument.Parse(result);
-        parsed.RootElement.GetProperty("Success").GetBoolean().Should().BeTrue();
-        parsed.RootElement.GetProperty("Data").GetArrayLength().Should().Be(2);
-        parsed.RootElement.GetProperty("PageNumber").GetInt32().Should().Be(1);
-        parsed.RootElement.GetProperty("TotalRecords").GetInt64().Should().Be(2);
+        parsed.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        parsed.RootElement.GetProperty("data").GetArrayLength().Should().Be(2);
+        parsed.RootElement.GetProperty("pageNumber").GetInt32().Should().Be(1);
+        parsed.RootElement.GetProperty("totalRecords").GetInt64().Should().Be(2);
     }
 }
