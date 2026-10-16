@@ -88,26 +88,30 @@ public sealed class AdvancedAppCommands : CommandBase
         var appIdArg = new Argument<int>("id") { Description = "Application ID" };
         var fileOption = new Option<string>("--file", ["-f"]) { Description = "Path to environment variable file" };
         var varOption = new Option<string[]>("--var", ["-v"]) { Description = "Environment variables in KEY=VALUE format" };
+        var allowManagedOption = new Option<bool>("--allow-managed") { Description = "Allow keys reserved for Coolify-managed SERVICE_* variables" };
 
         setEnvCmd.Add(appIdArg);
         setEnvCmd.Add(fileOption);
         setEnvCmd.Add(varOption);
+        setEnvCmd.Add(allowManagedOption);
 
-        setEnvCmd.SetAction(async (parseResult, ct) =>
-        {
-            await HandleSetEnvAsync(parseResult.GetValue(appIdArg), parseResult.GetValue(fileOption), parseResult.GetValue(varOption));
-        });
+        // Returns the exit code directly: the entry point returns InvokeAsync's result, which ignores Environment.ExitCode.
+        setEnvCmd.SetAction(async (parseResult, ct) => await HandleSetEnvAsync(
+            parseResult.GetValue(appIdArg),
+            parseResult.GetValue(fileOption),
+            parseResult.GetValue(varOption),
+            parseResult.GetValue(allowManagedOption)));
 
         return setEnvCmd;
     }
 
-    private async Task HandleSetEnvAsync(int appId, string? filePath, string[]? vars)
+    private async Task<int> HandleSetEnvAsync(int appId, string? filePath, string[]? vars, bool allowManaged)
     {
         try
         {
             ValidatePositiveId(appId);
 
-            var envVars = new List<EnvironmentVariable>();
+            var entries = new List<EnvVarEntry>();
 
             // Load from file if provided
             if (!string.IsNullOrWhiteSpace(filePath))
@@ -117,21 +121,10 @@ public sealed class AdvancedAppCommands : CommandBase
                     throw new ValidationException($"Environment file not found: {filePath}");
                 }
 
-                var lines = File.ReadAllLines(filePath);
-                foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#")))
-                {
-                    if (line.Contains("="))
-                    {
-                        var parts = line.Split("=", 2);
-                        envVars.Add(new EnvironmentVariable
-                        {
-                            Key = parts[0].Trim(),
-                            Value = parts[1].Trim()
-                        });
-                    }
-                }
+                var fileEntries = EnvFileParser.ParseFile(filePath);
+                entries.AddRange(fileEntries);
 
-                Logger.Info($"Loaded {envVars.Count} environment variables from {filePath}");
+                Logger.Info($"Loaded {fileEntries.Count} environment variables from {filePath}");
             }
 
             // Parse command-line variables
@@ -142,23 +135,26 @@ public sealed class AdvancedAppCommands : CommandBase
                     if (varPair.Contains("="))
                     {
                         var parts = varPair.Split("=", 2);
-                        envVars.Add(new EnvironmentVariable
-                        {
-                            Key = parts[0].Trim(),
-                            Value = parts[1].Trim()
-                        });
+                        entries.Add(new EnvVarEntry(parts[0].Trim(), parts[1].Trim()));
                     }
                 }
             }
 
-            if (envVars.Count == 0)
+            if (entries.Count == 0)
             {
                 WriteWarning("No environment variables to set");
-                return;
+                return Constants.ExitCodes.Success;
             }
 
+            // Fail fast: every violation is reported before anything is sent to Coolify
+            EnvironmentVariableBatchValidator.ValidateOrThrow(entries, allowManaged);
+
+            var envVars = entries
+                .Select(e => new EnvironmentVariable { Key = e.Key, Value = e.Value })
+                .ToList();
+
             Logger.Info($"Setting {envVars.Count} environment variables for application {appId}");
-            var result = await _envVarService.BulkUpdateVariablesAsync(appId.ToString(), envVars);
+            var result = await _envVarService.BulkUpdateVariablesAsync(appId.ToString(), envVars, allowManaged);
 
             if (result.Success)
             {
@@ -168,10 +164,18 @@ public sealed class AdvancedAppCommands : CommandBase
             {
                 WriteError(result.Message ?? string.Empty);
             }
+
+            return Constants.ExitCodes.Success;
         }
         catch (ValidationException ex)
         {
             WriteError(ex.Message);
+            return Constants.ExitCodes.Success;
+        }
+        catch (EnvVarValidationException ex)
+        {
+            WriteEnvVarViolations(ex);
+            return Constants.ExitCodes.EnvVarValidationError;
         }
     }
 

@@ -66,6 +66,11 @@ catch (ValidationException valEx)
 Logger.Error($"Validation Error: {valEx.Message}");
 Environment.ExitCode = Constants.ExitCodes.ValidationError;
 }
+catch (EnvVarValidationException envEx)
+{
+WriteEnvVarViolations(envEx);
+Environment.ExitCode = Constants.ExitCodes.EnvVarValidationError;
+}
 catch (Exception ex)
 {
 Logger.Error(ex, $"Unexpected error in command '{name}'");
@@ -74,6 +79,19 @@ Environment.ExitCode = Constants.ExitCodes.UnhandledError;
 });
 
 return command;
+}
+
+/// <summary>
+/// Prints every violation from a failed environment variable batch, one per line, so the user
+/// can fix them all in one pass. Values are never printed.
+/// </summary>
+protected void WriteEnvVarViolations(EnvVarValidationException ex)
+{
+WriteError($"Environment variable validation failed ({ex.Violations.Count} violation(s)); nothing was sent to Coolify:");
+foreach (var violation in ex.Violations)
+{
+WriteError($"  {violation.Message}");
+}
 }
 
 /// <summary>

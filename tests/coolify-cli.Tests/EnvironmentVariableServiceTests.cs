@@ -4,6 +4,7 @@ using System.Net;
 using System.Text.Json;
 using Xunit;
 using FluentAssertions;
+using CoolifyCli.Infrastructure;
 using CoolifyCli.Services;
 using CoolifyCli.Models;
 
@@ -253,23 +254,22 @@ public class EnvironmentVariableServiceTests
     }
 
     /// <summary>
-    /// Tests that CreateVariableAsync returns error when variable validation fails.
+    /// Tests that CreateVariableAsync throws before calling the API when the key breaks the batch name rule.
+    /// The HTTP handler mock is strict, so any request would fail the test with a different exception.
     /// </summary>
     [Fact]
-    public async Task CreateVariableAsync_ShouldReturnError_WhenVariableValidationFails()
+    public async Task CreateVariableAsync_ShouldThrowEnvVarValidationException_WhenKeyIsInvalid()
     {
         // Arrange
         var applicationId = "app-123";
         var variable = new EnvironmentVariable { Key = "invalid-key!", Value = "val", ApplicationId = applicationId };
 
         // Act
-        var result = await _service.CreateVariableAsync(applicationId, variable);
+        var act = () => _service.CreateVariableAsync(applicationId, variable);
 
         // Assert
-        result.Data.Should().BeNull();
-        result.Success.Should().BeFalse();
-        result.StatusCode.Should().Be(400);
-        result.Errors.Should().NotBeEmpty();
+        var ex = await act.Should().ThrowAsync<EnvVarValidationException>();
+        ex.Which.Violations.Should().ContainSingle(v => v.Rule == EnvVarViolationRule.InvalidKeyName);
     }
 
     /// <summary>
@@ -307,23 +307,94 @@ public class EnvironmentVariableServiceTests
     }
 
     /// <summary>
-    /// Tests that UpdateVariableAsync returns error when variable validation fails.
+    /// Tests that UpdateVariableAsync throws before calling the API when the key breaks the batch name rule.
     /// </summary>
     [Fact]
-    public async Task UpdateVariableAsync_ShouldReturnError_WhenVariableValidationFails()
+    public async Task UpdateVariableAsync_ShouldThrowEnvVarValidationException_WhenKeyIsInvalid()
     {
         // Arrange
         var variableId = 42;
         var variable = new EnvironmentVariable { Key = "invalid-key!", Value = "val", ApplicationId = "app-123" };
 
         // Act
-        var result = await _service.UpdateVariableAsync(variableId, variable);
+        var act = () => _service.UpdateVariableAsync(variableId, variable);
 
         // Assert
-        result.Data.Should().BeNull();
-        result.Success.Should().BeFalse();
-        result.StatusCode.Should().Be(400);
-        result.Errors.Should().NotBeEmpty();
+        var ex = await act.Should().ThrowAsync<EnvVarValidationException>();
+        ex.Which.Violations.Should().ContainSingle(v => v.Rule == EnvVarViolationRule.InvalidKeyName);
+    }
+
+    /// <summary>
+    /// Tests that UpdateVariableAsync accepts a Coolify-managed key when explicitly allowed.
+    /// </summary>
+    [Fact]
+    public async Task UpdateVariableAsync_ShouldCallApi_WhenManagedKeyIsAllowed()
+    {
+        // Arrange
+        var variable = new EnvironmentVariable { Key = "SERVICE_URL_APP", Value = "https://example.com", ApplicationId = "app-123" };
+
+        _httpMessageHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent("{}") });
+
+        // Act
+        var result = await _service.UpdateVariableAsync(42, variable, allowManagedKeys: true);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Tests that BulkUpdateVariablesAsync reports every broken rule in one exception and never calls the API.
+    /// </summary>
+    [Fact]
+    public async Task BulkUpdateVariablesAsync_ShouldThrowWithAllViolations_AndNotCallApi()
+    {
+        // Arrange
+        var applicationId = "app-123";
+        var variables = new List<EnvironmentVariable> {
+            new EnvironmentVariable { Key = "1BAD", Value = "a", ApplicationId = applicationId },
+            new EnvironmentVariable { Key = "SERVICE_FQDN_WEB", Value = "b", ApplicationId = applicationId },
+            new EnvironmentVariable { Key = "GOOD", Value = "line1\nline2", ApplicationId = applicationId },
+            new EnvironmentVariable { Key = "GOOD", Value = "c", ApplicationId = applicationId }
+        };
+
+        // Act
+        var act = () => _service.BulkUpdateVariablesAsync(applicationId, variables);
+
+        // Assert
+        var ex = await act.Should().ThrowAsync<EnvVarValidationException>();
+        ex.Which.Violations.Select(v => v.Rule).Should().Equal(
+            EnvVarViolationRule.InvalidKeyName,
+            EnvVarViolationRule.ManagedKey,
+            EnvVarViolationRule.NewlineInValue,
+            EnvVarViolationRule.DuplicateKey);
+    }
+
+    /// <summary>
+    /// Tests that BulkUpdateVariablesAsync sends the batch when every key is valid and managed keys are allowed.
+    /// </summary>
+    [Fact]
+    public async Task BulkUpdateVariablesAsync_ShouldCallApi_WhenManagedKeysAreAllowed()
+    {
+        // Arrange
+        var applicationId = "app-123";
+        var variables = new List<EnvironmentVariable> {
+            new EnvironmentVariable { Key = "SERVICE_FQDN_WEB", Value = "example.com", ApplicationId = applicationId },
+            new EnvironmentVariable { Key = "PLAIN", Value = "x", ApplicationId = applicationId }
+        };
+
+        _httpMessageHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent("{}") });
+
+        // Act
+        var result = await _service.BulkUpdateVariablesAsync(applicationId, variables, allowManagedKeys: true);
+
+        // Assert
+        result.Success.Should().BeTrue();
     }
 
     /// <summary>
