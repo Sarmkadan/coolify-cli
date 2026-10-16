@@ -114,6 +114,18 @@ public static class Constants
 
         /// <summary>The environment variable that supplies the Coolify environment identifier.</summary>
         public const string EnvironmentIdVariableName      = "COOLIFY_ENVIRONMENT_ID";
+
+        /// <summary>The environment variable that supplies <c>CoolifyOptions.BaseUrl</c>; takes precedence over <c>COOLIFY_API_URL</c>.</summary>
+        public const string BaseUrlVariableName            = "COOLIFY_URL";
+
+        /// <summary>The environment variable that supplies <c>CoolifyOptions.ApiToken</c>; takes precedence over <c>COOLIFY_API_KEY</c>.</summary>
+        public const string ApiTokenVariableName           = "COOLIFY_TOKEN";
+
+        /// <summary>The environment variable that supplies <c>CoolifyOptions.DefaultProjectUuid</c>.</summary>
+        public const string ProjectUuidVariableName        = "COOLIFY_PROJECT_UUID";
+
+        /// <summary>The environment variable that selects the JSON config file read by <c>CoolifyOptionsConfiguration</c>.</summary>
+        public const string ConfigFileVariableName         = "COOLIFY_CONFIG_FILE";
     }
 
     /// <summary>Constants for the infrastructure-as-code template subsystem.</summary>
