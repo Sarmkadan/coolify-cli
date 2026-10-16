@@ -19,6 +19,10 @@
 <PackageReference Include="FluentAssertions" Version="7.0.0" />
 <PackageReference Include="Moq" Version="4.20.72" />
 <PackageReference Include="YamlDotNet" Version="16.3.0" />
+<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.0" />
+<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
 </ItemGroup>
 
 <!-- Include only the source files under test, avoiding main project's broken dependencies -->
@@ -47,6 +51,11 @@
 <Compile Include="../../Infrastructure/CoolifyApiClientOptions.cs" />
 <Compile Include="../../Infrastructure/CoolifyConfiguration.cs" />
 <Compile Include="../../Infrastructure/CoolifyExceptions.cs" />
+<Compile Include="../../Infrastructure/CoolifyOptions.cs" />
+<Compile Include="../../Infrastructure/CoolifyOptionsValidator.cs" />
+<Compile Include="../../Infrastructure/CoolifyOptionsConfiguration.cs" />
+<Compile Include="../../Infrastructure/CoolifyOptionsExtensions.cs" />
+<Compile Include="../../Infrastructure/CoolifyStartupValidator.cs" />
 <Compile Include="../../Infrastructure/IacTemplateOptions.cs" />
 <Compile Include="../../Services/ApplicationService.cs" />
 <Compile Include="../../Services/ILogger.cs" />
@@ -57,7 +66,6 @@
 <Compile Include="../../Formatters/TableFormatter.cs" />
 <Compile Include="../../Formatters/JsonFormatter.cs" />
 <Compile Include="../../Formatters/TemplateDiffFormatter.cs" />
-<Compile Include="../../Formatters/TemplateDiffFormatterJsonExtensions.cs" />
 <Compile Include="../../Formatters/CsvFormatter.cs" />
 <Compile Include="JsonFormatterTests.cs" />
 <Compile Include="CsvFormatterTests.cs" />
@@ -66,6 +74,9 @@
 <Compile Include="EnvironmentVariableServiceTests.cs" />
 <Compile Include="TuiStateTests.cs" />
 <Compile Include="TuiStateConcurrencyTests.cs" />
+<Compile Include="CoolifyOptionsValidatorTests.cs" />
+<Compile Include="CoolifyOptionsConfigurationTests.cs" />
+<Compile Include="CoolifyStartupValidatorTests.cs" />
 </ItemGroup>
 
 <!-- Include remaining Models files -->
