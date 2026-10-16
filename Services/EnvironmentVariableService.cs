@@ -1,6 +1,7 @@
 #nullable enable
 namespace CoolifyCli.Services;
 
+using CoolifyCli.Infrastructure;
 using CoolifyCli.Models;
 
 /// <summary>
@@ -74,13 +75,17 @@ public class EnvironmentVariableService
     /// </summary>
     /// <param name="applicationId">The application ID.</param>
     /// <param name="variable">The environment variable configuration.</param>
+    /// <param name="allowManagedKeys">Whether to accept keys reserved for Coolify-managed variables.</param>
     /// <returns>Created environment variable with masked secrets.</returns>
-    public async Task<ApiResponse<EnvironmentVariable>> CreateVariableAsync(string applicationId, EnvironmentVariable variable)
+    /// <exception cref="EnvVarValidationException">Thrown before any API call when the key or value breaks a batch rule.</exception>
+    public async Task<ApiResponse<EnvironmentVariable>> CreateVariableAsync(string applicationId, EnvironmentVariable variable, bool allowManagedKeys = false)
     {
         ArgumentNullException.ThrowIfNull(variable);
 
         if (string.IsNullOrWhiteSpace(applicationId))
             return ApiResponse<EnvironmentVariable>.ErrorResponse("Application ID is required.", 400);
+
+        EnvironmentVariableBatchValidator.ValidateOrThrow([new EnvVarEntry(variable.Key, variable.Value)], allowManagedKeys);
 
         var validationErrors = variable.Validate().ToList();
         if (validationErrors.Count > 0)
@@ -113,10 +118,14 @@ public class EnvironmentVariableService
     /// </summary>
     /// <param name="variableId">The variable ID.</param>
     /// <param name="variable">Updated variable data.</param>
+    /// <param name="allowManagedKeys">Whether to accept keys reserved for Coolify-managed variables.</param>
     /// <returns>Updated environment variable with masked secrets.</returns>
-    public async Task<ApiResponse<EnvironmentVariable>> UpdateVariableAsync(int variableId, EnvironmentVariable variable)
+    /// <exception cref="EnvVarValidationException">Thrown before any API call when the key or value breaks a batch rule.</exception>
+    public async Task<ApiResponse<EnvironmentVariable>> UpdateVariableAsync(int variableId, EnvironmentVariable variable, bool allowManagedKeys = false)
     {
         ArgumentNullException.ThrowIfNull(variable);
+
+        EnvironmentVariableBatchValidator.ValidateOrThrow([new EnvVarEntry(variable.Key, variable.Value)], allowManagedKeys);
 
         _logger.Info($"Updating environment variable {variableId} ({variable.Key})");
         variable.Id = variableId;
@@ -166,14 +175,20 @@ public class EnvironmentVariableService
     /// </summary>
     /// <param name="applicationId">The application ID.</param>
     /// <param name="variables">List of variables to update.</param>
+    /// <param name="allowManagedKeys">Whether to accept keys reserved for Coolify-managed variables.</param>
     /// <returns>Update result.</returns>
-    public async Task<ApiResponse<object>> BulkUpdateVariablesAsync(string applicationId, List<EnvironmentVariable> variables)
+    /// <exception cref="EnvVarValidationException">Thrown before any API call when any key, value or duplicate breaks a batch rule.</exception>
+    public async Task<ApiResponse<object>> BulkUpdateVariablesAsync(string applicationId, List<EnvironmentVariable> variables, bool allowManagedKeys = false)
     {
         if (string.IsNullOrWhiteSpace(applicationId))
             return ApiResponse<object>.ErrorResponse("Application ID is required.", 400);
 
         if (variables is null || variables.Count == 0)
             return ApiResponse<object>.ErrorResponse("At least one variable is required.", 400);
+
+        EnvironmentVariableBatchValidator.ValidateOrThrow(
+            variables.Select(v => new EnvVarEntry(v.Key, v.Value)),
+            allowManagedKeys);
 
         var validationErrors = new List<string>();
         foreach (var variable in variables)

@@ -201,5 +201,8 @@ public static class Constants
 
         /// <summary>Indicates a timeout-specific error result; value <c>9</c>.</summary>
         public const int TimeoutError = 9;
+
+        /// <summary>Indicates that environment variable input failed fail-fast validation before any API call; value <c>10</c>.</summary>
+        public const int EnvVarValidationError = 10;
     }
 }

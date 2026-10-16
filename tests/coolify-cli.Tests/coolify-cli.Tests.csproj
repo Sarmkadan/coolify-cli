@@ -57,10 +57,16 @@
 <Compile Include="../../Infrastructure/CoolifyOptionsExtensions.cs" />
 <Compile Include="../../Infrastructure/CoolifyStartupValidator.cs" />
 <Compile Include="../../Infrastructure/IacTemplateOptions.cs" />
+<Compile Include="../../Infrastructure/EnvVarValidationException.cs" />
 <Compile Include="../../Services/ApplicationService.cs" />
 <Compile Include="../../Services/ILogger.cs" />
 <Compile Include="../../Services/CoolifyApiClient.cs" />
 <Compile Include="../../Services/EnvironmentVariableService.cs" />
+<Compile Include="../../Services/EnvironmentVariableBatchValidator.cs" />
+<Compile Include="../../Services/EnvFileParser.cs" />
+<Compile Include="../../Models/EnvVarEntry.cs" />
+<Compile Include="../../Models/EnvVarViolation.cs" />
+<Compile Include="../../Models/EnvVarViolationRule.cs" />
 <Compile Include="../../Models/DeploymentContext.cs" />
 <Compile Include="../../Models/LogEntry.cs" />
 <Compile Include="../../Formatters/TableFormatter.cs" />
@@ -77,6 +83,8 @@
 <Compile Include="CoolifyOptionsValidatorTests.cs" />
 <Compile Include="CoolifyOptionsConfigurationTests.cs" />
 <Compile Include="CoolifyStartupValidatorTests.cs" />
+<Compile Include="EnvironmentVariableBatchValidatorTests.cs" />
+<Compile Include="EnvFileParserTests.cs" />
 </ItemGroup>
 
 <!-- Include remaining Models files -->
