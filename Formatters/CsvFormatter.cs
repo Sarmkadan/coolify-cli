@@ -1,4 +1,5 @@
 #nullable enable
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 
@@ -10,6 +11,12 @@ namespace CoolifyCli.Formatters;
 /// </summary>
 public class CsvFormatter : IOutputFormatter
 {
+    /// <summary>
+    /// Characters that spreadsheet applications treat as the start of a formula or control sequence:
+    /// <c>=</c>, <c>+</c>, <c>-</c>, <c>@</c>, tab and carriage return.
+    /// </summary>
+    private const string FormulaTriggers = "=+-@\t\r";
+
     private readonly char _delimiter;
     private readonly bool _includeHeader;
     private readonly List<string>? _selectedFields;
@@ -289,7 +296,27 @@ public class CsvFormatter : IOutputFormatter
         if (value is decimal or double or float)
             return value.ToString() ?? string.Empty;
 
-        return EscapeCsvField(value.ToString() ?? string.Empty);
+        return EscapeCsvField(NeutralizeFormula(value.ToString() ?? string.Empty));
+    }
+
+    /// <summary>
+    /// Neutralizes CSV/formula injection by prefixing a value with a single quote when a spreadsheet
+    /// application would interpret it as a formula or DDE command. Leading spaces are ignored when
+    /// checking, because spreadsheets still treat <c>"  =cmd"</c> as a formula. Numeric strings such
+    /// as <c>"-42"</c> are returned unchanged so they are not escaped twice.
+    /// </summary>
+    /// <param name="value">The cell value to neutralize.</param>
+    /// <returns>The value, prefixed with a single quote if it is a potential formula.</returns>
+    private static string NeutralizeFormula(string value)
+    {
+        var trimmed = value.TrimStart(' ');
+        if (trimmed.Length == 0 || !FormulaTriggers.Contains(trimmed[0]))
+            return value;
+
+        if ((trimmed[0] is '-' or '+') && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+            return value;
+
+        return $"'{value}";
     }
 
     /// <summary>

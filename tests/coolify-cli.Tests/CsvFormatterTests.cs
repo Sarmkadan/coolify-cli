@@ -459,4 +459,61 @@ public class CsvFormatterTests
 
         result.Should().Contain("\",\n\r\"");
     }
+
+    [Fact]
+    public void FormatCollection_FormulaValueSum_PrefixesWithSingleQuote()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "=SUM(1+1)" } });
+
+        result.Should().Contain("'=SUM(1+1)");
+        result.Should().NotContain(",=SUM");
+    }
+
+    [Theory]
+    [InlineData("=1+1")]
+    [InlineData("+cmd|' /C calc'!A0")]
+    [InlineData("@SUM(A1)")]
+    [InlineData("-2+3")]
+    public void FormatCollection_FormulaTriggerCharacter_PrefixesWithSingleQuote(string field)
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = field } });
+
+        result.Should().Contain($"'{field}");
+    }
+
+    [Fact]
+    public void FormatCollection_WhitespaceBeforeFormulaTrigger_PrefixesWithSingleQuote()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "  =1+1" } });
+
+        result.Should().Contain("'  =1+1");
+    }
+
+    [Fact]
+    public void FormatCollection_NegativeNumericString_IsNotEscaped()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "-42.5" } });
+
+        result.Should().Contain("-42.5");
+        result.Should().NotContain("'-42.5");
+    }
+
+    [Fact]
+    public void FormatCollection_NormalText_IsNotPrefixed()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "John" } });
+
+        result.Should().Contain("John");
+        result.Should().NotContain("'John");
+    }
 }
