@@ -75,7 +75,7 @@ public class EnvironmentVariableServiceTests
     public async Task GetApplicationVariablesAsync_ShouldReturnError_WhenApplicationIdIsNull()
     {
         // Arrange
-        string? nullApplicationId = null;
+        string nullApplicationId = null!;
 
         // Act
         var result = await _service.GetApplicationVariablesAsync(nullApplicationId);
@@ -241,7 +241,7 @@ public class EnvironmentVariableServiceTests
     public async Task CreateVariableAsync_ShouldReturnError_WhenApplicationIdIsNull()
     {
         // Arrange
-        string? nullApplicationId = null;
+        string nullApplicationId = null!;
         var variable = new EnvironmentVariable { Key = "NEW_VAR", Value = "new-value" };
 
         // Act
@@ -479,7 +479,7 @@ public class EnvironmentVariableServiceTests
     public async Task BulkUpdateVariablesAsync_ShouldReturnError_WhenApplicationIdIsNull()
     {
         // Arrange
-        string? nullApplicationId = null;
+        string nullApplicationId = null!;
         var variables = new List<EnvironmentVariable> { new EnvironmentVariable { Key = "VAR1", Value = "value1" } };
 
         // Act
@@ -498,7 +498,7 @@ public class EnvironmentVariableServiceTests
     {
         // Arrange
         var applicationId = "app-123";
-        List<EnvironmentVariable>? nullVariables = null;
+        List<EnvironmentVariable> nullVariables = null!;
 
         // Act
         var result = await _service.BulkUpdateVariablesAsync(applicationId, nullVariables);
@@ -568,7 +568,7 @@ public class EnvironmentVariableServiceTests
     public async Task GetVariablesByScopeAsync_ShouldReturnError_WhenApplicationIdIsNull()
     {
         // Arrange
-        string? nullApplicationId = null;
+        string nullApplicationId = null!;
         var scope = "production";
 
         // Act
@@ -588,7 +588,7 @@ public class EnvironmentVariableServiceTests
     {
         // Arrange
         var applicationId = "app-123";
-        string? nullScope = null;
+        string nullScope = null!;
 
         // Act
         var result = await _service.GetVariablesByScopeAsync(applicationId, nullScope);
@@ -636,7 +636,7 @@ public class EnvironmentVariableServiceTests
     public async Task RotateSecretsAsync_ShouldThrow_WhenApplicationIdIsNull()
     {
         // Arrange
-        string? nullApplicationId = null;
+        string nullApplicationId = null!;
         var variableIds = new List<int> { 1, 2, 3 };
 
         // Act & Assert
@@ -651,7 +651,7 @@ public class EnvironmentVariableServiceTests
     {
         // Arrange
         var applicationId = "app-123";
-        List<int>? nullVariableIds = null;
+        List<int> nullVariableIds = null!;
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => _service.RotateSecretsAsync(applicationId, nullVariableIds));

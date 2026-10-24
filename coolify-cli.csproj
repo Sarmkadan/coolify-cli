@@ -5,9 +5,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>CoolifiCli</RootNamespace>
     <AssemblyName>coolify-cli</AssemblyName>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Zaiets.coolify.cli</PackageId>
     <Version>1.0.0</Version>
     <Authors>Vladyslav Zaiets</Authors>

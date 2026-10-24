@@ -85,7 +85,7 @@ public static class StringExtensions
     /// <param name="addEllipsis">Whether to append ellipsis when truncating.</param>
     /// <returns>The truncated string, or the original string if it's null, empty, or shorter than maxLength.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxLength"/> is negative.</exception>
-    public static string Truncate(this string? input, int maxLength, bool addEllipsis = true)
+    public static string? Truncate(this string? input, int maxLength, bool addEllipsis = true)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
 
@@ -165,7 +165,7 @@ public static class StringExtensions
     /// <param name="showChars">The number of characters to show at the beginning and end.</param>
     /// <returns>The masked string, or the original string if it's null, empty, or too short to mask.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="showChars"/> is negative.</exception>
-    public static string MaskSensitive(this string? input, int showChars = 4)
+    public static string? MaskSensitive(this string? input, int showChars = 4)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(showChars);
 

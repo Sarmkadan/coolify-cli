@@ -80,11 +80,8 @@ public static class DateTimeExtensions
     /// </remarks>
     /// <param name="dateTime">The date and time to convert to a relative string.</param>
     /// <returns>A human-readable string representing the relative time, or "just now" if within 1 second.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dateTime"/> is null.</exception>
     public static string ToRelativeTime(this DateTime dateTime)
     {
-        ArgumentNullException.ThrowIfNull(dateTime);
-
         var utcNow = DateTime.UtcNow;
         var utcDateTime = dateTime.Kind == DateTimeKind.Local
             ? dateTime.ToUniversalTime()
@@ -126,11 +123,8 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTimeOffset">The date and time with offset to convert to a relative string.</param>
     /// <returns>A human-readable string representing the relative time, or "just now" if within 1 second.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dateTimeOffset"/> is null.</exception>
     public static string ToRelativeTime(this DateTimeOffset dateTimeOffset)
     {
-        ArgumentNullException.ThrowIfNull(dateTimeOffset);
-
         var utcNow = DateTimeOffset.UtcNow;
         var timeSpan = utcNow - dateTimeOffset;
 

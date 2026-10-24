@@ -41,7 +41,7 @@ namespace CoolifyCli.Models
                 health.ServiceId,
                 health.Id,
                 health.Status,
-                health.IsHealthy,
+                health.IsHealthy(),
                 health.ResponseTimeMs,
                 health.CpuUsagePercent,
                 health.MemoryUsageMb,

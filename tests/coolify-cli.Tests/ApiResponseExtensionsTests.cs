@@ -273,7 +273,7 @@ public class ApiResponseExtensionsTests
         combined.Success.Should().BeTrue();
         combined.Data.Should().NotBeNull();
         combined.Data.Should().HaveCount(3);
-        combined.Data[0].Id.Should().Be(TestData.SampleUsers[0].Id);
+        combined.Data![0].Id.Should().Be(TestData.SampleUsers[0].Id);
         combined.Data[1].Id.Should().Be(TestData.SampleUsers[1].Id);
         combined.Data[2].Id.Should().Be(TestData.SampleUsers[2].Id);
         combined.Message.Should().Be("Operation completed successfully.");
@@ -579,7 +579,7 @@ public class ApiResponseExtensionsTests
     {
         // Arrange
         var response = ApiResponse<User>.SuccessResponse(TestData.SampleUser, "Initial");
-        var errors = new List<string> { "Valid error", "", null, "   ", "Another valid error" };
+        var errors = new List<string> { "Valid error", "", null!, "   ", "Another valid error" };
 
         // Act
         response.AddErrors(errors);
