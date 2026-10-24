@@ -125,7 +125,7 @@ public ApplicationService(CoolifyApiClient apiClient, ILogger logger)
         {
             _logger.Error(ex, "HTTP error during deployment");
             deploymentContext.LogEvent($"HTTP error: {ex.Message}", LogLevel.Fatal);
-            throw new ApiCommunicationException($"HTTP error during deployment: {ex.Message}", ex, (int)ex.StatusCode);
+            throw new ApiCommunicationException($"HTTP error during deployment: {ex.Message}", ex, (int?)ex.StatusCode);
         }
         catch (TaskCanceledException)
         {

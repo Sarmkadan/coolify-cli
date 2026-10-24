@@ -7,9 +7,9 @@ namespace CoolifyCli.Utilities;
 /// <summary>
 /// Represents the result of a validation operation.
 /// </summary>
-/// <param name="isValid">Indicates whether the validation succeeded.</param>
-/// <param name="error">The error message describing why validation failed (null if valid).</param>
-/// <param name="paramName">The name of the parameter being validated (optional).</param>
+/// <param name="IsValid">Indicates whether the validation succeeded.</param>
+/// <param name="Error">The error message describing why validation failed (null if valid).</param>
+/// <param name="ParamName">The name of the parameter being validated (optional).</param>
 public sealed record ValidationResult(bool IsValid, string? Error = null, string? ParamName = null)
 {
     /// <summary>

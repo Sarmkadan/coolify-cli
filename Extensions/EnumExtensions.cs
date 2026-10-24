@@ -131,12 +131,8 @@ public static class EnumExtensions
     /// <param name="value">The enum value to check.</param>
     /// <param name="flag">The flag to check for.</param>
     /// <returns><see langword="true"/> if the enum has the specified flag set; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool HasFlag<T>(this T value, T flag) where T : struct, Enum
     {
-        ArgumentNullException.ThrowIfNull(value);
-        ArgumentNullException.ThrowIfNull(flag);
-
         var valueAsInt = Convert.ToInt64(value);
         var flagAsInt = Convert.ToInt64(flag);
 
@@ -150,10 +146,8 @@ public static class EnumExtensions
     /// <typeparam name="T">The enum type.</typeparam>
     /// <param name="value">The enum value to convert.</param>
     /// <returns>The underlying numeric value as a long.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static long ToLong<T>(this T value) where T : struct, Enum
     {
-        ArgumentNullException.ThrowIfNull(value);
         return Convert.ToInt64(value);
     }
 
@@ -163,10 +157,8 @@ public static class EnumExtensions
     /// <typeparam name="T">The enum type.</typeparam>
     /// <param name="value">The enum value to convert.</param>
     /// <returns>The underlying numeric value as an int.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static int ToInt<T>(this T value) where T : struct, Enum
     {
-        ArgumentNullException.ThrowIfNull(value);
         return Convert.ToInt32(value);
     }
 
@@ -205,11 +197,9 @@ public static class EnumExtensions
     /// <param name="value">The enum value to check.</param>
     /// <param name="name">The name to compare against.</param>
     /// <returns><see langword="true"/> if the enum value's name equals the provided name (case-insensitive); otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="value"/> is <see langword="null"/>.\n    /// Thrown when <paramref name="name"/> is <see langword="null"/>.\n    /// </exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is <see langword="null"/>.</exception>
     public static bool EqualsIgnoreCase<T>(this T value, string name) where T : struct, Enum
     {
-        ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(name);
 
         return value.ToString().Equals(name, StringComparison.OrdinalIgnoreCase);

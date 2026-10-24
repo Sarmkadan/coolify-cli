@@ -51,7 +51,7 @@ namespace CoolifyCli.Infrastructure
             return options.OutputFormat.ToLowerInvariant() switch
             {
                 "json" => FormatJson(value),
-                _ => value.ToString()
+                _ => value.ToString() ?? string.Empty
             };
         }
 
@@ -71,7 +71,7 @@ namespace CoolifyCli.Infrastructure
                 double d => d.ToString(CultureInfo.InvariantCulture),
                 float f => f.ToString(CultureInfo.InvariantCulture),
                 decimal m => m.ToString(CultureInfo.InvariantCulture),
-                _ => value.ToString()
+                _ => value.ToString() ?? string.Empty
             };
         }
 

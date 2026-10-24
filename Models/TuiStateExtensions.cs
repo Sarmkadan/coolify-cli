@@ -30,12 +30,10 @@ public static class TuiStateExtensions
     }
 
     /// <summary>
-    /// Moves the selection cursor up by the specified number of rows, clamped to zero.
+    /// Moves the selection cursor up by one row, clamped to zero.
     /// </summary>
     /// <param name="state">The TUI state to modify.</param>
-    /// <param name="steps">Number of rows to move up.</param>
     /// <exception cref="ArgumentNullException"><paramref name="state"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="steps"/> is negative.</exception>
     public static TuiState MoveUp(this TuiState state) => MoveUp(state, 1);
 
     /// <summary>

@@ -85,7 +85,7 @@ public class CoolifyOptionsValidatorTests
         var options = ValidOptions();
         options.BaseUrl = "https://deploy-user:hunter2-password@coolify.example.com";
 
-        var failures = Validate(options).Failures.ToList();
+        var failures = Validate(options).Failures!.ToList();
 
         failures.Should().ContainSingle()
             .Which.Should().Be("BaseUrl must not contain credentials; use ApiToken instead.");
@@ -222,7 +222,7 @@ public class CoolifyOptionsValidatorTests
             TimeoutSeconds = 0
         };
 
-        var failures = Validate(options).Failures.ToList();
+        var failures = Validate(options).Failures!.ToList();
 
         failures.Should().HaveCount(2);
         failures.Should().NotContain(f => f.Contains(secret));
