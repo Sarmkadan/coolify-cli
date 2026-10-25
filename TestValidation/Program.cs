@@ -620,6 +620,7 @@ envSetCommand.SetAction(async (parseResult, ct) =>
 
 envCommand.Add(envListCommand);
 envCommand.Add(envSetCommand);
+envCommand.Add(new EnvironmentImportCommands(apiClient, logger, config).CreateImportCommand());
 
 rootCommand.Add(appCommand);
 rootCommand.Add(dbCommand);
