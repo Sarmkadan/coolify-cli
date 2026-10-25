@@ -5,13 +5,43 @@ namespace CoolifyCli.Formatters;
 /// <summary>
 /// Factory for creating output formatters based on format type.
 /// Provides a unified way to dispatch formatters via CLI flags like --output json|csv|table.
+/// Formats are looked up in a registry, so new formatters can be added without changing the dispatch logic.
 /// </summary>
 public static class OutputFormatterFactory
 {
+    private static readonly Dictionary<string, Func<FormatterOptions?, IOutputFormatter>> Registry = new()
+    {
+        ["json"] = CreateJsonFormatter,
+        ["csv"] = CreateCsvFormatter,
+        ["table"] = CreateTableFormatter,
+        ["text"] = CreateTableFormatter
+    };
+
+    private static readonly Dictionary<string, string> ExtensionFormats = new()
+    {
+        ["json"] = "json",
+        ["csv"] = "csv",
+        ["txt"] = "table"
+    };
+
+    /// <summary>
+    /// Registers a formatter under the given format name, replacing any existing registration.
+    /// </summary>
+    /// <param name="format">The format name used in lookups (case-insensitive).</param>
+    /// <param name="factory">Creates a formatter from optional formatter-specific options.</param>
+    /// <exception cref="ArgumentNullException">Thrown when format or factory is null.</exception>
+    public static void Register(string format, Func<FormatterOptions?, IOutputFormatter> factory)
+    {
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(factory);
+
+        Registry[format.ToLowerInvariant()] = factory;
+    }
+
     /// <summary>
     /// Creates a formatter for the specified output format.
     /// </summary>
-    /// <param name="format">The output format ("json", "csv", "table").</param>
+    /// <param name="format">The output format ("json", "csv", "table", "text").</param>
     /// <param name="options">Optional formatter-specific options.</param>
     /// <returns>A configured formatter instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when format is null.</exception>
@@ -20,13 +50,10 @@ public static class OutputFormatterFactory
     {
         ArgumentNullException.ThrowIfNull(format);
 
-        return format.ToLowerInvariant() switch
-        {
-            "json" => CreateJsonFormatter(options),
-            "csv" => CreateCsvFormatter(options),
-            "table" or "text" => CreateTableFormatter(options),
-            _ => throw new ArgumentException($"Unsupported output format: {format}. Supported formats: json, csv, table", nameof(format))
-        };
+        if (!Registry.TryGetValue(format.ToLowerInvariant(), out var factory))
+            throw new ArgumentException($"Unsupported output format: {format}. Supported formats: json, csv, table", nameof(format));
+
+        return factory(options);
     }
 
     /// <summary>
@@ -42,13 +69,10 @@ public static class OutputFormatterFactory
         ArgumentNullException.ThrowIfNull(fileExtension);
 
         var ext = fileExtension.TrimStart('.').ToLowerInvariant();
-        return ext switch
-        {
-            "json" => CreateJsonFormatter(options),
-            "csv" => CreateCsvFormatter(options),
-            "txt" => CreateTableFormatter(options),
-            _ => throw new ArgumentException($"Unsupported file extension: {fileExtension}. Supported: .json, .csv, .txt", nameof(fileExtension))
-        };
+        if (!ExtensionFormats.TryGetValue(ext, out var format))
+            throw new ArgumentException($"Unsupported file extension: {fileExtension}. Supported: .json, .csv, .txt", nameof(fileExtension));
+
+        return CreateFormatter(format, options);
     }
 
     private static JsonFormatter CreateJsonFormatter(FormatterOptions? options)
