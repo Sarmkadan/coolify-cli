@@ -296,8 +296,15 @@ public class TuiService
             var ok = db.IsHealthy ? "✓" : "✗";
             var line = $" {db.Id,-4} {db.Name,-24} {db.Type,-14} {db.Host,-20} {ok,-6}";
 
-            if (selected) { Console.BackgroundColor = ConsoleColor.DarkCyan; Console.ForegroundColor = ConsoleColor.White; }
-            else { Console.ForegroundColor = db.IsHealthy ? ConsoleColor.Green : ConsoleColor.Red; }
+            if (selected)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else
+            {
+                Console.ForegroundColor = db.IsHealthy ? ConsoleColor.Green : ConsoleColor.Red;
+            }
 
             Console.WriteLine(line.PadRight(width));
             Console.ResetColor();
