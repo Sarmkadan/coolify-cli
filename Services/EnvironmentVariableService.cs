@@ -103,7 +103,9 @@ public class EnvironmentVariableService
             variable);
 
         if (response.Success)
+        {
             _logger.Info($"Environment variable {variable.Key} created successfully");
+        }
         else if (!string.IsNullOrEmpty(response.Message))
         {
             var maskedMessage = _secretMasker.MaskExceptionMessage(response.Message, variable.Key);
@@ -141,7 +143,9 @@ public class EnvironmentVariableService
         var response = await _apiClient.PutAsync<EnvironmentVariable>($"/api/v1/env-vars/{variableId}", variable);
 
         if (response.Success)
+        {
             _logger.Info($"Environment variable {variableId} updated successfully");
+        }
         else if (!string.IsNullOrEmpty(response.Message))
         {
             var maskedMessage = _secretMasker.MaskExceptionMessage(response.Message, variable.Key);
@@ -212,7 +216,9 @@ public class EnvironmentVariableService
             bulkUpdateRequest);
 
         if (response.Success)
+        {
             _logger.Info($"Bulk update completed for {variables.Count} variables");
+        }
         else if (!string.IsNullOrEmpty(response.Message))
         {
             var maskedMessage = _secretMasker.MaskExceptionMessage(response.Message);
@@ -277,7 +283,9 @@ public class EnvironmentVariableService
             rotateRequest);
 
         if (response.Success)
+        {
             _logger.Info("Secret rotation completed successfully");
+        }
         else if (!string.IsNullOrEmpty(response.Message))
         {
             var maskedMessage = _secretMasker.MaskExceptionMessage(response.Message);
