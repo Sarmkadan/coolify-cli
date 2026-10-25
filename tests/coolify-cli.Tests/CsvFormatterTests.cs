@@ -516,4 +516,34 @@ public class CsvFormatterTests
         result.Should().Contain("John");
         result.Should().NotContain("'John");
     }
+
+    [Fact]
+    public void FormatCollection_FieldWithComma_QuotesFieldExactly()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "Doe, John", Age = 30 } });
+
+        result.Should().Be("Name,Age,BirthDate,IsActive,Salary\n\"Doe, John\",30,,false,0");
+    }
+
+    [Fact]
+    public void FormatCollection_FieldWithNewline_QuotesFieldExactly()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "John\nDoe", Age = 30 } });
+
+        result.Should().Be("Name,Age,BirthDate,IsActive,Salary\n\"John\nDoe\",30,,false,0");
+    }
+
+    [Fact]
+    public void FormatCollection_FieldWithQuote_QuotesFieldAndDoublesInnerQuotes()
+    {
+        var formatter = new CsvFormatter();
+
+        var result = formatter.FormatCollection(new List<TestPerson> { new TestPerson { Name = "Say \"hi\"", Age = 30 } });
+
+        result.Should().Be("Name,Age,BirthDate,IsActive,Salary\n\"Say \"\"hi\"\"\",30,,false,0");
+    }
 }
