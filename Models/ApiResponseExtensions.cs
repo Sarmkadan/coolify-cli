@@ -30,7 +30,7 @@ public static class ApiResponseExtensions
         return new ApiResponse<TTarget>
         {
             Success = response.Success,
-            Data = response.Data is { } data ? mapper(data) : default,
+            Data = response.Success && response.Data is { } data ? mapper(data) : default,
             Message = response.Message,
             Errors = new List<string>(response.Errors),
             StatusCode = response.StatusCode,
