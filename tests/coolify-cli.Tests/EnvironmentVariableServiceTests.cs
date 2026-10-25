@@ -81,7 +81,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetApplicationVariablesAsync(nullApplicationId);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -99,7 +100,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetApplicationVariablesAsync(emptyApplicationId);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -117,7 +119,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetApplicationVariablesAsync(whitespaceApplicationId);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -148,7 +151,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetApplicationVariablesAsync(applicationId);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(503);
     }
@@ -248,7 +252,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.CreateVariableAsync(nullApplicationId, variable);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -575,7 +580,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetVariablesByScopeAsync(nullApplicationId, scope);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -594,7 +600,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetVariablesByScopeAsync(applicationId, nullScope);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -734,7 +741,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetChangeHistoryAsync(variableId, invalidLimit);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }
@@ -753,7 +761,8 @@ public class EnvironmentVariableServiceTests
         var result = await _service.GetChangeHistoryAsync(variableId, invalidLimit);
 
         // Assert
-        result.Data.Should().BeNull();
+        Action act = () => _ = result.Data;
+        act.Should().Throw<InvalidOperationException>();
         result.Success.Should().BeFalse();
         result.StatusCode.Should().Be(400);
     }

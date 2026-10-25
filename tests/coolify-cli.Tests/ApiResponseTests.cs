@@ -109,7 +109,8 @@ public class ApiResponseTests
         // Assert
         response.Should().NotBeNull();
         response.Success.Should().BeFalse();
-        response.Data.Should().BeNull();
+        Action act = () => _ = response.Data;
+        act.Should().Throw<InvalidOperationException>();
         response.Errors.Should().BeEquivalentTo(errors);
         response.StatusCode.Should().Be(400);
         response.Message.Should().Be("Error 1");
@@ -146,7 +147,8 @@ public class ApiResponseTests
         // Assert
         response.Should().NotBeNull();
         response.Success.Should().BeFalse();
-        response.Data.Should().BeNull();
+        Action act = () => _ = response.Data;
+        act.Should().Throw<InvalidOperationException>();
         response.Errors.Should().BeEquivalentTo(new List<string> { error });
         response.StatusCode.Should().Be(500);
         response.Message.Should().Be(error);
@@ -183,9 +185,61 @@ public class ApiResponseTests
         // Assert
         response.Should().NotBeNull();
         response.Success.Should().BeFalse();
-        response.Data.Should().BeNull();
+        Action act = () => _ = response.Data;
+        act.Should().Throw<InvalidOperationException>();
         response.Errors.Should().BeEmpty();
         response.Message.Should().Be("An error occurred.");
+    }
+
+    // ====================================================================
+    // ApiResponse<T> Data Access Tests
+    // ====================================================================
+
+    /// <summary>
+    /// Verifies that reading Data on a failed response throws InvalidOperationException with a clear message.
+    /// </summary>
+    [Fact]
+    public void Data_OnFailedResponse_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var response = ApiResponse<User>.ErrorResponse("Not found", 404);
+
+        // Act
+        Action act = () => _ = response.Data;
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*failed response*");
+    }
+
+    /// <summary>
+    /// Verifies that Data becomes inaccessible once AddError flips a previously successful response to failed.
+    /// </summary>
+    [Fact]
+    public void Data_AfterAddError_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var response = ApiResponse<User>.SuccessResponse(TestData.SampleUser);
+
+        // Act
+        response.AddError("Late failure");
+        Action act = () => _ = response.Data;
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    /// <summary>
+    /// Verifies that Data on a successful response still returns the stored payload.
+    /// </summary>
+    [Fact]
+    public void Data_OnSuccessfulResponse_ReturnsStoredData()
+    {
+        // Arrange
+        var response = new ApiResponse<User> { Success = true, Data = TestData.SampleUser };
+
+        // Act & Assert
+        response.Data.Should().BeSameAs(TestData.SampleUser);
     }
 
     // ====================================================================

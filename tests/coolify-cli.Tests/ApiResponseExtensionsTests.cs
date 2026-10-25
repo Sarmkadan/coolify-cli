@@ -91,10 +91,33 @@ public class ApiResponseExtensionsTests
         // Assert
         mappedResponse.Should().NotBeNull();
         mappedResponse.Success.Should().BeFalse();
-        mappedResponse.Data.Should().BeNull();
+        Action act = () => _ = mappedResponse.Data;
+        act.Should().Throw<InvalidOperationException>();
         mappedResponse.Errors.Should().BeEquivalentTo(errors);
         mappedResponse.StatusCode.Should().Be(500);
         mappedResponse.Message.Should().Be("Database error");
+    }
+
+    /// <summary>
+    /// Verifies that Map does not invoke the mapper for a failed response, since there is no data to map.
+    /// </summary>
+    [Fact]
+    public void Map_WithFailedResponse_DoesNotInvokeMapper()
+    {
+        // Arrange
+        var response = ApiResponse<User>.ErrorResponse("Database error", 500);
+        var mapperCalls = 0;
+
+        // Act
+        var mappedResponse = response.Map(u =>
+        {
+            mapperCalls++;
+            return new UserDto { Id = u.Id };
+        });
+
+        // Assert
+        mapperCalls.Should().Be(0);
+        mappedResponse.Success.Should().BeFalse();
     }
 
     /// <summary>
@@ -300,7 +323,8 @@ public class ApiResponseExtensionsTests
         // Assert
         combined.Should().NotBeNull();
         combined.Success.Should().BeFalse();
-        combined.Data.Should().BeNull();
+        Action act = () => _ = combined.Data;
+        act.Should().Throw<InvalidOperationException>();
         combined.Errors.Should().Contain("Database error");
         combined.StatusCode.Should().Be(500); // First failed response's status code
         combined.Message.Should().Be("Database error");
@@ -325,7 +349,8 @@ public class ApiResponseExtensionsTests
         // Assert
         combined.Should().NotBeNull();
         combined.Success.Should().BeFalse();
-        combined.Data.Should().BeNull();
+        Action act = () => _ = combined.Data;
+        act.Should().Throw<InvalidOperationException>();
         combined.Errors.Should().BeEquivalentTo(new List<string> { "Error 1", "Error 2", "Error 3" });
         combined.StatusCode.Should().Be(400); // First response's status code
         combined.Message.Should().Be("Error 1");

@@ -11,10 +11,18 @@ public class ApiResponse<T>
     /// Indicates whether the API operation was successful.
     /// </summary>
     public bool Success { get; set; } = true;
+    private T? _data;
     /// <summary>
     /// The response data payload.
     /// </summary>
-    public T? Data { get; set; }
+    /// <exception cref="InvalidOperationException">Thrown when accessed on a failed response.</exception>
+    public T? Data
+    {
+        get => Success
+            ? _data
+            : throw new InvalidOperationException("Cannot access Data on a failed response. Check Success before reading Data.");
+        set => _data = value;
+    }
     /// <summary>
     /// Optional message describing the operation result.
     /// </summary>
