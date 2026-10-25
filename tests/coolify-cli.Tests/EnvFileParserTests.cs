@@ -90,4 +90,55 @@ public class EnvFileParserTests
             File.Delete(path);
         }
     }
+
+    /// <summary>
+    /// Tests that single- and double-quoted values lose their quotes and keep inner spaces and '#'.
+    /// </summary>
+    [Fact]
+    public void Parse_ShouldUnquoteValues_KeepingInnerContent()
+    {
+        var entries = EnvFileParser.Parse(["A=\"hello world\"", "B='x # y'", "C=\"\""]);
+
+        entries.Should().Equal(
+            new EnvVarEntry("A", "hello world", 1),
+            new EnvVarEntry("B", "x # y", 2),
+            new EnvVarEntry("C", string.Empty, 3));
+    }
+
+    /// <summary>
+    /// Tests that an inline comment after a quoted value is ignored.
+    /// </summary>
+    [Fact]
+    public void Parse_ShouldIgnoreTrailingText_AfterClosingQuote()
+    {
+        var entries = EnvFileParser.Parse(["A=\"one\" # note"]);
+
+        entries.Should().ContainSingle()
+            .Which.Value.Should().Be("one");
+    }
+
+    /// <summary>
+    /// Tests that an unquoted value stops at a '#' preceded by whitespace, but keeps a '#' inside a word.
+    /// </summary>
+    [Fact]
+    public void Parse_ShouldStripInlineComment_FromUnquotedValue()
+    {
+        var entries = EnvFileParser.Parse(["A=value # comment", "B=abc#def"]);
+
+        entries.Should().Equal(
+            new EnvVarEntry("A", "value", 1),
+            new EnvVarEntry("B", "abc#def", 2));
+    }
+
+    /// <summary>
+    /// Tests that an 'export' prefix is dropped from the key.
+    /// </summary>
+    [Fact]
+    public void Parse_ShouldDropExportPrefix_FromKey()
+    {
+        var entries = EnvFileParser.Parse(["export API_URL=https://example.test"]);
+
+        entries.Should().ContainSingle()
+            .Which.Should().Be(new EnvVarEntry("API_URL", "https://example.test", 1));
+    }
 }
