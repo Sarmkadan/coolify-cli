@@ -32,10 +32,10 @@ public static class InfrastructureCommands
     /// <returns>The fully configured <c>iac</c> command group.</returns>
     public static Command CreateIacCommand(
         ApplicationService appService,
-        DatabaseService    dbService,
-        ILogger            logger)
+        DatabaseService dbService,
+        ILogger logger)
     {
-        var engine   = IacServiceExtensions.CreateTemplateEngine(appService, dbService, logger);
+        var engine = IacServiceExtensions.CreateTemplateEngine(appService, dbService, logger);
         var resolver = new TemplateVariableResolver(logger);
 
         var iacCommand = new Command(
@@ -59,8 +59,8 @@ public static class InfrastructureCommands
     /// </summary>
     private static Command CreateApplyCommand(
         IInfrastructureTemplateEngine engine,
-        TemplateVariableResolver      resolver,
-        ILogger                       logger)
+        TemplateVariableResolver resolver,
+        ILogger logger)
     {
         var fileArg = new Argument<string>("file") { Description = "Path to the YAML infrastructure template to apply" };
         var dryOpt = new Option<bool>("--dry-run", ["-d"]) { Description = "Simulate all operations without mutating live state" };
@@ -78,21 +78,21 @@ public static class InfrastructureCommands
         cmd.SetAction(async (parseResult, ct) =>
         {
             var file = parseResult.GetValue(fileArg);
-            var dry  = parseResult.GetValue(dryOpt);
-            var yes  = parseResult.GetValue(yesOpt);
-            var ci   = parseResult.GetValue(ciOpt);
-            var fmt  = parseResult.GetValue(fmtOpt);
+            var dry = parseResult.GetValue(dryOpt);
+            var yes = parseResult.GetValue(yesOpt);
+            var ci = parseResult.GetValue(ciOpt);
+            var fmt = parseResult.GetValue(fmtOpt);
             try
             {
                 var options = ci
                     ? IacTemplateOptions.CiMode
                     : new IacTemplateOptions
-                      {
-                          DryRun       = dry,
-                          AutoApprove  = yes,
-                          OutputFormat = fmt!,
-                          ShowDiff     = true
-                      };
+                    {
+                        DryRun = dry,
+                        AutoApprove = yes,
+                        OutputFormat = fmt!,
+                        ShowDiff = true
+                    };
 
                 var loadResult = await engine.LoadWithVariablesAsync(file!, resolver);
                 if (!loadResult.Success)
@@ -151,8 +151,8 @@ public static class InfrastructureCommands
     /// </summary>
     private static Command CreateValidateCommand(
         IInfrastructureTemplateEngine engine,
-        TemplateVariableResolver      resolver,
-        ILogger                       logger)
+        TemplateVariableResolver resolver,
+        ILogger logger)
     {
         var fileArg = new Argument<string>("file") { Description = "Path to the YAML infrastructure template to validate" };
         var fmtOpt = new Option<string>("--format", ["-f"]) { Description = "Output format: text (default) | json", DefaultValueFactory = _ => "text" };
@@ -167,10 +167,10 @@ public static class InfrastructureCommands
         cmd.SetAction(async (parseResult, ct) =>
         {
             var file = parseResult.GetValue(fileArg);
-            var fmt  = parseResult.GetValue(fmtOpt);
+            var fmt = parseResult.GetValue(fmtOpt);
             try
             {
-                var options    = new IacTemplateOptions { OutputFormat = fmt! };
+                var options = new IacTemplateOptions { OutputFormat = fmt! };
                 var loadResult = await engine.LoadWithVariablesAsync(file!, resolver);
 
                 if (!loadResult.Success)
@@ -181,7 +181,7 @@ public static class InfrastructureCommands
                 }
 
                 var valResponse = await engine.ValidateTemplateAsync(loadResult.Data!);
-                var validation  = valResponse.Data!;
+                var validation = valResponse.Data!;
 
                 TemplateDiffFormatter.FormatValidationResult(validation, options);
 
@@ -206,8 +206,8 @@ public static class InfrastructureCommands
     /// </summary>
     private static Command CreateDiffCommand(
         IInfrastructureTemplateEngine engine,
-        TemplateVariableResolver      resolver,
-        ILogger                       logger)
+        TemplateVariableResolver resolver,
+        ILogger logger)
     {
         var fileArg = new Argument<string>("file") { Description = "Path to the YAML infrastructure template to diff" };
         var fmtOpt = new Option<string>("--format", ["-f"]) { Description = "Output format: text (default) | json", DefaultValueFactory = _ => "text" };
@@ -222,10 +222,10 @@ public static class InfrastructureCommands
         cmd.SetAction(async (parseResult, ct) =>
         {
             var file = parseResult.GetValue(fileArg);
-            var fmt  = parseResult.GetValue(fmtOpt);
+            var fmt = parseResult.GetValue(fmtOpt);
             try
             {
-                var options    = new IacTemplateOptions { OutputFormat = fmt!, ShowDiff = true };
+                var options = new IacTemplateOptions { OutputFormat = fmt!, ShowDiff = true };
                 var loadResult = await engine.LoadWithVariablesAsync(file!, resolver);
 
                 if (!loadResult.Success)
@@ -271,7 +271,7 @@ public static class InfrastructureCommands
     /// </summary>
     private static Command CreateExportCommand(
         IInfrastructureTemplateEngine engine,
-        ILogger                       logger)
+        ILogger logger)
     {
         var outOpt = new Option<string?>("--output", ["-o"]) { Description = "Write the exported YAML to this file path; prints to stdout when omitted" };
         var nameOpt = new Option<string>("--name", ["-n"]) { Description = "Override the metadata.name field of the exported template", DefaultValueFactory = _ => "exported-stack" };
@@ -286,7 +286,7 @@ public static class InfrastructureCommands
         cmd.SetAction(async (parseResult, ct) =>
         {
             var output = parseResult.GetValue(outOpt);
-            var name   = parseResult.GetValue(nameOpt);
+            var name = parseResult.GetValue(nameOpt);
             try
             {
                 var exportResponse = await engine.ExportCurrentStateAsync();
@@ -350,8 +350,8 @@ public static class InfrastructureCommands
 
         cmd.SetAction(async (parseResult, ct) =>
         {
-            var name        = parseResult.GetValue(nameOpt);
-            var outputPath  = parseResult.GetValue(outOpt);
+            var name = parseResult.GetValue(nameOpt);
+            var outputPath = parseResult.GetValue(outOpt);
             var environment = parseResult.GetValue(envOpt);
 
             if (File.Exists(outputPath))
