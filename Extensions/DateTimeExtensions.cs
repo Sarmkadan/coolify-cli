@@ -267,7 +267,7 @@ public static class DateTimeExtensions
     /// <returns><see langword="true"/> if the date is in the past; otherwise, <see langword="false"/>.</returns>
     public static bool IsPast(this DateTime dateTime)
     {
-        return dateTime < DateTime.UtcNow;
+        return ToUtc(dateTime) < DateTime.UtcNow;
     }
 
     /// <summary>
@@ -277,7 +277,7 @@ public static class DateTimeExtensions
     /// <returns><see langword="true"/> if the date is in the future; otherwise, <see langword="false"/>.</returns>
     public static bool IsFuture(this DateTime dateTime)
     {
-        return dateTime > DateTime.UtcNow;
+        return ToUtc(dateTime) > DateTime.UtcNow;
     }
 
     /// <summary>
@@ -287,8 +287,15 @@ public static class DateTimeExtensions
     /// <returns><see langword="true"/> if the date is today; otherwise, <see langword="false"/>.</returns>
     public static bool IsToday(this DateTime dateTime)
     {
-        return dateTime.Date == DateTime.UtcNow.Date;
+        return ToUtc(dateTime).Date == DateTime.UtcNow.Date;
     }
+
+    /// <summary>
+    /// Normalizes a <see cref="DateTime"/> to UTC before comparing it with <see cref="DateTime.UtcNow"/>.
+    /// Only <see cref="DateTimeKind.Local"/> values need conversion; Utc and Unspecified are used as-is.
+    /// </summary>
+    private static DateTime ToUtc(DateTime dateTime) =>
+        dateTime.Kind == DateTimeKind.Local ? dateTime.ToUniversalTime() : dateTime;
 
     /// <summary>
     /// Formats a <see cref="DateTime"/> as ISO 8601 string for API calls.
