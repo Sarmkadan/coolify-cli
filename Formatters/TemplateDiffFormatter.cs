@@ -17,6 +17,24 @@ using CoolifyCli.Models;
 public static class TemplateDiffFormatter
 {
     private const int RulerWidth = 64;
+    private const char RulerChar = '─';
+
+    private const string SigilAdded    = "+";
+    private const string SigilModified = "~";
+    private const string SigilOrphaned = "!";
+    private const string SigilInSync   = "=";
+
+    private const string LabelAdded    = "ADDED    ";
+    private const string LabelModified = "MODIFIED ";
+    private const string LabelOrphaned = "ORPHAN   ";
+    private const string LabelInSync   = "IN SYNC  ";
+
+    private const string MarkSuccess = "✓";
+    private const string MarkFailure = "✗";
+    private const string MarkWarning = "!";
+
+    private const string StatusPassed = MarkSuccess + " PASSED";
+    private const string StatusFailed = MarkFailure + " FAILED";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -92,19 +110,19 @@ public static class TemplateDiffFormatter
 
         sb.AppendLine();
         sb.AppendLine("  Infrastructure Diff");
-        sb.AppendLine(new string('─', RulerWidth));
+        sb.AppendLine(new string(RulerChar, RulerWidth));
 
-        AppendDiffSection(sb, diff.Added,     "+", "ADDED    ");
-        AppendDiffSection(sb, diff.Modified,  "~", "MODIFIED ");
-        AppendDiffSection(sb, diff.Removed,   "!", "ORPHAN   ");
-        AppendDiffSection(sb, diff.Unchanged, "=", "IN SYNC  ");
+        AppendDiffSection(sb, diff.Added,     SigilAdded,    LabelAdded);
+        AppendDiffSection(sb, diff.Modified,  SigilModified, LabelModified);
+        AppendDiffSection(sb, diff.Removed,   SigilOrphaned, LabelOrphaned);
+        AppendDiffSection(sb, diff.Unchanged, SigilInSync,   LabelInSync);
 
-        sb.AppendLine(new string('─', RulerWidth));
+        sb.AppendLine(new string(RulerChar, RulerWidth));
         sb.AppendLine(
-            $"  +{diff.Added.Count} added  " +
-            $"~{diff.Modified.Count} modified  " +
-            $"!{diff.Removed.Count} orphaned  " +
-            $"={diff.Unchanged.Count} unchanged");
+            $"  {SigilAdded}{diff.Added.Count} added  " +
+            $"{SigilModified}{diff.Modified.Count} modified  " +
+            $"{SigilOrphaned}{diff.Removed.Count} orphaned  " +
+            $"{SigilInSync}{diff.Unchanged.Count} unchanged");
         sb.AppendLine();
 
         return sb.ToString();
@@ -113,15 +131,15 @@ public static class TemplateDiffFormatter
     private static string RenderApplyResultText(TemplateApplyResult result)
     {
         var sb   = new StringBuilder();
-        var icon = result.Success ? "✓" : "✗";
+        var icon = result.Success ? MarkSuccess : MarkFailure;
 
         sb.AppendLine();
         sb.AppendLine($"  Apply Result  {icon}  {result.Duration.TotalSeconds:F1}s");
-        sb.AppendLine(new string('─', RulerWidth));
+        sb.AppendLine(new string(RulerChar, RulerWidth));
 
         foreach (var op in result.Operations)
         {
-            var status = op.Succeeded ? "✓" : "✗";
+            var status = op.Succeeded ? MarkSuccess : MarkFailure;
             sb.AppendLine(
                 $"  {status}  [{op.Action,-6}]  {op.ResourceType,-13} {op.ResourceName}");
 
@@ -129,7 +147,7 @@ public static class TemplateDiffFormatter
                 sb.AppendLine($"             {op.Message}");
         }
 
-        sb.AppendLine(new string('─', RulerWidth));
+        sb.AppendLine(new string(RulerChar, RulerWidth));
         sb.AppendLine($"  {result.SucceededCount} succeeded  {result.FailedCount} failed");
         sb.AppendLine();
 
@@ -139,22 +157,22 @@ public static class TemplateDiffFormatter
     private static string RenderValidationText(TemplateValidationResult validation)
     {
         var sb     = new StringBuilder();
-        var status = validation.IsValid ? "✓ PASSED" : "✗ FAILED";
+        var status = validation.IsValid ? StatusPassed : StatusFailed;
 
         sb.AppendLine();
         sb.AppendLine($"  Validation: {validation.TemplateName}  —  {status}");
-        sb.AppendLine(new string('─', RulerWidth));
+        sb.AppendLine(new string(RulerChar, RulerWidth));
 
         foreach (var err in validation.Errors)
-            sb.AppendLine($"  ✗  {err}");
+            sb.AppendLine($"  {MarkFailure}  {err}");
 
         foreach (var warn in validation.Warnings)
-            sb.AppendLine($"  !  {warn}");
+            sb.AppendLine($"  {MarkWarning}  {warn}");
 
         if (validation.Errors.Count == 0 && validation.Warnings.Count == 0)
             sb.AppendLine("  Template is valid with no warnings.");
 
-        sb.AppendLine(new string('─', RulerWidth));
+        sb.AppendLine(new string(RulerChar, RulerWidth));
         sb.AppendLine(
             $"  {validation.Errors.Count} error(s)  {validation.Warnings.Count} warning(s)");
         sb.AppendLine();
