@@ -13,7 +13,7 @@ public sealed class DatabaseService
     private readonly CoolifyApiClient _apiClient;
     private readonly ILogger _logger;
 
-        /// <summary>
+    /// <summary>
     /// Initialises a new <see cref="DatabaseService"/> instance.
     /// </summary>
     /// <param name="apiClient">Authenticated HTTP client for Coolify API communication.</param>
@@ -100,7 +100,9 @@ public sealed class DatabaseService
         var response = await _apiClient.PutAsync<DatabaseConfiguration>($"/api/v1/databases/{databaseId}", database);
 
         if (response.Success)
+        {
             _logger.Info($"Database {databaseId} updated successfully");
+        }
 
         return response;
     }
@@ -113,7 +115,9 @@ public sealed class DatabaseService
     public async Task<ApiResponse<ServiceHealth>> CheckDatabaseHealthAsync(int databaseId)
     {
         if (databaseId <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
+        }
 
         _logger.Info($"Checking health of database {databaseId}");
         var response = await _apiClient.GetAsync<ServiceHealth>($"/api/v1/databases/{databaseId}/health");
@@ -141,9 +145,13 @@ public sealed class DatabaseService
         var response = await _apiClient.PostAsync<object>($"/api/v1/databases/{databaseId}/backup", new { });
 
         if (response.Success)
+        {
             _logger.Info($"Backup initiated successfully for database {databaseId}");
+        }
         else
+        {
             _logger.Error($"Failed to initiate backup: {response.Message}");
+        }
 
         return response;
     }
@@ -169,10 +177,14 @@ public sealed class DatabaseService
     public async Task<ApiResponse<object>> RestoreDatabaseAsync(int databaseId, string backupId)
     {
         if (databaseId <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
+        }
 
         if (string.IsNullOrWhiteSpace(backupId))
+        {
             throw new ArgumentException("Backup ID is required for restore.", nameof(backupId));
+        }
 
         _logger.Info($"Restoring database {databaseId} from backup {backupId}");
 
@@ -180,9 +192,13 @@ public sealed class DatabaseService
         var response = await _apiClient.PostAsync<object>($"/api/v1/databases/{databaseId}/restore", restoreRequest);
 
         if (response.Success)
+        {
             _logger.Info($"Database restore initiated for {databaseId}");
+        }
         else
+        {
             _logger.Error($"Failed to restore database: {response.Message}");
+        }
 
         return response;
     }
@@ -195,15 +211,21 @@ public sealed class DatabaseService
     public async Task<ApiResponse<bool>> TestConnectionAsync(int databaseId)
     {
         if (databaseId <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(databaseId), "Database ID must be positive.");
+        }
 
         _logger.Info($"Testing connection to database {databaseId}");
         var response = await _apiClient.GetAsync<bool>($"/api/v1/databases/{databaseId}/test-connection");
 
         if (response.Success)
+        {
             _logger.Info($"Database {databaseId} connection test passed");
+        }
         else
+        {
             _logger.Error($"Database {databaseId} connection test failed: {response.Message}");
+        }
 
         return response;
     }
@@ -219,9 +241,13 @@ public sealed class DatabaseService
         var response = await _apiClient.DeleteAsync<object>($"/api/v1/databases/{databaseId}");
 
         if (response.Success)
+        {
             _logger.Info($"Database {databaseId} deleted successfully");
+        }
         else
+        {
             _logger.Error($"Failed to delete database: {response.Message}");
+        }
 
         return response;
     }
